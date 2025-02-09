@@ -35,31 +35,12 @@ import type { Logger } from "./util/logging";
 import { LOG } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
 
-export interface EvidenceCollection {
-    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
-    getEvidence(issueKey: string): XrayEvidenceItem[];
-}
-
-export class SimpleEvidenceCollection {
-    private readonly collectedEvidence = new Map<string, XrayEvidenceItem[]>();
-    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
-        const currentEvidence = this.collectedEvidence.get(issueKey);
-        if (!currentEvidence) {
-            this.collectedEvidence.set(issueKey, [evidence]);
-        } else {
-            currentEvidence.push(evidence);
-        }
-    }
-    getEvidence(issueKey: string): XrayEvidenceItem[] {
-        return this.collectedEvidence.get(issueKey) ?? [];
-    }
-}
-
-export class PluginContext implements EvidenceCollection {
+export class PluginContext implements EvidenceCollection, IterationParameterCollection {
     private readonly clients: ClientCombination;
     private readonly internalOptions: InternalCypressXrayPluginOptions;
     private readonly cypressOptions: Cypress.PluginConfigOptions;
     private readonly evidenceCollection: EvidenceCollection;
+    private readonly iterationParameterCollection: IterationParameterCollection;
     private readonly graph: ExecutableGraph<Command>;
     private readonly logger: Logger;
 
@@ -68,6 +49,7 @@ export class PluginContext implements EvidenceCollection {
         internalOptions: InternalCypressXrayPluginOptions,
         cypressOptions: Cypress.PluginConfigOptions,
         evidenceCollection: EvidenceCollection,
+        iterationParameterCollection: IterationParameterCollection,
         graph: ExecutableGraph<Command>,
         logger: Logger
     ) {
@@ -75,6 +57,7 @@ export class PluginContext implements EvidenceCollection {
         this.internalOptions = internalOptions;
         this.cypressOptions = cypressOptions;
         this.evidenceCollection = evidenceCollection;
+        this.iterationParameterCollection = iterationParameterCollection;
         this.graph = graph;
         this.logger = logger;
     }
@@ -106,6 +89,54 @@ export class PluginContext implements EvidenceCollection {
 
     public getEvidence(issueKey: string): XrayEvidenceItem[] {
         return this.evidenceCollection.getEvidence(issueKey);
+    }
+
+    public addIterationParameter(issueKey: string, name: string, value: string): void {
+        this.iterationParameterCollection.addIterationParameter(issueKey, name, value);
+    }
+
+    public getIterationParameters(issueKey: string): { name: string; value: string }[] {
+        return this.iterationParameterCollection.getIterationParameters(issueKey);
+    }
+}
+
+export interface EvidenceCollection {
+    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
+    getEvidence(issueKey: string): XrayEvidenceItem[];
+}
+
+export class SimpleEvidenceCollection {
+    private readonly collectedEvidence = new Map<string, XrayEvidenceItem[]>();
+    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
+        const currentEvidence = this.collectedEvidence.get(issueKey);
+        if (!currentEvidence) {
+            this.collectedEvidence.set(issueKey, [evidence]);
+        } else {
+            currentEvidence.push(evidence);
+        }
+    }
+    getEvidence(issueKey: string): XrayEvidenceItem[] {
+        return this.collectedEvidence.get(issueKey) ?? [];
+    }
+}
+
+export interface IterationParameterCollection {
+    addIterationParameter(issueKey: string, name: string, value: string): void;
+    getIterationParameters(issueKey: string): { name: string; value: string }[];
+}
+
+export class SimpleIterationParameterCollection implements IterationParameterCollection {
+    private readonly collectedParameters = new Map<string, { name: string; value: string }[]>();
+    public addIterationParameter(issueKey: string, name: string, value: string): void {
+        const currentParameters = this.collectedParameters.get(issueKey);
+        if (!currentParameters) {
+            this.collectedParameters.set(issueKey, [{ name, value }]);
+        } else {
+            currentParameters.push({ name, value });
+        }
+    }
+    public getIterationParameters(issueKey: string): { name: string; value: string }[] {
+        return this.collectedParameters.get(issueKey) ?? [];
     }
 }
 

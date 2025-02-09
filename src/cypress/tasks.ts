@@ -1,4 +1,4 @@
-import type { EvidenceCollection } from "../context";
+import type { EvidenceCollection, IterationParameterCollection } from "../context";
 import { getTestIssueKeys } from "../hooks/after/util";
 import { encode } from "../util/base64";
 import { dedent } from "../util/dedent";
@@ -14,6 +14,11 @@ export enum PluginTask {
      * within a test.
      */
     INCOMING_RESPONSE = "cypress-xray-plugin:task:response",
+    /**
+     * The task that provides Xray iteration parameters for a test run. These can be used to
+     * distinguish between iterations in the execution results view.
+     */
+    ITERATION_DEFINITION = "cypress-xray-plugin:iteration:definition",
     /**
      * The task which handles outgoing requests dispatched through `cy.request` within a test.
      */
@@ -52,27 +57,46 @@ export function enqueueTask(
     filename: string,
     response: Cypress.Response<unknown>
 ): Cypress.Chainable<Cypress.Response<unknown>>;
-export function enqueueTask<T>(
-    task: PluginTask,
-    filename: string,
-    arg: unknown
-): Cypress.Chainable<T> {
+/**
+ * Enqueues the plugin task that defines the Xray iteration parameters for the current test run.
+ *
+ * @param task - the task name
+ * @param parameters - the iteration parameters
+ */
+export function enqueueTask(
+    task: PluginTask.ITERATION_DEFINITION,
+    parameters: Record<string, string>
+): Cypress.Chainable<Record<string, string>>;
+export function enqueueTask<T>(task: PluginTask, ...args: unknown[]): Cypress.Chainable<T> {
     switch (task) {
         case PluginTask.OUTGOING_REQUEST: {
-            const parameters: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST] = {
+            // Cast valid because of overload.
+            const [filename, request] = args as [string, Partial<Cypress.RequestOptions>];
+            const taskParameters: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST] = {
                 filename: filename,
-                request: arg as Partial<Cypress.RequestOptions>,
-                test: Cypress.currentTest.title,
+                request: request,
+                test: Cypress.currentTest.titlePath.join(" "),
             };
-            return cy.task(task, parameters);
+            return cy.task(task, taskParameters);
         }
         case PluginTask.INCOMING_RESPONSE: {
-            const parameters: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE] = {
+            // Cast valid because of overload.
+            const [filename, response] = args as [string, Cypress.Response<unknown>];
+            const taskParameters: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE] = {
                 filename: filename,
-                response: arg as Cypress.Response<unknown>,
-                test: Cypress.currentTest.title,
+                response: response,
+                test: Cypress.currentTest.titlePath.join(" "),
             };
-            return cy.task(task, parameters);
+            return cy.task(task, taskParameters);
+        }
+        case PluginTask.ITERATION_DEFINITION: {
+            // Cast valid because of overload.
+            const [parameters] = args as [Record<string, string>];
+            const taskParameters: PluginTaskParameterType[PluginTask.ITERATION_DEFINITION] = {
+                parameters: parameters,
+                test: Cypress.currentTest.titlePath.join(" "),
+            };
+            return cy.task(task, taskParameters);
         }
     }
 }
@@ -93,6 +117,19 @@ export interface PluginTaskParameterType {
          * The response data.
          */
         response: Cypress.Response<unknown>;
+        /**
+         * The test name where `cy.request` was called.
+         */
+        test: string;
+    };
+    /**
+     * The task parameters for defining Xray iteration data.
+     */
+    [PluginTask.ITERATION_DEFINITION]: {
+        /**
+         * The Xray iteration parameters of the current test.
+         */
+        parameters: Record<string, string>;
         /**
          * The test name where `cy.request` was called.
          */
@@ -123,6 +160,10 @@ interface PluginTaskReturnType {
      */
     [PluginTask.INCOMING_RESPONSE]: Cypress.Response<unknown>;
     /**
+     * The result of an itereation parameter definition task task.
+     */
+    [PluginTask.ITERATION_DEFINITION]: Partial<Cypress.RequestOptions>;
+    /**
      * The result of an outgoing request task.
      */
     [PluginTask.OUTGOING_REQUEST]: Partial<Cypress.RequestOptions>;
@@ -135,12 +176,19 @@ type TaskListener = {
 export class PluginTaskListener implements TaskListener {
     private readonly projectKey: string;
     private readonly evidenceCollection: EvidenceCollection;
+    private readonly iterationParameterCollection: IterationParameterCollection;
     private readonly logger: Logger;
     private readonly ignoredTests = new Set<string>();
 
-    constructor(projectKey: string, evidenceCollection: EvidenceCollection, logger: Logger) {
+    constructor(
+        projectKey: string,
+        evidenceCollection: EvidenceCollection,
+        iterationParameterCollection: IterationParameterCollection,
+        logger: Logger
+    ) {
         this.projectKey = projectKey;
         this.evidenceCollection = evidenceCollection;
+        this.iterationParameterCollection = iterationParameterCollection;
         this.logger = logger;
     }
 
@@ -202,5 +250,33 @@ export class PluginTaskListener implements TaskListener {
             }
         }
         return args.response;
+    }
+
+    public [PluginTask.ITERATION_DEFINITION](
+        args: PluginTaskParameterType[PluginTask.ITERATION_DEFINITION]
+    ) {
+        try {
+            const issueKeys = getTestIssueKeys(args.test, this.projectKey);
+            for (const [name, value] of Object.entries(args.parameters)) {
+                for (const issueKey of issueKeys) {
+                    this.iterationParameterCollection.addIterationParameter(issueKey, name, value);
+                }
+            }
+        } catch (error: unknown) {
+            if (!this.ignoredTests.has(args.test)) {
+                this.logger.message(
+                    "warning",
+                    dedent(`
+                        Test: ${args.test}
+
+                          Encountered an iteration definition task call which cannot be mapped to a test.
+
+                            Caused by: ${errorMessage(error)}
+                    `)
+                );
+                this.ignoredTests.add(args.test);
+            }
+        }
+        return args.parameters;
     }
 }

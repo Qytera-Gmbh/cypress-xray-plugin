@@ -3,7 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { describe, it } from "node:test";
 import { getMockedCypress } from "../../test/mocks";
-import { SimpleEvidenceCollection } from "../context";
+import { SimpleEvidenceCollection, SimpleIterationParameterCollection } from "../context";
 import { dedent } from "../util/dedent";
 import { LOG } from "../util/logging";
 import * as tasks from "./tasks";
@@ -12,7 +12,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe(tasks.enqueueTask.name, () => {
         it("enqueues tasks for outgoing requests (url only)", (context) => {
             const { cy, cypress } = getMockedCypress();
-            cypress.currentTest.title = "A test title";
+            cypress.currentTest.titlePath = ["A test title"];
             const task = context.mock.method(cy, "task", context.mock.fn());
             tasks.enqueueTask(
                 tasks.PluginTask.OUTGOING_REQUEST,
@@ -31,7 +31,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("enqueues tasks for outgoing requests (object)", (context) => {
             const { cy, cypress } = getMockedCypress();
-            cypress.currentTest.title = "Another test title";
+            cypress.currentTest.titlePath = ["Another test title"];
             const task = context.mock.method(cy, "task", context.mock.fn());
             tasks.enqueueTask(tasks.PluginTask.OUTGOING_REQUEST, "requestObject.json", {
                 body: { data: "cool data" },
@@ -54,7 +54,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("enqueues tasks for incoming responses", (context) => {
             const { cy, cypress } = getMockedCypress();
-            cypress.currentTest.title = "Incoming test title";
+            cypress.currentTest.titlePath = ["Incoming test title"];
             const task = context.mock.method(cy, "task", context.mock.fn());
             tasks.enqueueTask(tasks.PluginTask.INCOMING_RESPONSE, "responseObject.json", {
                 allRequestResponses: [],
@@ -94,12 +94,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single outgoing requests for tests with issue key", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             const addEvidence = context.mock.method(
                 evidenceCollection,
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             const result = listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest.json",
                 request: {
@@ -122,8 +128,14 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("handles single outgoing requests for tests with multiple issue keys", (context) => {
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             context.mock.method(LOG, "message", context.mock.fn());
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest.json",
                 request: {
@@ -157,12 +169,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles multiple outgoing requests for tests with the same issue key", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             const addEvidence = context.mock.method(
                 evidenceCollection,
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             const result1 = listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest1.json",
                 request: {
@@ -211,12 +229,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single outgoing requests for tests without issue key", (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             const addEvidence = context.mock.method(
                 evidenceCollection,
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest.json",
                 request: {
@@ -251,12 +275,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles multiple outgoing requests for tests without issue key", (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             const addEvidence = context.mock.method(
                 evidenceCollection,
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest1.json",
                 request: {
@@ -301,12 +331,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single incoming responses for tests with issue key", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             const addEvidence = context.mock.method(
                 evidenceCollection,
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             const result = listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse.json",
                 response: {
@@ -347,8 +383,14 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("handles single incoming responses for tests with multiple issue keys", (context) => {
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             context.mock.method(LOG, "message", context.mock.fn());
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse.json",
                 response: {
@@ -391,12 +433,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles multiple incoming responses for tests with the same issue key", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             const addEvidence = context.mock.method(
                 evidenceCollection,
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             const result1 = listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse1.json",
                 response: {
@@ -475,12 +523,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single incoming responses for tests without issue key", (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             const addEvidence = context.mock.method(
                 evidenceCollection,
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse.json",
                 response: {
@@ -524,12 +578,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles multiple incoming responses for tests without issue key", (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
             const addEvidence = context.mock.method(
                 evidenceCollection,
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                iterationParameterCollection,
+                LOG
+            );
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse1.json",
                 response: {

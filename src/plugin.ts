@@ -1,5 +1,9 @@
 import path from "path";
-import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context";
+import globalContext, {
+    PluginContext,
+    SimpleEvidenceCollection,
+    SimpleIterationParameterCollection,
+} from "./context";
 import type { PluginTaskParameterType } from "./cypress/tasks";
 import { PluginTask, PluginTaskListener } from "./cypress/tasks";
 import afterRun from "./hooks/after/after-run";
@@ -93,11 +97,17 @@ export async function configureXrayPlugin(
         internalOptions,
         config,
         new SimpleEvidenceCollection(),
+        new SimpleIterationParameterCollection(),
         new ExecutableGraph(),
         logger
     );
     globalContext.setGlobalContext(context);
-    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
+    const listener = new PluginTaskListener(
+        internalOptions.jira.projectKey,
+        context,
+        context,
+        logger
+    );
     on("task", {
         [PluginTask.INCOMING_RESPONSE]: (
             args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
