@@ -3,7 +3,10 @@ import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import globalContext, { SimpleEvidenceCollection } from "../../../../../context";
+import globalContext, {
+    SimpleEvidenceCollection,
+    SimpleIterationParameterCollection,
+} from "../../../../../context";
 import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
 import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
 import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
@@ -45,6 +48,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
                         featureFileExtension: options.cucumber?.featureFileExtension,
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
                         uploadScreenshots: options.xray.uploadScreenshots,
@@ -94,6 +98,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
                         featureFileExtension: options.cucumber?.featureFileExtension,
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
                         uploadScreenshots: options.xray.uploadScreenshots,
@@ -154,6 +159,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
                         featureFileExtension: options.cucumber?.featureFileExtension,
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
                         uploadScreenshots: options.xray.uploadScreenshots,
@@ -215,6 +221,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
                         featureFileExtension: options.cucumber?.featureFileExtension,
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
                         uploadScreenshots: options.xray.uploadScreenshots,
@@ -274,6 +281,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
                         featureFileExtension: options.cucumber?.featureFileExtension,
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
                         uploadScreenshots: options.xray.uploadScreenshots,
@@ -342,6 +350,7 @@ describe(relative(cwd(), __filename), async () => {
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
@@ -372,6 +381,7 @@ describe(relative(cwd(), __filename), async () => {
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
@@ -402,6 +412,7 @@ describe(relative(cwd(), __filename), async () => {
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
@@ -428,6 +439,7 @@ describe(relative(cwd(), __filename), async () => {
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
@@ -454,6 +466,7 @@ describe(relative(cwd(), __filename), async () => {
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
+                        iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
@@ -495,6 +508,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -538,6 +552,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -569,6 +584,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: ".feature",
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
                     uploadScreenshots: true,
@@ -596,6 +612,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -621,6 +638,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -644,6 +662,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -678,6 +697,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: evidenceCollection,
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -749,6 +769,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -772,6 +793,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -794,6 +816,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -819,6 +842,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -843,6 +867,7 @@ describe(relative(cwd(), __filename), async () => {
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
                     uploadScreenshots: true,
@@ -872,6 +897,7 @@ describe(relative(cwd(), __filename), async () => {
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
                     uploadScreenshots: true,
@@ -901,6 +927,7 @@ describe(relative(cwd(), __filename), async () => {
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
                     uploadScreenshots: true,
@@ -926,6 +953,7 @@ describe(relative(cwd(), __filename), async () => {
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
                     uploadScreenshots: true,
@@ -951,6 +979,7 @@ describe(relative(cwd(), __filename), async () => {
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
                     uploadScreenshots: true,
@@ -990,6 +1019,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -1014,6 +1044,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -1038,6 +1069,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -1062,6 +1094,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -1086,6 +1119,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: ".ts",
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
@@ -1107,6 +1141,7 @@ describe(relative(cwd(), __filename), async () => {
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: true,
                     projectKey: "CYP",
                     uploadScreenshots: false,
@@ -1122,6 +1157,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             assert.deepStrictEqual(command.getParameters(), {
                 evidenceCollection: new SimpleEvidenceCollection(),
+                iterationParameterCollection: new SimpleIterationParameterCollection(),
                 normalizeScreenshotNames: true,
                 projectKey: "CYP",
                 uploadScreenshots: false,

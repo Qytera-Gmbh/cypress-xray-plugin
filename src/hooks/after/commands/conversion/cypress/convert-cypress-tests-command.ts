@@ -1,6 +1,6 @@
 import path from "node:path";
 import { lt } from "semver";
-import type { EvidenceCollection } from "../../../../../context";
+import type { EvidenceCollection, IterationParameterCollection } from "../../../../../context";
 import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
 import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
 import { CypressStatus } from "../../../../../types/cypress/status";
@@ -31,6 +31,7 @@ import { getXrayStatus } from "./util/status-conversion";
 interface Parameters {
     evidenceCollection: EvidenceCollection;
     featureFileExtension?: string;
+    iterationParameterCollection: IterationParameterCollection;
     normalizeScreenshotNames: boolean;
     projectKey: string;
     uploadScreenshots: boolean;
@@ -78,7 +79,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         }
         const xrayTests: XrayTest[] = [];
         for (const [issueKey, testRuns] of runsByKey) {
-            xrayTests.push(this.getTest(testRuns, issueKey, this.getXrayEvidence(issueKey)));
+            xrayTests.push(this.getTest(testRuns, issueKey));
         }
         if (xrayTests.length === 0) {
             throw new Error(
@@ -204,8 +205,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
     private getTest(
         runs: [SuccessfulConversion, ...SuccessfulConversion[]],
-        issueKey: string,
-        evidence: XrayEvidenceItem[]
+        issueKey: string
     ): XrayTest {
         const xrayTest: XrayTest = {
             finish: truncateIsoTime(
@@ -219,6 +219,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             status: this.getXrayStatus(runs),
             testKey: issueKey,
         };
+        const evidence = this.getXrayEvidence(issueKey);
         if (evidence.length > 0) {
             xrayTest.evidence = evidence;
         }
@@ -226,7 +227,15 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             const iterations: XrayIterationResult[] = [];
             for (const iteration of runs) {
                 iterations.push({
-                    parameters: [{ name: "iteration", value: (iterations.length + 1).toString() }],
+                    parameters: [
+                        {
+                            name: "iteration",
+                            value: (iterations.length + 1).toString(),
+                        },
+                        ...this.parameters.iterationParameterCollection.getIterationParameters(
+                            issueKey
+                        ),
+                    ],
                     status: getXrayStatus(
                         iteration.status,
                         this.parameters.useCloudStatusFallback === true,

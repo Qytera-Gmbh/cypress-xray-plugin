@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { XrayClient } from "../../client/xray/xray-client";
-import type { EvidenceCollection } from "../../context";
+import type { EvidenceCollection, IterationParameterCollection } from "../../context";
 import type { CypressRunResultType } from "../../types/cypress/cypress";
 import type { IssueTransition } from "../../types/jira/responses/issue-transition";
 import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
@@ -53,6 +53,7 @@ async function addUploadCommands(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     evidenceCollection: EvidenceCollection,
+    iterationParameterCollection: IterationParameterCollection,
     graph: ExecutableGraph<Command>,
     logger: Logger
 ) {
@@ -87,6 +88,7 @@ async function addUploadCommands(
         evidenceCollection: evidenceCollection,
         graph: graph,
         issueData: issueData,
+        iterationParameterCollection: iterationParameterCollection,
         logger: logger,
         options: options,
         results: results,
@@ -310,6 +312,7 @@ class AfterRunBuilder {
     private readonly options: InternalCypressXrayPluginOptions;
     private readonly issueData: PluginIssueUpdate | undefined;
     private readonly evidenceCollection: EvidenceCollection;
+    private readonly iterationParameterCollection: IterationParameterCollection;
     private readonly clients: ClientCombination;
     private readonly logger: Logger;
     private readonly constants: {
@@ -326,6 +329,7 @@ class AfterRunBuilder {
         evidenceCollection: EvidenceCollection;
         graph: ExecutableGraph<Command>;
         issueData?: PluginIssueUpdate;
+        iterationParameterCollection: IterationParameterCollection;
         logger: Logger;
         options: InternalCypressXrayPluginOptions;
         results: CypressRunResultType;
@@ -335,6 +339,7 @@ class AfterRunBuilder {
         this.options = args.options;
         this.issueData = args.issueData;
         this.evidenceCollection = args.evidenceCollection;
+        this.iterationParameterCollection = args.iterationParameterCollection;
         this.clients = args.clients;
         this.logger = args.logger;
         this.constants = {};
@@ -360,6 +365,7 @@ class AfterRunBuilder {
                 {
                     evidenceCollection: this.evidenceCollection,
                     featureFileExtension: this.options.cucumber?.featureFileExtension,
+                    iterationParameterCollection: this.iterationParameterCollection,
                     normalizeScreenshotNames: this.options.plugin.normalizeScreenshotNames,
                     projectKey: this.options.jira.projectKey,
                     uploadScreenshots: this.options.xray.uploadScreenshots,

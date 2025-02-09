@@ -439,12 +439,13 @@ describe(relative(cwd(), __filename), async () => {
                 pluginContext.getClients()
             );
             assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[4], expectedContext);
+            assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[5], expectedContext);
             assert.deepStrictEqual(
-                addUploadCommands.mock.calls[0].arguments[5],
+                addUploadCommands.mock.calls[0].arguments[6],
                 pluginContext.getGraph()
             );
             assert.strictEqual(
-                addUploadCommands.mock.calls[0].arguments[6] instanceof CapturingLogger,
+                addUploadCommands.mock.calls[0].arguments[7] instanceof CapturingLogger,
                 true
             );
         });

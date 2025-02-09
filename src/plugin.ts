@@ -145,6 +145,7 @@ export async function configureXrayPlugin(
                     context.getOptions(),
                     context.getClients(),
                     context,
+                    context,
                     context.getGraph(),
                     logger
                 );
