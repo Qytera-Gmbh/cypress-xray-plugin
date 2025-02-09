@@ -1,5 +1,5 @@
 import { normalizedFilename } from "../util/files";
-import { PluginTask, enqueueTask } from "./tasks";
+import { enqueueTask } from "./tasks";
 
 Cypress.Commands.overwrite(
     "request",
@@ -15,10 +15,14 @@ Cypress.Commands.overwrite(
         );
         const timestamp = normalizedFilename(new Date().toLocaleTimeString());
         const basename = `${method} ${url} ${timestamp}`;
-        return enqueueTask(PluginTask.OUTGOING_REQUEST, `${basename} request.json`, request)
+        return enqueueTask("cypress-xray-plugin:task:request", `${basename} request.json`, request)
             .then(originalFn)
             .then((response) =>
-                enqueueTask(PluginTask.INCOMING_RESPONSE, `${basename} response.json`, response)
+                enqueueTask(
+                    "cypress-xray-plugin:task:response",
+                    `${basename} response.json`,
+                    response
+                )
             );
     }
 );
