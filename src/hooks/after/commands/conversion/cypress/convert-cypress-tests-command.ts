@@ -226,15 +226,23 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         if (runs.length > 1) {
             const iterations: XrayIterationResult[] = [];
             for (const iteration of runs) {
+                const definedParameters =
+                    this.parameters.iterationParameterCollection.getIterationParameters(
+                        issueKey,
+                        iteration.title
+                    );
                 iterations.push({
                     parameters: [
                         {
                             name: "iteration",
                             value: (iterations.length + 1).toString(),
                         },
-                        ...this.parameters.iterationParameterCollection.getIterationParameters(
-                            issueKey
-                        ),
+                        ...Object.entries(definedParameters).map(([key, value]) => {
+                            return {
+                                name: key,
+                                value: value,
+                            };
+                        }),
                     ],
                     status: getXrayStatus(
                         iteration.status,

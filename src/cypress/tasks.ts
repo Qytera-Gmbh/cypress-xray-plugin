@@ -121,7 +121,7 @@ export interface PluginTaskParameterType {
          */
         parameters: Record<string, string>;
         /**
-         * The test name where `cy.request` was called.
+         * The test name where the task was called.
          */
         test: string;
     };
@@ -264,10 +264,12 @@ export class PluginTaskListener implements TaskListener {
     ) {
         try {
             const issueKeys = getTestIssueKeys(args.test, this.projectKey);
-            for (const [name, value] of Object.entries(args.parameters)) {
-                for (const issueKey of issueKeys) {
-                    this.iterationParameterCollection.addIterationParameter(issueKey, name, value);
-                }
+            for (const issueKey of issueKeys) {
+                this.iterationParameterCollection.setIterationParameters(
+                    issueKey,
+                    args.test,
+                    args.parameters
+                );
             }
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {

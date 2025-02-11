@@ -91,12 +91,16 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
         return this.evidenceCollection.getEvidence(issueKey);
     }
 
-    public addIterationParameter(issueKey: string, name: string, value: string): void {
-        this.iterationParameterCollection.addIterationParameter(issueKey, name, value);
+    public setIterationParameters(
+        issueKey: string,
+        testId: string,
+        parameters: Record<string, string>
+    ): void {
+        this.iterationParameterCollection.setIterationParameters(issueKey, testId, parameters);
     }
 
-    public getIterationParameters(issueKey: string): { name: string; value: string }[] {
-        return this.iterationParameterCollection.getIterationParameters(issueKey);
+    public getIterationParameters(issueKey: string, testId: string): Record<string, string> {
+        return this.iterationParameterCollection.getIterationParameters(issueKey, testId);
     }
 }
 
@@ -121,22 +125,30 @@ export class SimpleEvidenceCollection {
 }
 
 export interface IterationParameterCollection {
-    addIterationParameter(issueKey: string, name: string, value: string): void;
-    getIterationParameters(issueKey: string): { name: string; value: string }[];
+    getIterationParameters(issueKey: string, testId: string): Record<string, string>;
+    setIterationParameters(
+        issueKey: string,
+        testId: string,
+        parameters: Record<string, string>
+    ): void;
 }
 
 export class SimpleIterationParameterCollection implements IterationParameterCollection {
-    private readonly collectedParameters = new Map<string, { name: string; value: string }[]>();
-    public addIterationParameter(issueKey: string, name: string, value: string): void {
-        const currentParameters = this.collectedParameters.get(issueKey);
-        if (!currentParameters) {
-            this.collectedParameters.set(issueKey, [{ name, value }]);
-        } else {
-            currentParameters.push({ name, value });
+    private readonly collectedParameters = new Map<string, Map<string, Record<string, string>>>();
+    public setIterationParameters(
+        issueKey: string,
+        testId: string,
+        parameters: Record<string, string>
+    ): void {
+        let issueTests = this.collectedParameters.get(issueKey);
+        if (!issueTests) {
+            issueTests = new Map<string, Record<string, string>>();
+            this.collectedParameters.set(issueKey, issueTests);
         }
+        issueTests.set(testId, parameters);
     }
-    public getIterationParameters(issueKey: string): { name: string; value: string }[] {
-        return this.collectedParameters.get(issueKey) ?? [];
+    public getIterationParameters(issueKey: string, testId: string): Record<string, string> {
+        return this.collectedParameters.get(issueKey)?.get(testId) ?? {};
     }
 }
 
