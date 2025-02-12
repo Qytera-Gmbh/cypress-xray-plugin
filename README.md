@@ -73,3 +73,9 @@ Please [visit the documentation](https://qytera-gmbh.github.io/projects/cypress-
 ## Issues
 
 If you're encountering strange behaviour or feel like a feature is missing, feel free to create a [GitHub issue](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues).
+
+## Further Reading
+
+Here is a small list of related blog posts that may be of interest:
+
+- :de: [Das Cypress Xray Plugin zur nahtlosen Integration Ihrer End-to-End Tests](https://www.qytera.de/blog/cypress-xray-plugin-e2e-tests)
