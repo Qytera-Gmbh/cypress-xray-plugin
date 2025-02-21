@@ -11,7 +11,7 @@ import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 // ============================================================================================== //
 
 describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
-    for (const test of [
+    for (const testCase of [
         {
             cucumberTests: ["CYP-969", "CYP-970"],
             manualTests: ["CYP-967", "CYP-968"],
@@ -29,49 +29,52 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             title: "results upload works for tests with multiple issue keys (server)",
         },
     ] as const) {
-        await it(test.title, async () => {
-            const output = runCypress(test.projectDirectory, {
-                includeDefaultEnv: test.service,
+        await it(testCase.title, async () => {
+            const output = runCypress(testCase.projectDirectory, {
+                includeDefaultEnv: testCase.service,
             });
 
             const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                test.projectKey,
+                testCase.projectKey,
                 output,
                 "both"
             );
 
-            if (test.service === "cloud") {
-                const searchResult = await getIntegrationClient("jira", test.service).search({
+            if (testCase.service === "cloud") {
+                const execution = await getIntegrationClient(
+                    "jira",
+                    testCase.service
+                ).issues.getIssue({
                     fields: ["id"],
-                    jql: `issue in (${testExecutionIssueKey})`,
+                    issueIdOrKey: testExecutionIssueKey,
                 });
-                assert.ok(searchResult[0].id);
-                const testResults = await getIntegrationClient("xray", test.service).getTestResults(
-                    searchResult[0].id
-                );
-                assert.deepStrictEqual(
-                    testResults.map((result) => result.jira.key),
-                    [
-                        test.manualTests[0],
-                        test.manualTests[1],
-                        test.cucumberTests[0],
-                        test.cucumberTests[1],
-                    ]
-                );
+                assert.ok(execution.id);
+                const query = await getIntegrationClient(
+                    "xray",
+                    testCase.service
+                ).graphql.getTestExecution({ issueId: execution.id }, (testExecution) => [
+                    testExecution.tests({ limit: 100 }, (testResults) => [
+                        testResults.results((test) => [test.jira({ fields: ["key"] })]),
+                    ]),
+                ]);
+                assert.strictEqual(query.tests?.results?.[0]?.jira.key, testCase.manualTests[0]);
+                assert.strictEqual(query.tests.results[1]?.jira.key, testCase.manualTests[1]);
+                assert.strictEqual(query.tests.results[2]?.jira.key, testCase.cucumberTests[0]);
+                assert.strictEqual(query.tests.results[3]?.jira.key, testCase.cucumberTests[1]);
             }
 
-            if (test.service === "server") {
+            if (testCase.service === "server") {
                 const testResults = await getIntegrationClient(
                     "xray",
-                    test.service
-                ).getTestExecution(testExecutionIssueKey);
+                    testCase.service
+                ).testExecutions.getTests(testExecutionIssueKey);
                 assert.deepStrictEqual(
                     testResults.map((result) => result.key),
                     [
-                        test.manualTests[0],
-                        test.manualTests[1],
-                        test.cucumberTests[0],
-                        test.cucumberTests[1],
+                        testCase.manualTests[0],
+                        testCase.manualTests[1],
+                        testCase.cucumberTests[0],
+                        testCase.cucumberTests[1],
                     ]
                 );
             }
