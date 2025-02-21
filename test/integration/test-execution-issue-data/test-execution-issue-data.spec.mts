@@ -15,7 +15,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
     for (const test of [
         {
             expectedLabels: [],
-            expectedSummary: "Integration test 359 (hardcoded)",
+            expectedSummary: "Integration test test execution issue data (hardcoded)",
             projectDirectory: join(import.meta.dirname, "static-cloud"),
             projectKey: "CYP",
             service: "cloud",
@@ -23,7 +23,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
         },
         {
             expectedLabels: ["x", "y"],
-            expectedSummary: "Integration test 359 (wrapped)",
+            expectedSummary: "Integration test dynamic test execution issue data (wrapped)",
             projectDirectory: join(import.meta.dirname, "dynamic-cloud"),
             projectKey: "CYP",
             service: "cloud",
@@ -39,7 +39,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
         },
         {
             expectedLabels: ["x", "y"],
-            expectedSummary: "Integration test 359 (wrapped)",
+            expectedSummary: "Integration test dynamic test execution issue data (wrapped)",
             projectDirectory: join(import.meta.dirname, "dynamic-server"),
             projectKey: "CYPLUG",
             service: "server",
