@@ -12,7 +12,7 @@ module.exports = defineConfig({
                     projectKey: "CYP",
                     testExecutionIssue: {
                         fields: {
-                            summary: "Integration test iterations using describe",
+                            summary: "Integration test iterations with parameters",
                         },
                     },
                     url: "https://example.org",

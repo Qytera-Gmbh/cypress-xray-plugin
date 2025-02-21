@@ -3,9 +3,9 @@ import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { setTimeout } from "node:timers/promises";
-import { runCypress } from "../../sh";
-import { getIntegrationClient } from "../clients";
-import { getCreatedTestExecutionIssueKey } from "../util";
+import { runCypress } from "../../sh.js";
+import { getIntegrationClient } from "../clients.mjs";
+import { getCreatedTestExecutionIssueKey } from "../util.js";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/359

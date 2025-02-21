@@ -4,8 +4,8 @@ import fs from "node:fs";
 import { join, relative } from "node:path";
 import process from "node:process";
 import { describe, it } from "node:test";
-import type { LoggedRequest } from "../../../src/client/https/requests";
-import { runCypress } from "../../sh";
+import type { LoggedRequest } from "../../../src/client/https/requests.js";
+import { runCypress } from "../../sh.js";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314

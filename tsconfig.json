@@ -1,5 +1,5 @@
 {
-    "include": ["**/*.ts", "**/*.js", "test/server.ts"],
+    "include": ["**/*.ts", "**/*.js", "test/**/*.mts"],
     "exclude": ["node_modules/", "dist/"],
     "compilerOptions": {
         "declaration": true,

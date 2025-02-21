@@ -8,7 +8,7 @@ async function setupNodeEvents(on, config) {
             projectKey: "CYP",
             testExecutionIssue: {
                 fields: {
-                    summary: "Integration test 339",
+                    summary: "Integration test disabled request upload",
                     description: new Date().toLocaleString(),
                 },
             },

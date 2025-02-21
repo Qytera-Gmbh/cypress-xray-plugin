@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { runCypress } from "../../sh";
+import { runCypress } from "../../sh.js";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/339

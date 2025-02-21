@@ -21,7 +21,7 @@ module.exports = defineConfig({
                     projectKey: "CYP",
                     testExecutionIssue: {
                         fields: {
-                            summary: "Integration test 341",
+                            summary: "Integration test skipped cucumber tests",
                         },
                     },
                 },

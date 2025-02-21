@@ -17,7 +17,8 @@ module.exports = defineConfig({
                     testExecutionIssue: () => {
                         return {
                             fields: {
-                                summary: "Integration test 359 (wrapped)",
+                                summary:
+                                    "Integration test dynamic test execution issue data (wrapped)",
                                 labels: LABELS,
                             },
                         };
