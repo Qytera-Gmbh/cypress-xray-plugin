@@ -71,7 +71,7 @@ export default tseslint.config(
     },
     { files: ["**/*.mjs"], ...tseslint.configs.disableTypeChecked },
     {
-        files: ["**/*.spec.ts"],
+        files: ["**/*.spec.ts", "**/*.spec.mts"],
         rules: {
             "@typescript-eslint/no-floating-promises": [
                 "warn",

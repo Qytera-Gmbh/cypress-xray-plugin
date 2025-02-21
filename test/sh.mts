@@ -1,14 +1,16 @@
 import ansiColors from "ansi-colors";
-import * as childProcess from "child_process";
-import fs from "fs";
-import path, { join } from "path";
-import { dedent } from "../src/util/dedent";
+import * as childProcess from "node:child_process";
+import fs from "node:fs";
+import path, { join } from "node:path";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { dedent } = await import("../src/util/dedent.js");
 
 const ENV_BACKUP = { ...process.env };
 
 import "dotenv/config";
 
-const CYPRESS_EXECUTABLE = path.join(__dirname, "..", "node_modules", ".bin", "cypress");
+const CYPRESS_EXECUTABLE = path.join(import.meta.dirname, "..", "node_modules", ".bin", "cypress");
 
 const ENV_CLOUD = [
     "CYPRESS_JIRA_PROJECT_KEY_CLOUD",

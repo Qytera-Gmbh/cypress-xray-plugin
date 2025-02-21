@@ -1,7 +1,11 @@
 import path from "path";
-import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context";
+import globalContext, {
+    PluginContext,
+    SimpleEvidenceCollection,
+    SimpleIterationParameterCollection,
+} from "./context";
 import type { PluginTaskParameterType } from "./cypress/tasks";
-import { PluginTask, PluginTaskListener } from "./cypress/tasks";
+import { PluginTaskListener } from "./cypress/tasks";
 import afterRun from "./hooks/after/after-run";
 import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
 import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
@@ -93,27 +97,38 @@ export async function configureXrayPlugin(
         internalOptions,
         config,
         new SimpleEvidenceCollection(),
+        new SimpleIterationParameterCollection(),
         new ExecutableGraph(),
         logger
     );
     globalContext.setGlobalContext(context);
-    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
+    const listener = new PluginTaskListener(
+        internalOptions.jira.projectKey,
+        context,
+        context,
+        logger
+    );
     on("task", {
-        [PluginTask.INCOMING_RESPONSE]: (
-            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+        ["cypress-xray-plugin:task:iteration:definition"]: (
+            args: PluginTaskParameterType["cypress-xray-plugin:task:iteration:definition"]
         ) => {
-            if (internalOptions.xray.uploadRequests) {
-                return listener[PluginTask.INCOMING_RESPONSE](args);
-            }
-            return args.response;
+            return listener["cypress-xray-plugin:task:iteration:definition"](args);
         },
-        [PluginTask.OUTGOING_REQUEST]: (
-            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ["cypress-xray-plugin:task:request"]: (
+            args: PluginTaskParameterType["cypress-xray-plugin:task:request"]
         ) => {
             if (internalOptions.xray.uploadRequests) {
-                return listener[PluginTask.OUTGOING_REQUEST](args);
+                return listener["cypress-xray-plugin:task:request"](args);
             }
             return args.request;
+        },
+        ["cypress-xray-plugin:task:response"]: (
+            args: PluginTaskParameterType["cypress-xray-plugin:task:response"]
+        ) => {
+            if (internalOptions.xray.uploadRequests) {
+                return listener["cypress-xray-plugin:task:response"](args);
+            }
+            return args.response;
         },
     });
     on("after:run", async (results: CypressFailedRunResultType | CypressRunResultType) => {
@@ -134,6 +149,7 @@ export async function configureXrayPlugin(
                     context.getCypressOptions().projectRoot,
                     context.getOptions(),
                     context.getClients(),
+                    context,
                     context,
                     context.getGraph(),
                     logger
@@ -233,11 +249,14 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
 
 function registerDefaultTasks(on: Cypress.PluginEvents) {
     on("task", {
-        [PluginTask.INCOMING_RESPONSE]: (
-            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
-        ) => args.response,
-        [PluginTask.OUTGOING_REQUEST]: (
-            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ["cypress-xray-plugin:task:iteration:definition"]: (
+            args: PluginTaskParameterType["cypress-xray-plugin:task:iteration:definition"]
+        ) => args.parameters,
+        ["cypress-xray-plugin:task:request"]: (
+            args: PluginTaskParameterType["cypress-xray-plugin:task:request"]
         ) => args.request,
+        ["cypress-xray-plugin:task:response"]: (
+            args: PluginTaskParameterType["cypress-xray-plugin:task:response"]
+        ) => args.response,
     });
 }

@@ -9,7 +9,10 @@ import { PatCredentials } from "../../client/authentication/credentials";
 import { AxiosRestClient } from "../../client/https/requests";
 import { BaseJiraClient } from "../../client/jira/jira-client";
 import { ServerClient } from "../../client/xray/xray-client-server";
-import globalContext, { SimpleEvidenceCollection } from "../../context";
+import globalContext, {
+    SimpleEvidenceCollection,
+    SimpleIterationParameterCollection,
+} from "../../context";
 import type { CypressRunResultType } from "../../types/cypress/cypress";
 import type { ClientCombination } from "../../types/plugin";
 import {
@@ -118,6 +121,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -152,6 +156,7 @@ describe(relative(cwd(), __filename), async () => {
                 assert.deepStrictEqual(convertCypressTestsCommand.getParameters(), {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: ".feature",
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
                     uploadScreenshots: true,
@@ -242,6 +247,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -311,6 +317,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -347,6 +354,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -381,6 +389,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -408,6 +417,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -454,6 +464,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -493,6 +504,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -546,6 +558,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -694,6 +707,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -734,6 +748,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -762,6 +777,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -802,6 +818,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -831,6 +848,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -872,6 +890,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -912,6 +931,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -980,6 +1000,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     );
@@ -1175,6 +1196,7 @@ describe(relative(cwd(), __filename), async () => {
                         options,
                         clients,
                         new SimpleEvidenceCollection(),
+                        new SimpleIterationParameterCollection(),
                         graph,
                         LOG
                     ),
@@ -1195,6 +1217,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -1254,6 +1277,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -1317,6 +1341,7 @@ describe(relative(cwd(), __filename), async () => {
                     options,
                     clients,
                     new SimpleEvidenceCollection(),
+                    new SimpleIterationParameterCollection(),
                     graph,
                     LOG
                 );
@@ -1369,6 +1394,7 @@ describe(relative(cwd(), __filename), async () => {
                 assert.deepStrictEqual(convertCypressTestsCommand.getParameters(), {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: ".feature",
+                    iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
                     uploadScreenshots: true,

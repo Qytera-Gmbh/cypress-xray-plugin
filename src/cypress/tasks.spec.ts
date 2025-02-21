@@ -3,7 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { describe, it } from "node:test";
 import { getMockedCypress } from "../../test/mocks";
-import { SimpleEvidenceCollection } from "../context";
+import { SimpleEvidenceCollection, SimpleIterationParameterCollection } from "../context";
 import { dedent } from "../util/dedent";
 import { LOG } from "../util/logging";
 import * as tasks from "./tasks";
@@ -12,7 +12,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe(tasks.enqueueTask.name, () => {
         it("enqueues tasks for outgoing requests (url only)", (context) => {
             const { cy, cypress } = getMockedCypress();
-            cypress.currentTest.title = "A test title";
+            cypress.currentTest.titlePath = ["A test title"];
             const task = context.mock.method(cy, "task", context.mock.fn());
             tasks.enqueueTask(
                 tasks.PluginTask.OUTGOING_REQUEST,
@@ -31,7 +31,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("enqueues tasks for outgoing requests (object)", (context) => {
             const { cy, cypress } = getMockedCypress();
-            cypress.currentTest.title = "Another test title";
+            cypress.currentTest.titlePath = ["Another test title"];
             const task = context.mock.method(cy, "task", context.mock.fn());
             tasks.enqueueTask(tasks.PluginTask.OUTGOING_REQUEST, "requestObject.json", {
                 body: { data: "cool data" },
@@ -54,7 +54,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("enqueues tasks for incoming responses", (context) => {
             const { cy, cypress } = getMockedCypress();
-            cypress.currentTest.title = "Incoming test title";
+            cypress.currentTest.titlePath = ["Incoming test title"];
             const task = context.mock.method(cy, "task", context.mock.fn());
             tasks.enqueueTask(tasks.PluginTask.INCOMING_RESPONSE, "responseObject.json", {
                 allRequestResponses: [],
@@ -88,6 +88,23 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
             ]);
         });
+
+        it("enqueues tasks for defining iteration parameters", (context) => {
+            const { cy, cypress } = getMockedCypress();
+            cypress.currentTest.titlePath = ["Incoming test title"];
+            const task = context.mock.method(cy, "task", context.mock.fn());
+            tasks.enqueueTask("cypress-xray-plugin:task:iteration:definition", {
+                age: "42",
+                name: "Bob",
+            });
+            assert.deepStrictEqual(task.mock.calls[0].arguments, [
+                "cypress-xray-plugin:task:iteration:definition",
+                {
+                    parameters: { age: "42", name: "Bob" },
+                    test: "Incoming test title",
+                },
+            ]);
+        });
     });
 
     describe(tasks.PluginTaskListener.name, () => {
@@ -99,7 +116,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             const result = listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest.json",
                 request: {
@@ -123,7 +145,12 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single outgoing requests for tests with multiple issue keys", (context) => {
             const evidenceCollection = new SimpleEvidenceCollection();
             context.mock.method(LOG, "message", context.mock.fn());
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest.json",
                 request: {
@@ -162,7 +189,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             const result1 = listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest1.json",
                 request: {
@@ -216,7 +248,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest.json",
                 request: {
@@ -256,7 +293,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 filename: "outgoingRequest1.json",
                 request: {
@@ -306,7 +348,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             const result = listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse.json",
                 response: {
@@ -348,7 +395,12 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single incoming responses for tests with multiple issue keys", (context) => {
             const evidenceCollection = new SimpleEvidenceCollection();
             context.mock.method(LOG, "message", context.mock.fn());
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse.json",
                 response: {
@@ -396,7 +448,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             const result1 = listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse1.json",
                 response: {
@@ -480,7 +537,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse.json",
                 response: {
@@ -529,7 +591,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                evidenceCollection,
+                new SimpleIterationParameterCollection(),
+                LOG
+            );
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 filename: "incomingResponse1.json",
                 response: {
@@ -569,6 +636,190 @@ describe(path.relative(process.cwd(), __filename), () => {
                     Test: This is a test
 
                       Encountered a cy.request call which will not be included as evidence.
+
+                        Caused by: Test: This is a test
+
+                          No test issue keys found in title.
+
+                          You can target existing test issues by adding a corresponding issue key:
+
+                            it("CYP-123 This is a test", () => {
+                              // ...
+                            });
+
+                          For more information, visit:
+                          - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `),
+            ]);
+        });
+
+        it("handles iteration definitions for tests with issue key", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
+            const setIterationParameters = context.mock.method(
+                iterationParameterCollection,
+                "setIterationParameters",
+                context.mock.fn()
+            );
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                new SimpleEvidenceCollection(),
+                iterationParameterCollection,
+                LOG
+            );
+            const result = listener["cypress-xray-plugin:task:iteration:definition"]({
+                parameters: { age: "42", name: "Bob" },
+                test: "This is a test CYP-123",
+            });
+            assert.deepStrictEqual(setIterationParameters.mock.calls[0].arguments, [
+                "CYP-123",
+                "This is a test CYP-123",
+                { age: "42", name: "Bob" },
+            ]);
+            assert.deepStrictEqual(result, { age: "42", name: "Bob" });
+        });
+
+        it("handles single iteration definitions for tests with multiple issue keys", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                new SimpleEvidenceCollection(),
+                iterationParameterCollection,
+                LOG
+            );
+            listener["cypress-xray-plugin:task:iteration:definition"]({
+                parameters: { age: "42", name: "Bob" },
+                test: "CYP-123 CYP-124 CYP-125",
+            });
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-123",
+                    "CYP-123 CYP-124 CYP-125"
+                ),
+                { age: "42", name: "Bob" }
+            );
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-124",
+                    "CYP-123 CYP-124 CYP-125"
+                ),
+                { age: "42", name: "Bob" }
+            );
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-125",
+                    "CYP-123 CYP-124 CYP-125"
+                ),
+                { age: "42", name: "Bob" }
+            );
+        });
+
+        it("handles multiple iteration definitions for tests with the same issue key", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                new SimpleEvidenceCollection(),
+                iterationParameterCollection,
+                LOG
+            );
+            listener["cypress-xray-plugin:task:iteration:definition"]({
+                parameters: { name: "Bob" },
+                test: "This is a test CYP-123",
+            });
+            listener["cypress-xray-plugin:task:iteration:definition"]({
+                parameters: { age: "42" },
+                test: "This is another test CYP-123",
+            });
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-123",
+                    "This is a test CYP-123"
+                ),
+                { name: "Bob" }
+            );
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-123",
+                    "This is another test CYP-123"
+                ),
+                { age: "42" }
+            );
+        });
+
+        it("handles single iteration definitions for tests without issue key", (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
+            const setIterationParameters = context.mock.method(
+                iterationParameterCollection,
+                "setIterationParameters",
+                context.mock.fn()
+            );
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                new SimpleEvidenceCollection(),
+                iterationParameterCollection,
+                LOG
+            );
+            listener["cypress-xray-plugin:task:iteration:definition"]({
+                parameters: { name: "Bob" },
+                test: "This is a test",
+            });
+            assert.strictEqual(setIterationParameters.mock.callCount(), 0);
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
+                "warning",
+                dedent(`
+                    Test: This is a test
+
+                      Encountered an iteration definition task call which cannot be mapped to a test.
+
+                        Caused by: Test: This is a test
+
+                          No test issue keys found in title.
+
+                          You can target existing test issues by adding a corresponding issue key:
+
+                            it("CYP-123 This is a test", () => {
+                              // ...
+                            });
+
+                          For more information, visit:
+                          - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `),
+            ]);
+        });
+
+        it("handles multiple iteration definitions for tests without issue key", (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const iterationParameterCollection = new SimpleIterationParameterCollection();
+            const setIterationParameters = context.mock.method(
+                iterationParameterCollection,
+                "setIterationParameters",
+                context.mock.fn()
+            );
+            const listener = new tasks.PluginTaskListener(
+                "CYP",
+                new SimpleEvidenceCollection(),
+                iterationParameterCollection,
+                LOG
+            );
+            listener["cypress-xray-plugin:task:iteration:definition"]({
+                parameters: { name: "Bob" },
+                test: "This is a test",
+            });
+            listener["cypress-xray-plugin:task:iteration:definition"]({
+                parameters: { age: "42" },
+                test: "This is a test",
+            });
+            assert.strictEqual(setIterationParameters.mock.callCount(), 0);
+            assert.deepStrictEqual(message.mock.callCount(), 1);
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
+                "warning",
+                dedent(`
+                    Test: This is a test
+
+                      Encountered an iteration definition task call which cannot be mapped to a test.
 
                         Caused by: Test: This is a test
 

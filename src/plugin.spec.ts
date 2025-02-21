@@ -9,7 +9,11 @@ import { PatCredentials } from "./client/authentication/credentials";
 import { AxiosRestClient } from "./client/https/requests";
 import { BaseJiraClient, type JiraClient } from "./client/jira/jira-client";
 import { ServerClient } from "./client/xray/xray-client-server";
-import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context";
+import globalContext, {
+    PluginContext,
+    SimpleEvidenceCollection,
+    SimpleIterationParameterCollection,
+} from "./context";
 import afterRun from "./hooks/after/after-run";
 import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
@@ -60,6 +64,7 @@ describe(relative(cwd(), __filename), async () => {
             },
             config,
             new SimpleEvidenceCollection(),
+            new SimpleIterationParameterCollection(),
             new ExecutableGraph(),
             new CapturingLogger()
         );
@@ -413,6 +418,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
                 pluginContext.getCypressOptions(),
                 new SimpleEvidenceCollection(),
+                new SimpleIterationParameterCollection(),
                 new ExecutableGraph(),
                 new CapturingLogger()
             );
@@ -433,12 +439,13 @@ describe(relative(cwd(), __filename), async () => {
                 pluginContext.getClients()
             );
             assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[4], expectedContext);
+            assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[5], expectedContext);
             assert.deepStrictEqual(
-                addUploadCommands.mock.calls[0].arguments[5],
+                addUploadCommands.mock.calls[0].arguments[6],
                 pluginContext.getGraph()
             );
             assert.strictEqual(
-                addUploadCommands.mock.calls[0].arguments[6] instanceof CapturingLogger,
+                addUploadCommands.mock.calls[0].arguments[7] instanceof CapturingLogger,
                 true
             );
         });

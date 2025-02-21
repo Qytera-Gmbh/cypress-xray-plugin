@@ -12,7 +12,11 @@ import { AxiosRestClient } from "./client/https/requests";
 import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
 import { ServerClient } from "./client/xray/xray-client-server";
-import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context";
+import globalContext, {
+    PluginContext,
+    SimpleEvidenceCollection,
+    SimpleIterationParameterCollection,
+} from "./context";
 import type { User } from "./types/jira/responses/user";
 import type {
     InternalCucumberOptions,
@@ -2145,6 +2149,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
                 {} as Cypress.PluginConfigOptions,
                 new SimpleEvidenceCollection(),
+                new SimpleIterationParameterCollection(),
                 new ExecutableGraph(),
                 new CapturingLogger()
             );

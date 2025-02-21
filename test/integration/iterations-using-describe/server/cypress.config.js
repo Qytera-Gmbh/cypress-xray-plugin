@@ -12,7 +12,7 @@ module.exports = defineConfig({
                     projectKey: "CYPLUG",
                     testExecutionIssue: {
                         fields: {
-                            summary: "Integration test 421",
+                            summary: "Integration test iterations using describe",
                         },
                     },
                     url: "https://example.org",

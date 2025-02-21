@@ -20,5 +20,6 @@ export function getCreatedTestExecutionIssueKey(
     const createdIssueLine = output.find((line) => regex.test(line))?.match(regex);
     assert.ok(createdIssueLine);
     const testExecutionIssueKey = createdIssueLine[1];
+    assert.ok(createdIssueLine[1]);
     return testExecutionIssueKey;
 }

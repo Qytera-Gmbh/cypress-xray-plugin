@@ -4,36 +4,36 @@ import fs from "node:fs";
 import { join, relative } from "node:path";
 import process from "node:process";
 import { describe, it } from "node:test";
-import type { LoggedRequest } from "../../../src/client/https/requests";
-import { runCypress } from "../../sh";
+import type { LoggedRequest } from "../../../src/client/https/requests.js";
+import { runCypress } from "../../sh.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
 // ============================================================================================== //
 
-describe(relative(process.cwd(), __filename), () => {
+describe(relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
-            logDirectory: join(__dirname, "automatic-cloud", "logs"),
-            projectDirectory: join(__dirname, "automatic-cloud"),
+            logDirectory: join(import.meta.dirname, "automatic-cloud", "logs"),
+            projectDirectory: join(import.meta.dirname, "automatic-cloud"),
             service: "cloud",
             title: "cy.request gets overwritten (cloud)",
         },
         {
-            logDirectory: join(__dirname, "automatic-server", "logs"),
-            projectDirectory: join(__dirname, "automatic-server"),
+            logDirectory: join(import.meta.dirname, "automatic-server", "logs"),
+            projectDirectory: join(import.meta.dirname, "automatic-server"),
             service: "server",
             title: "cy.request gets overwritten (server)",
         },
         {
-            logDirectory: join(__dirname, "manual-cloud", "logs"),
-            projectDirectory: join(__dirname, "manual-cloud"),
+            logDirectory: join(import.meta.dirname, "manual-cloud", "logs"),
+            projectDirectory: join(import.meta.dirname, "manual-cloud"),
             service: "cloud",
             title: "cy.request gets overwritten using manual task calls (cloud)",
         },
         {
-            logDirectory: join(__dirname, "manual-server", "logs"),
-            projectDirectory: join(__dirname, "manual-server"),
+            logDirectory: join(import.meta.dirname, "manual-server", "logs"),
+            projectDirectory: join(import.meta.dirname, "manual-server"),
             service: "server",
             title: "cy.request gets overwritten using manual task calls (server)",
         },

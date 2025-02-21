@@ -20,7 +20,7 @@ module.exports = defineConfig({
                     projectKey: "CYP",
                     testExecutionIssue: {
                         fields: {
-                            summary: "Integration test 282",
+                            summary: "Integration test mixed cucumber cypress project",
                         },
                     },
                 },

@@ -16,7 +16,7 @@ module.exports = defineConfig({
                     projectKey: "CYP",
                     testExecutionIssue: {
                         fields: {
-                            summary: "Integration test 359 (hardcoded)",
+                            summary: "Integration test test execution issue data (hardcoded)",
                             labels: LABELS,
                         },
                     },
