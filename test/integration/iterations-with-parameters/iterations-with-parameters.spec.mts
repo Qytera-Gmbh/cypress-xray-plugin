@@ -41,18 +41,21 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             );
 
             if (testCase.service === "cloud") {
-                const searchResult =
-                    await JIRA_CLIENT_CLOUD.issueSearch.searchForIssuesUsingJqlPost({
-                        fields: ["id"],
-                        jql: `issue in (${testExecutionIssueKey}, ${testCase.linkedTest})`,
-                    });
-                assert.ok(searchResult.issues?.[0].id);
-                assert.ok(searchResult.issues[1].id);
+                const executionIssue = await JIRA_CLIENT_CLOUD.issues.getIssue({
+                    fields: ["id"],
+                    issueIdOrKey: testExecutionIssueKey,
+                });
+                const testIssue = await JIRA_CLIENT_CLOUD.issues.getIssue({
+                    fields: ["id"],
+                    issueIdOrKey: testCase.linkedTest,
+                });
+                assert.ok(executionIssue.id);
+                assert.ok(testIssue.id);
                 const testResults = await XRAY_CLIENT_CLOUD.graphql.getTestRuns(
                     {
                         limit: 1,
-                        testExecIssueIds: [searchResult.issues[0].id],
-                        testIssueIds: [searchResult.issues[1].id],
+                        testExecIssueIds: [executionIssue.id],
+                        testIssueIds: [testIssue.id],
                     },
                     (testRunResults) => [
                         testRunResults.results((testRun) => [
@@ -72,7 +75,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     ]
                 );
                 assert.strictEqual(testResults.results?.length, 1);
-                assert.deepStrictEqual(testResults.results[0]?.status, { name: "FAILED" });
+                assert.deepStrictEqual(testResults.results[0]?.status, { name: "PASSED" });
                 assert.deepStrictEqual(testResults.results[0].test, {
                     jira: {
                         key: testCase.linkedTest,
@@ -116,6 +119,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                                 { name: "hello", value: "there" },
                                 { name: "good", value: "morning" },
                                 { name: "using", value: "enqueueTask" },
+                                { name: "id", value: "" },
                             ],
                             status: { name: "PASSED" },
                         },
@@ -126,31 +130,46 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             if (testCase.service === "server") {
                 // Jira server does not like searches immediately after issue creation (socket hang up).
                 await setTimeout(10000);
-                const testExecution =
-                    await XRAY_CLIENT_SERVER.testExecutions.getTests(testExecutionIssueKey);
-                const testRun = await XRAY_CLIENT_SERVER.testRuns.getTestRun(
-                    testExecution[0].id.toString()
-                );
-                assert.deepStrictEqual(testRun.status, "FAIL");
+                const testRun = await XRAY_CLIENT_SERVER.testRuns.getTestRun({
+                    testExecIssueKey: testExecutionIssueKey,
+                    testIssueKey: testCase.linkedTest,
+                });
+                assert.deepStrictEqual(testRun.status, "PASS");
                 assert.deepStrictEqual(testRun.testKey, testCase.linkedTest);
-                assert.strictEqual(testRun.iterations?.length, 2);
-                // Workaround because of configured status automations for which I don't have permission.
-                // Would be "PASS" normally.
+                assert.strictEqual(testRun.iterations?.length, 4);
+                // Workarounds because of configured status automations for which I don't have permission.
+                // "TODO" Would be "PASS" normally.
                 assert.strictEqual(testRun.iterations[0].status, "TODO");
                 assert.deepStrictEqual(testRun.iterations[0].parameters, [
-                    {
-                        name: "iteration",
-                        value: "1",
-                    },
+                    { name: "iteration", value: "1" },
+                    { name: "hello", value: "there" },
+                    { name: "good", value: "morning" },
+                    { name: "using", value: "cy.task" },
+                    { name: "id", value: "#1" },
                 ]);
-                // Workaround because of configured status automations for which I don't have permission.
-                // Would be "PASS" normally.
-                assert.deepStrictEqual(testRun.iterations[1].status, "TODO");
+                assert.strictEqual(testRun.iterations[1].status, "TODO");
                 assert.deepStrictEqual(testRun.iterations[1].parameters, [
-                    {
-                        name: "iteration",
-                        value: "2",
-                    },
+                    { name: "iteration", value: "2" },
+                    { name: "hello", value: "there" },
+                    { name: "good", value: "morning" },
+                    { name: "using", value: "cy.task" },
+                    { name: "id", value: "#2" },
+                ]);
+                assert.strictEqual(testRun.iterations[2].status, "TODO");
+                assert.deepStrictEqual(testRun.iterations[2].parameters, [
+                    { name: "iteration", value: "3" },
+                    { name: "hello", value: "there" },
+                    { name: "good", value: "morning" },
+                    { name: "using", value: "cy.task" },
+                    { name: "id", value: "#3" },
+                ]);
+                assert.strictEqual(testRun.iterations[3].status, "TODO");
+                assert.deepStrictEqual(testRun.iterations[3].parameters, [
+                    { name: "iteration", value: "4" },
+                    { name: "hello", value: "there" },
+                    { name: "good", value: "morning" },
+                    { name: "using", value: "enqueueTask" },
+                    { name: "id", value: "" },
                 ]);
             }
         });
