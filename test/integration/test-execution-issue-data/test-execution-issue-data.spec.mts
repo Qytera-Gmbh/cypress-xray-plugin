@@ -3,20 +3,20 @@ import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { setTimeout } from "node:timers/promises";
-import { runCypress } from "../../sh.js";
+import { runCypress } from "../../sh.mjs";
 import { getIntegrationClient } from "../clients.mjs";
-import { getCreatedTestExecutionIssueKey } from "../util.js";
+import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/359
 // ============================================================================================== //
 
-describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
+describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             expectedLabels: [],
             expectedSummary: "Integration test 359 (hardcoded)",
-            projectDirectory: join(__dirname, "static-cloud"),
+            projectDirectory: join(import.meta.dirname, "static-cloud"),
             projectKey: "CYP",
             service: "cloud",
             title: "test execution issue data is hardcoded (cloud)",
@@ -24,7 +24,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
         {
             expectedLabels: ["x", "y"],
             expectedSummary: "Integration test 359 (wrapped)",
-            projectDirectory: join(__dirname, "dynamic-cloud"),
+            projectDirectory: join(import.meta.dirname, "dynamic-cloud"),
             projectKey: "CYP",
             service: "cloud",
             title: "test execution issue data is wrapped (cloud)",
@@ -32,7 +32,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
         {
             expectedLabels: [],
             expectedSummary: "Integration test 359 (hardcoded)",
-            projectDirectory: join(__dirname, "static-server"),
+            projectDirectory: join(import.meta.dirname, "static-server"),
             projectKey: "CYPLUG",
             service: "server",
             title: "test execution issue data is hardcoded (server)",
@@ -40,7 +40,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
         {
             expectedLabels: ["x", "y"],
             expectedSummary: "Integration test 359 (wrapped)",
-            projectDirectory: join(__dirname, "dynamic-server"),
+            projectDirectory: join(import.meta.dirname, "dynamic-server"),
             projectKey: "CYPLUG",
             service: "server",
             title: "test execution issue data is wrapped (server)",

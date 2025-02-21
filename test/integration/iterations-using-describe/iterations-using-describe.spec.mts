@@ -3,26 +3,26 @@ import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { setTimeout } from "node:timers/promises";
-import { runCypress } from "../../sh.js";
+import { runCypress } from "../../sh.mjs";
 import { getIntegrationClient } from "../clients.mjs";
-import { getCreatedTestExecutionIssueKey } from "../util.js";
+import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/421
 // ============================================================================================== //
 
-describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
+describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             linkedTest: "CYP-1815",
-            projectDirectory: join(__dirname, "cloud"),
+            projectDirectory: join(import.meta.dirname, "cloud"),
             projectKey: "CYP",
             service: "cloud",
             title: "issue keys defined in describe titles (cloud)",
         },
         {
             linkedTest: "CYPLUG-1082",
-            projectDirectory: join(__dirname, "server"),
+            projectDirectory: join(import.meta.dirname, "server"),
             projectKey: "CYPLUG",
             service: "server",
             title: "issue keys defined in describe titles (server)",

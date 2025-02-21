@@ -2,20 +2,20 @@ import assert from "node:assert";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { runCypress } from "../../sh.js";
+import { runCypress } from "../../sh.mjs";
 import { getIntegrationClient } from "../clients.mjs";
-import { getCreatedTestExecutionIssueKey } from "../util.js";
+import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/328
 // ============================================================================================== //
 
-describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
+describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             cucumberTests: ["CYP-969", "CYP-970"],
             manualTests: ["CYP-967", "CYP-968"],
-            projectDirectory: join(__dirname, "cloud"),
+            projectDirectory: join(import.meta.dirname, "cloud"),
             projectKey: "CYP",
             service: "cloud",
             title: "results upload works for tests with multiple issue keys (cloud)",
@@ -23,7 +23,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
         {
             cucumberTests: ["CYPLUG-342", "CYPLUG-343"],
             manualTests: ["CYPLUG-340", "CYPLUG-341"],
-            projectDirectory: join(__dirname, "server"),
+            projectDirectory: join(import.meta.dirname, "server"),
             projectKey: "CYPLUG",
             service: "server",
             title: "results upload works for tests with multiple issue keys (server)",

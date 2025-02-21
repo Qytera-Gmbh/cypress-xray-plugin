@@ -2,18 +2,18 @@ import assert from "node:assert";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { runCypress } from "../../sh.js";
+import { runCypress } from "../../sh.mjs";
 import { getIntegrationClient } from "../clients.mjs";
-import { getCreatedTestExecutionIssueKey } from "../util.js";
+import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/282
 // ============================================================================================== //
 
-describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
+describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
-            projectDirectory: join(__dirname, "cloud"),
+            projectDirectory: join(import.meta.dirname, "cloud"),
             projectKey: "CYP",
             scenarioIssueKey: "CYP-756",
             service: "cloud",
@@ -21,7 +21,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
             title: "results upload works for mixed cypress and cucumber projects (cloud)",
         },
         {
-            projectDirectory: join(__dirname, "server"),
+            projectDirectory: join(import.meta.dirname, "server"),
             projectKey: "CYPLUG",
             scenarioIssueKey: "CYPLUG-165",
             service: "server",
