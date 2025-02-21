@@ -11,7 +11,7 @@ import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 // ============================================================================================== //
 
 describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
-    for (const test of [
+    for (const testCase of [
         {
             projectDirectory: join(import.meta.dirname, "cloud"),
             projectKey: "CYP",
@@ -37,49 +37,60 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             xraySkippedStatus: "ABORTED",
         },
     ] as const) {
-        await it(test.title, async () => {
-            const output = runCypress(test.projectDirectory, {
-                includeDefaultEnv: test.service,
+        await it(testCase.title, async () => {
+            const output = runCypress(testCase.projectDirectory, {
+                includeDefaultEnv: testCase.service,
             });
 
             const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                test.projectKey,
+                testCase.projectKey,
                 output,
                 "cucumber"
             );
 
-            if (test.service === "cloud") {
-                const searchResult = await getIntegrationClient("jira", test.service).search({
+            if (testCase.service === "cloud") {
+                const execution = await getIntegrationClient(
+                    "jira",
+                    testCase.service
+                ).issues.getIssue({
                     fields: ["id"],
-                    jql: `issue in (${testExecutionIssueKey})`,
+                    issueIdOrKey: testExecutionIssueKey,
                 });
-                assert.ok(searchResult[0].id);
-                const testResults = await getIntegrationClient("xray", test.service).getTestResults(
-                    searchResult[0].id
-                );
-                const includedTest = testResults.find(
-                    (r) => r.jira.summary === "included cucumber test"
+                assert.ok(execution.id);
+                const query = await getIntegrationClient(
+                    "xray",
+                    testCase.service
+                ).graphql.getTestExecution({ issueId: execution.id }, (testExecution) => [
+                    testExecution.tests({ limit: 100 }, (testResults) => [
+                        testResults.results((test) => [
+                            test.status((status) => [status.name]),
+                            test.jira({ fields: ["summary"] }),
+                        ]),
+                    ]),
+                ]);
+                const includedTest = query.tests?.results?.find(
+                    (t) => t?.jira.summary === "included cucumber test"
                 );
                 assert.ok(includedTest);
-                assert.strictEqual(includedTest.status?.name, test.xrayPassedStatus);
-                const skippedTest = testResults.find(
-                    (r) => r.jira.summary === "skipped cucumber test"
+                assert.strictEqual(includedTest.status?.name, testCase.xrayPassedStatus);
+                const skippedTest = query.tests?.results?.find(
+                    (t) => t?.jira.summary === "skipped cucumber test"
                 );
                 assert.ok(skippedTest);
-                assert.strictEqual(skippedTest.status?.name, test.xraySkippedStatus);
+                assert.strictEqual(skippedTest.status?.name, testCase.xraySkippedStatus);
             }
 
-            if (test.service === "server") {
-                const testResults = await getIntegrationClient(
+            if (testCase.service === "server") {
+                const tests = await getIntegrationClient(
                     "xray",
-                    test.service
-                ).getTestExecution(testExecutionIssueKey);
-                const includedTest = testResults.find((r) => r.key === test.testKeys.included);
+                    testCase.service
+                ).testExecutions.getTests(testExecutionIssueKey);
+                const includedTest = tests.find((r) => r.key === testCase.testKeys.included);
                 assert.ok(includedTest);
-                assert.strictEqual(includedTest.status, test.xrayPassedStatus);
-                const skippedTest = testResults.find((r) => r.key === test.testKeys.skipped);
+                assert.strictEqual(includedTest.status, testCase.xrayPassedStatus);
+                const skippedTest = tests.find((r) => r.key === testCase.testKeys.skipped);
                 assert.ok(skippedTest);
-                assert.strictEqual(skippedTest.status, test.xraySkippedStatus);
+                assert.strictEqual(skippedTest.status, testCase.xraySkippedStatus);
             }
         });
     }
