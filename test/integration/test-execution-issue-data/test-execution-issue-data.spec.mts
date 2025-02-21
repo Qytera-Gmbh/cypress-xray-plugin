@@ -31,7 +31,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
         },
         {
             expectedLabels: [],
-            expectedSummary: "Integration test 359 (hardcoded)",
+            expectedSummary: "Integration test test execution issue data (hardcoded)",
             projectDirectory: join(import.meta.dirname, "static-server"),
             projectKey: "CYPLUG",
             service: "server",
