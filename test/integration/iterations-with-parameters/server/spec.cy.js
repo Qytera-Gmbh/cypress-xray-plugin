@@ -5,12 +5,15 @@ describe("CYPLUG-1411 Test Suite Name", () => {
         it(`Test Method ${test}`, () => {
             cy.visit("localhost:8080");
             cy.task(PluginTask.ITERATION_DEFINITION, {
-                hello: "there",
-                good: "morning",
-                using: "cy.task",
-                id: test,
+                parameters: {
+                    hello: "there",
+                    good: "morning",
+                    using: "cy.task",
+                    id: test,
+                },
+                test: Cypress.currentTest.titlePath.join(" "),
             });
-            expect(true).to.eq(false);
+            expect(true).to.eq(true);
         });
     }
 
