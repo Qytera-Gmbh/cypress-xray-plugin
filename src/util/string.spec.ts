@@ -27,11 +27,7 @@ describe(relative(cwd(), __filename), async () => {
             };
             assert.strictEqual(
                 unknownToString(f),
-                `async (arg1) => {
-                await new Promise((resolve) => {
-                    resolve(arg1);
-                });
-            }`
+                "async arg1=>{await new Promise(resolve=>{resolve(arg1)})}"
             );
         });
         await it("undefined", () => {
