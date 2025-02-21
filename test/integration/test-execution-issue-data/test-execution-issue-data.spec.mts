@@ -57,17 +57,24 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 "cypress"
             );
 
+            let searchResult;
             // Jira server does not like searches immediately after issue creation (socket hang up).
             if (test.service === "server") {
                 await setTimeout(10000);
+                searchResult = await getIntegrationClient("jira", test.service).issues.getIssue({
+                    fields: ["labels", "summary"],
+                    issueIdOrKey: testExecutionIssueKey,
+                });
+            } else {
+                // Duplication necessary because of TypeScript errors (jira.js problem).
+                searchResult = await getIntegrationClient("jira", test.service).issues.getIssue({
+                    fields: ["labels", "summary"],
+                    issueIdOrKey: testExecutionIssueKey,
+                });
             }
 
-            const searchResult = await getIntegrationClient("jira", test.service).search({
-                fields: ["labels", "summary"],
-                jql: `issue in (${testExecutionIssueKey})`,
-            });
-            assert.deepStrictEqual(searchResult[0].fields?.labels, test.expectedLabels);
-            assert.deepStrictEqual(searchResult[0].fields.summary, test.expectedSummary);
+            assert.deepStrictEqual(searchResult.fields.labels, test.expectedLabels);
+            assert.deepStrictEqual(searchResult.fields.summary, test.expectedSummary);
         });
     }
 });
