@@ -12,7 +12,7 @@ import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 // ============================================================================================== //
 
 describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
-    for (const test of [
+    for (const testCase of [
         {
             linkedTest: "CYP-1815",
             projectDirectory: join(import.meta.dirname, "cloud"),
@@ -28,49 +28,71 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             title: "issue keys defined in describe titles (server)",
         },
     ] as const) {
-        await it(test.title, async () => {
-            const output = runCypress(test.projectDirectory, {
+        await it(testCase.title, async () => {
+            const output = runCypress(testCase.projectDirectory, {
                 expectedStatusCode: 1,
-                includeDefaultEnv: test.service,
+                includeDefaultEnv: testCase.service,
             });
 
             const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                test.projectKey,
+                testCase.projectKey,
                 output,
                 "cypress"
             );
 
-            if (test.service === "cloud") {
-                const searchResult = await getIntegrationClient("jira", test.service).search({
+            if (testCase.service === "cloud") {
+                const searchResult = await getIntegrationClient(
+                    "jira",
+                    testCase.service
+                ).issueSearch.searchForIssuesUsingJqlPost({
                     fields: ["id"],
-                    jql: `issue in (${testExecutionIssueKey}, ${test.linkedTest})`,
+                    jql: `issue in (${testExecutionIssueKey}, ${testCase.linkedTest})`,
                 });
-                assert.ok(searchResult[0].id);
-                assert.ok(searchResult[1].id);
+                assert.ok(searchResult.issues?.[0].id);
+                assert.ok(searchResult.issues[1].id);
                 const testResults = await getIntegrationClient(
                     "xray",
-                    test.service
-                ).getTestRunResults({
-                    testExecIssueIds: [searchResult[0].id],
-                    testIssueIds: [searchResult[1].id],
-                });
-                assert.strictEqual(testResults.length, 1);
-                assert.deepStrictEqual(testResults[0].status, { name: "FAILED" });
-                assert.deepStrictEqual(testResults[0].test, {
+                    testCase.service
+                ).graphql.getTestRuns(
+                    {
+                        limit: 1,
+                        testExecIssueIds: [searchResult.issues[0].id],
+                        testIssueIds: [searchResult.issues[1].id],
+                    },
+                    (testRunResults) => [
+                        testRunResults.results((testRun) => [
+                            testRun.status((status) => [status.name]),
+                            testRun.test((test) => [test.jira({ fields: ["key"] })]),
+                            testRun.evidence((evidence) => [evidence.filename]),
+                            testRun.iterations({ limit: 100 }, (testRunIterationResults) => [
+                                testRunIterationResults.results((testRunIteration) => [
+                                    testRunIteration.status((stepStatus) => [stepStatus.name]),
+                                    testRunIteration.parameters((testRunParameter) => [
+                                        testRunParameter.name,
+                                        testRunParameter.value,
+                                    ]),
+                                ]),
+                            ]),
+                        ]),
+                    ]
+                );
+                assert.strictEqual(testResults.results?.length, 1);
+                assert.deepStrictEqual(testResults.results[0]?.status, { name: "FAILED" });
+                assert.deepStrictEqual(testResults.results[0].test, {
                     jira: {
-                        key: test.linkedTest,
+                        key: testCase.linkedTest,
                     },
                 });
-                assert.strictEqual(testResults[0].evidence?.length, 2);
+                assert.strictEqual(testResults.results[0].evidence?.length, 2);
                 assert.strictEqual(
-                    testResults[0].evidence[0].filename,
-                    `${test.linkedTest} Test Suite Name -- Test Method Name 1 (failed).png`
+                    testResults.results[0].evidence[0]?.filename,
+                    `${testCase.linkedTest} Test Suite Name -- Test Method Name 1 (failed).png`
                 );
                 assert.strictEqual(
-                    testResults[0].evidence[1].filename,
-                    `${test.linkedTest}-test-evidence-2.png`
+                    testResults.results[0].evidence[1]?.filename,
+                    `${testCase.linkedTest}-test-evidence-2.png`
                 );
-                assert.deepStrictEqual(testResults[0].iterations, {
+                assert.deepStrictEqual(testResults.results[0].iterations, {
                     results: [
                         {
                             parameters: [
@@ -98,28 +120,28 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 });
             }
 
-            if (test.service === "server") {
+            if (testCase.service === "server") {
                 // Jira server does not like searches immediately after issue creation (socket hang up).
                 await setTimeout(10000);
-                const testExecution = await getIntegrationClient(
+                const testRun = await getIntegrationClient(
                     "xray",
-                    test.service
-                ).getTestExecution(testExecutionIssueKey);
-                const testRun = await getIntegrationClient("xray", test.service).getTestRun(
-                    testExecution[0].id
-                );
+                    testCase.service
+                ).testRuns.getTestRun({
+                    testExecIssueKey: testExecutionIssueKey,
+                    testIssueKey: testCase.linkedTest,
+                });
                 assert.deepStrictEqual(testRun.status, "FAIL");
-                assert.deepStrictEqual(testRun.testKey, test.linkedTest);
+                assert.deepStrictEqual(testRun.testKey, testCase.linkedTest);
                 assert.strictEqual(testRun.evidences.length, 2);
                 assert.strictEqual(
                     testRun.evidences[0].fileName,
-                    `${test.linkedTest} Test Suite Name -- Test Method Name 1 (failed).png`
+                    `${testCase.linkedTest} Test Suite Name -- Test Method Name 1 (failed).png`
                 );
                 assert.strictEqual(
                     testRun.evidences[1].fileName,
-                    `${test.linkedTest}-test-evidence-2.png`
+                    `${testCase.linkedTest}-test-evidence-2.png`
                 );
-                assert.strictEqual(testRun.iterations.length, 2);
+                assert.strictEqual(testRun.iterations?.length, 2);
                 // Workaround because of configured status automations for which I don't have permission.
                 // Would be "FAIL" normally.
                 assert.strictEqual(testRun.iterations[0].status, "TODO");

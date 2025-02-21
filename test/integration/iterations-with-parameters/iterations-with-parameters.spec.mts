@@ -128,7 +128,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 await setTimeout(10000);
                 const testExecution =
                     await XRAY_CLIENT_SERVER.testExecutions.getTests(testExecutionIssueKey);
-                const testRun = await XRAY_CLIENT_SERVER.testRuns.testRun.getTestRun(
+                const testRun = await XRAY_CLIENT_SERVER.testRuns.getTestRun(
                     testExecution[0].id.toString()
                 );
                 assert.deepStrictEqual(testRun.status, "FAIL");

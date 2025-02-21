@@ -11,7 +11,7 @@ import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 // ============================================================================================== //
 
 describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
-    for (const test of [
+    for (const testCase of [
         {
             projectDirectory: join(import.meta.dirname, "cloud"),
             projectKey: "CYP",
@@ -29,40 +29,43 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             title: "results upload works for mixed cypress and cucumber projects (server)",
         },
     ] as const) {
-        await it(test.title, async () => {
-            const output = runCypress(test.projectDirectory, {
-                includeDefaultEnv: test.service,
+        await it(testCase.title, async () => {
+            const output = runCypress(testCase.projectDirectory, {
+                includeDefaultEnv: testCase.service,
             });
 
             const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                test.projectKey,
+                testCase.projectKey,
                 output,
                 "both"
             );
 
-            if (test.service === "cloud") {
-                const searchResult = await getIntegrationClient("jira", test.service).search({
+            if (testCase.service === "cloud") {
+                const issue = await getIntegrationClient("jira", testCase.service).issues.getIssue({
                     fields: ["id"],
-                    jql: `issue in (${testExecutionIssueKey})`,
+                    issueIdOrKey: testExecutionIssueKey,
                 });
-                assert.ok(searchResult[0].id);
-                const testResults = await getIntegrationClient("xray", test.service).getTestResults(
-                    searchResult[0].id
-                );
-                assert.deepStrictEqual(
-                    testResults.map((result) => result.jira.key),
-                    [test.testIssueKey, test.scenarioIssueKey]
-                );
+                assert.ok(issue.id);
+                const execution = await getIntegrationClient(
+                    "xray",
+                    testCase.service
+                ).graphql.getTestExecution({ issueId: issue.id }, (testExecution) => [
+                    testExecution.tests({ limit: 100 }, (testResults) => [
+                        testResults.results((test) => [test.jira({ fields: ["key"] })]),
+                    ]),
+                ]);
+                assert.strictEqual(execution.tests?.results?.[0]?.jira.key, testCase.testIssueKey);
+                assert.strictEqual(execution.tests.results[1]?.jira.key, testCase.scenarioIssueKey);
             }
 
-            if (test.service === "server") {
+            if (testCase.service === "server") {
                 const testResults = await getIntegrationClient(
                     "xray",
-                    test.service
-                ).getTestExecution(testExecutionIssueKey);
+                    testCase.service
+                ).testExecutions.getTests(testExecutionIssueKey);
                 assert.deepStrictEqual(
                     testResults.map((result) => result.key),
-                    [test.testIssueKey, test.scenarioIssueKey]
+                    [testCase.testIssueKey, testCase.scenarioIssueKey]
                 );
             }
         });
