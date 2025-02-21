@@ -673,13 +673,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             assert.deepStrictEqual(setIterationParameters.mock.calls[0].arguments, [
                 "CYP-123",
-                "age",
-                "42",
-            ]);
-            assert.deepStrictEqual(setIterationParameters.mock.calls[1].arguments, [
-                "CYP-123",
-                "name",
-                "Bob",
+                "This is a test CYP-123",
+                { age: "42", name: "Bob" },
             ]);
             assert.deepStrictEqual(result, { age: "42", name: "Bob" });
         });
@@ -702,30 +697,21 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "CYP-123",
                     "CYP-123 CYP-124 CYP-125"
                 ),
-                [
-                    { name: "age", value: "42" },
-                    { name: "name", value: "Bob" },
-                ]
+                { age: "42", name: "Bob" }
             );
             assert.deepStrictEqual(
                 iterationParameterCollection.getIterationParameters(
                     "CYP-124",
                     "CYP-123 CYP-124 CYP-125"
                 ),
-                [
-                    { name: "age", value: "42" },
-                    { name: "name", value: "Bob" },
-                ]
+                { age: "42", name: "Bob" }
             );
             assert.deepStrictEqual(
                 iterationParameterCollection.getIterationParameters(
                     "CYP-125",
                     "CYP-123 CYP-124 CYP-125"
                 ),
-                [
-                    { name: "age", value: "42" },
-                    { name: "name", value: "Bob" },
-                ]
+                { age: "42", name: "Bob" }
             );
         });
 
@@ -751,10 +737,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "CYP-123",
                     "This is a test CYP-123"
                 ),
-                [
-                    { name: "name", value: "Bob" },
-                    { name: "age", value: "42" },
-                ]
+                { name: "Bob" }
+            );
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-123",
+                    "This is another test CYP-123"
+                ),
+                { age: "42" }
             );
         });
 
