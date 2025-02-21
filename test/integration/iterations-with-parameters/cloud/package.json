@@ -9,7 +9,6 @@
     "license": "ISC",
     "description": "",
     "private": "true",
-    "type": "module",
     "devDependencies": {
         "cypress": "file:../../../../node_modules/cypress",
         "cypress-on-fix": "file:../../../../node_modules/cypress-on-fix",
