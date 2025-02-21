@@ -35,10 +35,10 @@
         "lib": "src"
     },
     "scripts": {
-        "test": "node --require ./test/loader.js ./test/run-unit-tests.ts",
+        "test": "node --import tsx ./test/run-unit-tests.ts",
         "test:coverage": "npx shx mkdir -p coverage && c8 -x '**/*.spec.ts' -r html npm run test",
-        "test:integration": "node --require ./test/loader.js ./test/run-integration-tests.ts",
-        "test:server": "node --require ./test/loader.js ./test/run-server.ts",
+        "test:integration": "node --import tsx ./test/run-integration-tests.ts",
+        "test:server": "node --import tsx ./test/run-server.ts",
         "build": "tsc --project tsconfig-build.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts"
     },
@@ -75,7 +75,7 @@
         "jira.js": "^4.0.6",
         "prettier": "^3.4.2",
         "shx": "^0.3.4",
-        "ts-node": "^10.9.2",
+        "tsx": "^4.19.3",
         "typescript": "^5.7.3",
         "typescript-eslint": "^8.19.0"
     }
