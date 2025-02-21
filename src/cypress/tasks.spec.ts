@@ -656,9 +656,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles iteration definitions for tests with issue key", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const iterationParameterCollection = new SimpleIterationParameterCollection();
-            const addIterationParameter = context.mock.method(
+            const setIterationParameters = context.mock.method(
                 iterationParameterCollection,
-                "addIterationParameter",
+                "setIterationParameters",
                 context.mock.fn()
             );
             const listener = new tasks.PluginTaskListener(
@@ -671,12 +671,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 parameters: { age: "42", name: "Bob" },
                 test: "This is a test CYP-123",
             });
-            assert.deepStrictEqual(addIterationParameter.mock.calls[0].arguments, [
+            assert.deepStrictEqual(setIterationParameters.mock.calls[0].arguments, [
                 "CYP-123",
                 "age",
                 "42",
             ]);
-            assert.deepStrictEqual(addIterationParameter.mock.calls[1].arguments, [
+            assert.deepStrictEqual(setIterationParameters.mock.calls[1].arguments, [
                 "CYP-123",
                 "name",
                 "Bob",
@@ -697,18 +697,36 @@ describe(path.relative(process.cwd(), __filename), () => {
                 parameters: { age: "42", name: "Bob" },
                 test: "CYP-123 CYP-124 CYP-125",
             });
-            assert.deepStrictEqual(iterationParameterCollection.getIterationParameters("CYP-123"), [
-                { name: "age", value: "42" },
-                { name: "name", value: "Bob" },
-            ]);
-            assert.deepStrictEqual(iterationParameterCollection.getIterationParameters("CYP-124"), [
-                { name: "age", value: "42" },
-                { name: "name", value: "Bob" },
-            ]);
-            assert.deepStrictEqual(iterationParameterCollection.getIterationParameters("CYP-125"), [
-                { name: "age", value: "42" },
-                { name: "name", value: "Bob" },
-            ]);
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-123",
+                    "CYP-123 CYP-124 CYP-125"
+                ),
+                [
+                    { name: "age", value: "42" },
+                    { name: "name", value: "Bob" },
+                ]
+            );
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-124",
+                    "CYP-123 CYP-124 CYP-125"
+                ),
+                [
+                    { name: "age", value: "42" },
+                    { name: "name", value: "Bob" },
+                ]
+            );
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-125",
+                    "CYP-123 CYP-124 CYP-125"
+                ),
+                [
+                    { name: "age", value: "42" },
+                    { name: "name", value: "Bob" },
+                ]
+            );
         });
 
         it("handles multiple iteration definitions for tests with the same issue key", (context) => {
@@ -728,18 +746,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                 parameters: { age: "42" },
                 test: "This is another test CYP-123",
             });
-            assert.deepStrictEqual(iterationParameterCollection.getIterationParameters("CYP-123"), [
-                { name: "name", value: "Bob" },
-                { name: "age", value: "42" },
-            ]);
+            assert.deepStrictEqual(
+                iterationParameterCollection.getIterationParameters(
+                    "CYP-123",
+                    "This is a test CYP-123"
+                ),
+                [
+                    { name: "name", value: "Bob" },
+                    { name: "age", value: "42" },
+                ]
+            );
         });
 
         it("handles single iteration definitions for tests without issue key", (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const iterationParameterCollection = new SimpleIterationParameterCollection();
-            const addIterationParameter = context.mock.method(
+            const setIterationParameters = context.mock.method(
                 iterationParameterCollection,
-                "addIterationParameter",
+                "setIterationParameters",
                 context.mock.fn()
             );
             const listener = new tasks.PluginTaskListener(
@@ -752,7 +776,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 parameters: { name: "Bob" },
                 test: "This is a test",
             });
-            assert.strictEqual(addIterationParameter.mock.callCount(), 0);
+            assert.strictEqual(setIterationParameters.mock.callCount(), 0);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 "warning",
                 dedent(`
@@ -779,9 +803,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles multiple iteration definitions for tests without issue key", (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const iterationParameterCollection = new SimpleIterationParameterCollection();
-            const addIterationParameter = context.mock.method(
+            const setIterationParameters = context.mock.method(
                 iterationParameterCollection,
-                "addIterationParameter",
+                "setIterationParameters",
                 context.mock.fn()
             );
             const listener = new tasks.PluginTaskListener(
@@ -798,7 +822,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 parameters: { age: "42" },
                 test: "This is a test",
             });
-            assert.strictEqual(addIterationParameter.mock.callCount(), 0);
+            assert.strictEqual(setIterationParameters.mock.callCount(), 0);
             assert.deepStrictEqual(message.mock.callCount(), 1);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 "warning",
