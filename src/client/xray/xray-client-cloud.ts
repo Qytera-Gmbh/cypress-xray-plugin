@@ -106,7 +106,7 @@ export class XrayClientCloud
         const response: AxiosResponse<{
             data: { addEvidenceToTestRun: { addedEvidence: string[]; warnings: string[] } };
         }> = await this.httpClient.post(
-            `${XrayClientCloud.URL}/graphql`,
+            XrayClientCloud.URL_GRAPHQL,
             { mutation },
             { headers: { ...authorizationHeader } }
         );
