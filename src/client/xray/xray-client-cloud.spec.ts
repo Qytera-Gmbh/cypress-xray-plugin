@@ -10,6 +10,7 @@ import type {
     MultipartInfo,
     MultipartInfoCloud,
 } from "../../types/xray/requests/import-execution-multipart-info";
+import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
 import { dedent } from "../../util/dedent";
 import { LOG } from "../../util/logging";
 import { JwtCredentials } from "../authentication/credentials";
@@ -740,6 +741,666 @@ describe(relative(cwd(), __filename), async () => {
                 assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
                     error,
                     "importFeatureError",
+                ]);
+            });
+        });
+
+        await describe("get test types", async () => {
+            await it("calls the correct endpoint", async (context) => {
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: JSON.parse(
+                            readFileSync(
+                                "./test/resources/fixtures/xray/responses/getTestsTypes.json",
+                                "utf-8"
+                            )
+                        ) as GetTestsResponse<{ key: string }>,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
+                });
+
+                await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332", "CYP-337");
+
+                assert.strictEqual(post.mock.callCount(), 1);
+                assert.deepStrictEqual(
+                    post.mock.calls[0].arguments[0],
+                    "https://xray.cloud.getxray.app/api/v2/graphql"
+                );
+                assert.deepStrictEqual(post.mock.calls[0].arguments[1], {
+                    query: dedent(`
+                        query($jql: String, $start: Int!, $limit: Int!) {
+                            getTests(jql: $jql, start: $start, limit: $limit) {
+                                total
+                                start
+                                results {
+                                    testType {
+                                        name
+                                        kind
+                                    }
+                                    jira(fields: ["key"])
+                                }
+                            }
+                        }`),
+                    variables: {
+                        jql: "project = 'CYP' AND issue in (CYP-330,CYP-331,CYP-332,CYP-337)",
+                        limit: 100,
+                        start: 0,
+                    },
+                });
+            });
+
+            await it("should handle successful responses", async (context) => {
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: JSON.parse(
+                            readFileSync(
+                                "./test/resources/fixtures/xray/responses/getTestsTypes.json",
+                                "utf-8"
+                            )
+                        ) as GetTestsResponse<{ key: string }>,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
+                });
+                const response = await client.getTestTypes(
+                    "CYP",
+                    "CYP-330",
+                    "CYP-331",
+                    "CYP-332",
+                    "CYP-337"
+                );
+                assert.deepStrictEqual(response, {
+                    ["CYP-330"]: "Generic",
+                    ["CYP-331"]: "Cucumber",
+                    ["CYP-332"]: "Manual",
+                    ["CYP-337"]: "Manual",
+                });
+            });
+
+            await it("should paginate big requests", async (context) => {
+                const mockedData: GetTestsResponse<unknown> = JSON.parse(
+                    readFileSync(
+                        "./test/resources/fixtures/xray/responses/getTestsTypes.json",
+                        "utf-8"
+                    )
+                ) as GetTestsResponse<unknown>;
+                let i = 0;
+                context.mock.method(restClient, "post", () => {
+                    switch (i++) {
+                        case 0:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTests: {
+                                            ...mockedData.data.getTests,
+                                            results: mockedData.data.getTests.results?.slice(0, 1),
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 1:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTests: {
+                                            ...mockedData.data.getTests,
+                                            results: mockedData.data.getTests.results?.slice(1, 2),
+                                            start: 1,
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 2:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTests: {
+                                            ...mockedData.data.getTests,
+                                            results: mockedData.data.getTests.results?.slice(2, 3),
+                                            start: 2,
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 3:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTests: {
+                                            start: 3,
+                                            total: 5,
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 4:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTests: {
+                                            ...mockedData.data.getTests,
+                                            results: mockedData.data.getTests.results?.slice(3, 4),
+                                            start: undefined,
+                                            total: undefined,
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 5:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTests: {
+                                            ...mockedData.data.getTests,
+                                            results: mockedData.data.getTests.results?.slice(3, 4),
+                                            start: 3,
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 6:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTests: {
+                                            ...mockedData.data.getTests,
+                                            results: mockedData.data.getTests.results?.slice(4, 5),
+                                            start: 4,
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                    }
+                });
+                const response = await client.getTestTypes(
+                    "CYP",
+                    "CYP-330",
+                    "CYP-331",
+                    "CYP-332",
+                    "CYP-337",
+                    "CYP-339"
+                );
+                assert.deepStrictEqual(response, {
+                    ["CYP-330"]: "Generic",
+                    ["CYP-331"]: "Cucumber",
+                    ["CYP-332"]: "Manual",
+                    ["CYP-337"]: "Manual",
+                });
+            });
+
+            await it("should handle bad responses", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const logErrorToFile = context.mock.method(
+                    LOG,
+                    "logErrorToFile",
+                    context.mock.fn()
+                );
+
+                const error = new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            error: "Must provide a project key",
+                        },
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
+                    }
+                );
+
+                context.mock.method(restClient, "post", () => {
+                    throw error;
+                });
+
+                await assert.rejects(client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332"), {
+                    message: "Failed to get test types",
+                });
+
+                assert.strictEqual(message.mock.callCount(), 2);
+                assert.deepStrictEqual(message.mock.calls[1].arguments, [
+                    "error",
+                    "Failed to get test types: Request failed with status code 400",
+                ]);
+                assert.strictEqual(logErrorToFile.mock.callCount(), 1);
+                assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
+                    error,
+                    "getTestTypesError",
+                ]);
+            });
+        });
+
+        await describe("get test results", async () => {
+            await it("calls the correct endpoint", async (context) => {
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            data: {
+                                getTestExecution: {
+                                    tests: {
+                                        limit: 10,
+                                        results: [
+                                            {
+                                                issueId: "12345",
+                                                jira: {
+                                                    key: "CYP-123",
+                                                    summary: "included cucumber test",
+                                                },
+                                                status: {
+                                                    color: "#95C160",
+                                                    description: "The test run has passed",
+                                                    final: true,
+                                                    name: "PASSED",
+                                                },
+                                            },
+                                            {
+                                                issueId: "98765",
+                                                jira: {
+                                                    key: "CYP-456",
+                                                    summary: "skipped cucumber test",
+                                                },
+                                                status: {
+                                                    color: "#afa30b",
+                                                    description:
+                                                        "A custom skipped status for development purposes",
+                                                    final: true,
+                                                    name: "SKIPPED",
+                                                },
+                                            },
+                                        ],
+                                        start: 0,
+                                        total: 2,
+                                    },
+                                },
+                            },
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
+                });
+
+                await client.getTestResults("13436");
+
+                assert.strictEqual(post.mock.callCount(), 1);
+                assert.deepStrictEqual(
+                    post.mock.calls[0].arguments[0],
+                    "https://xray.cloud.getxray.app/api/v2/graphql"
+                );
+                assert.deepStrictEqual(post.mock.calls[0].arguments[1], {
+                    query: dedent(`
+                        query($issueId: String, $start: Int!, $limit: Int!) {
+                            getTestExecution(issueId: $issueId) {
+                                tests(start: $start, limit: $limit) {
+                                    total
+                                    start
+                                    limit
+                                    results {
+                                        issueId
+                                        status {
+                                            name
+                                        }
+                                        jira(fields: ["key", "summary"])
+                                    }
+                                }
+                            }
+                        }`),
+                    variables: { issueId: "13436", limit: 100, start: 0 },
+                });
+            });
+
+            await it("handles successful responses", async (context) => {
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            data: {
+                                getTestExecution: {
+                                    tests: {
+                                        limit: 10,
+                                        results: [
+                                            {
+                                                issueId: "12345",
+                                                jira: {
+                                                    key: "CYP-123",
+                                                    summary: "included cucumber test",
+                                                },
+                                                status: {
+                                                    color: "#95C160",
+                                                    description: "The test run has passed",
+                                                    final: true,
+                                                    name: "PASSED",
+                                                },
+                                            },
+                                            {
+                                                issueId: "98765",
+                                                jira: {
+                                                    key: "CYP-456",
+                                                    summary: "skipped cucumber test",
+                                                },
+                                                status: {
+                                                    color: "#afa30b",
+                                                    description:
+                                                        "A custom skipped status for development purposes",
+                                                    final: true,
+                                                    name: "SKIPPED",
+                                                },
+                                            },
+                                        ],
+                                        start: 0,
+                                        total: 2,
+                                    },
+                                },
+                            },
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
+                });
+                const response = await client.getTestResults("13436");
+                assert.deepStrictEqual(response, [
+                    {
+                        issueId: "12345",
+                        jira: {
+                            key: "CYP-123",
+                            summary: "included cucumber test",
+                        },
+                        status: {
+                            color: "#95C160",
+                            description: "The test run has passed",
+                            final: true,
+                            name: "PASSED",
+                        },
+                    },
+                    {
+                        issueId: "98765",
+                        jira: {
+                            key: "CYP-456",
+                            summary: "skipped cucumber test",
+                        },
+                        status: {
+                            color: "#afa30b",
+                            description: "A custom skipped status for development purposes",
+                            final: true,
+                            name: "SKIPPED",
+                        },
+                    },
+                ]);
+            });
+
+            await it("should paginate big requests", async (context) => {
+                let i = 0;
+                context.mock.method(restClient, "post", () => {
+                    switch (i++) {
+                        case 0:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTestExecution: {
+                                            tests: {
+                                                limit: 1,
+                                                results: [
+                                                    {
+                                                        issueId: "12345",
+                                                        jira: {
+                                                            key: "CYP-123",
+                                                            summary: "included cucumber test",
+                                                        },
+                                                        status: {
+                                                            color: "#95C160",
+                                                            description: "The test run has passed",
+                                                            final: true,
+                                                            name: "PASSED",
+                                                        },
+                                                    },
+                                                ],
+                                                start: 0,
+                                                total: 3,
+                                            },
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 1:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTestExecution: {
+                                            tests: {
+                                                limit: 1,
+                                                results: [
+                                                    {
+                                                        issueId: "98765",
+                                                        jira: {
+                                                            key: "CYP-456",
+                                                            summary: "skipped cucumber test",
+                                                        },
+                                                        status: {
+                                                            color: "#afa30b",
+                                                            description:
+                                                                "A custom skipped status for development purposes",
+                                                            final: true,
+                                                            name: "SKIPPED",
+                                                        },
+                                                    },
+                                                ],
+                                                start: 1,
+                                                total: 3,
+                                            },
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 2:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTestExecution: {
+                                            tests: {
+                                                limit: 1,
+                                                results: [
+                                                    {
+                                                        issueId: "54321",
+                                                        jira: {
+                                                            key: "CYP-111",
+                                                            summary: "bonjour what's up",
+                                                        },
+                                                        status: {
+                                                            color: "#95C160",
+                                                            description: "The test run has passed",
+                                                            final: true,
+                                                            name: "PASSED",
+                                                        },
+                                                    },
+                                                ],
+                                                start: 2,
+                                                total: 4,
+                                            },
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 3:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTestExecution: {
+                                            tests: {
+                                                limit: 1,
+                                                start: 2,
+                                            },
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 4:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: {
+                                    data: {
+                                        getTestExecution: {
+                                            tests: {
+                                                limit: 1,
+                                                results: [
+                                                    {
+                                                        issueId: "00000",
+                                                        jira: {
+                                                            key: "CYP-000",
+                                                            summary: "missing status",
+                                                        },
+                                                    },
+                                                ],
+                                                start: "7",
+                                                total: 3,
+                                            },
+                                        },
+                                    },
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                    }
+                });
+
+                const response = await client.getTestResults("11111");
+                assert.deepStrictEqual(response, [
+                    {
+                        issueId: "12345",
+                        jira: {
+                            key: "CYP-123",
+                            summary: "included cucumber test",
+                        },
+                        status: {
+                            color: "#95C160",
+                            description: "The test run has passed",
+                            final: true,
+                            name: "PASSED",
+                        },
+                    },
+                    {
+                        issueId: "98765",
+                        jira: {
+                            key: "CYP-456",
+                            summary: "skipped cucumber test",
+                        },
+                        status: {
+                            color: "#afa30b",
+                            description: "A custom skipped status for development purposes",
+                            final: true,
+                            name: "SKIPPED",
+                        },
+                    },
+                    {
+                        issueId: "54321",
+                        jira: {
+                            key: "CYP-111",
+                            summary: "bonjour what's up",
+                        },
+                        status: {
+                            color: "#95C160",
+                            description: "The test run has passed",
+                            final: true,
+                            name: "PASSED",
+                        },
+                    },
+                ]);
+            });
+
+            await it("should handle bad responses", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const logErrorToFile = context.mock.method(
+                    LOG,
+                    "logErrorToFile",
+                    context.mock.fn()
+                );
+
+                const error = new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            error: "Must provide a project key",
+                        },
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
+                    }
+                );
+
+                context.mock.method(restClient, "post", () => {
+                    throw error;
+                });
+
+                await assert.rejects(client.getTestResults("13436"), {
+                    message: "Failed to get test results",
+                });
+                assert.strictEqual(message.mock.callCount(), 2);
+                assert.deepStrictEqual(message.mock.calls[1].arguments, [
+                    "error",
+                    "Failed to get test results: Request failed with status code 400",
+                ]);
+                assert.strictEqual(logErrorToFile.mock.callCount(), 1);
+                assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
+                    error,
+                    "getTestResultsError",
                 ]);
             });
         });
