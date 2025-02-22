@@ -7,9 +7,8 @@ import type {
 } from "../../types/xray/import-test-execution-results";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import type { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
 import type { GetTestRunsResponseCloud } from "../../types/xray/responses/graphql/get-test-runs";
-import type { Test, TestRun } from "../../types/xray/responses/graphql/xray";
+import type { TestRun } from "../../types/xray/responses/graphql/xray";
 import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
 import type {
     ImportFeatureResponse,
@@ -22,17 +21,6 @@ import type { JwtCredentials } from "../authentication/credentials";
 import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
 import { AbstractXrayClient } from "./xray-client";
-
-interface HasTestResults {
-    /**
-     * Returns a test execution by issue ID.
-     *
-     * @param issueId - the id of the test execution issue to be returned
-     * @returns the tests contained in the test execution
-     * @see https://us.xray.cloud.getxray.app/doc/graphql/gettestexecution.doc.html
-     */
-    getTestResults(issueId: string): Promise<Test<{ key: string; summary: string }>[]>;
-}
 
 interface HasTestRunResults {
     /**
@@ -56,7 +44,7 @@ interface HasTestRunResults {
 
 export class XrayClientCloud
     extends AbstractXrayClient<ImportFeatureResponseCloud, ImportExecutionResponseCloud>
-    implements HasTestResults, HasTestRunResults
+    implements HasTestRunResults
 {
     /**
      * The URLs of Xray's Cloud API.
@@ -130,67 +118,6 @@ export class XrayClientCloud
             );
         }
         return response.data.data.addEvidenceToTestRun;
-    }
-
-    @loggedRequest({ purpose: "get test results" })
-    public async getTestResults(issueId: string): ReturnType<HasTestResults["getTestResults"]> {
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Retrieving test results...");
-        const tests: Test<{ key: string; summary: string }>[] = [];
-        let total = 0;
-        let start = 0;
-        const query = dedent(`
-            query($issueId: String, $start: Int!, $limit: Int!) {
-                getTestExecution(issueId: $issueId) {
-                    tests(start: $start, limit: $limit) {
-                        total
-                        start
-                        limit
-                        results {
-                            issueId
-                            status {
-                                name
-                            }
-                            jira(fields: ["key", "summary"])
-                        }
-                    }
-                }
-            }
-        `);
-        do {
-            const paginatedRequest = {
-                query: query,
-                variables: {
-                    issueId: issueId,
-                    limit: XrayClientCloud.GRAPHQL_LIMIT,
-                    start: start,
-                },
-            };
-            const response: AxiosResponse<
-                GetTestExecutionResponseCloud<{ key: string; summary: string }>
-            > = await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
-                headers: {
-                    ...authorizationHeader,
-                },
-            });
-            const data = response.data.data.getTestExecution;
-            total = data.tests?.total ?? total;
-            if (data.tests?.results) {
-                if (typeof data.tests.start === "number") {
-                    start = data.tests.start + data.tests.results.length;
-                }
-                for (const test of data.tests.results) {
-                    if (test.status?.name) {
-                        tests.push(test);
-                    }
-                }
-            }
-        } while (start && start < total);
-        LOG.message(
-            "debug",
-            `Successfully retrieved test results for test execution issue: ${issueId}`
-        );
-        return tests;
     }
 
     @loggedRequest({ purpose: "get test run results" })
