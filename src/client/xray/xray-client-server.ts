@@ -3,7 +3,6 @@ import FormData from "form-data";
 import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import type { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution";
 import type { GetTestRunResponseServer } from "../../types/xray/responses/graphql/get-test-runs";
 import type { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution";
 import type {
@@ -21,30 +20,6 @@ import type { XrayClient } from "./xray-client";
 import { AbstractXrayClient } from "./xray-client";
 
 export interface XrayClientServer extends XrayClient {
-    /**
-     * Return a list of the tests associated with the test execution.
-     *
-     * @param testExecutionIssueKey - the test execution issue key
-     * @returns the tests
-     */
-    getTestExecution(
-        testExecutionIssueKey: string,
-        query?: {
-            /**
-             * Whether detailed information about the test run should be returned.
-             */
-            detailed?: boolean;
-            /**
-             * Limits the number of results per page. Should be greater or equal to 0 and lower or
-             * equal to the maximum set in Xray's global configuration.
-             */
-            limit?: number;
-            /**
-             * Number of the page to be retuned. Should be greater or equal to 1.
-             */
-            page?: number;
-        }
-    ): Promise<GetTestExecutionResponseServer>;
     /**
      * Returns JSON that represents the test run.
      *
@@ -75,38 +50,6 @@ export class ServerClient
      */
     constructor(apiBaseUrl: string, credentials: HttpCredentials, httpClient: AxiosRestClient) {
         super(`${apiBaseUrl}/rest/raven/latest`, credentials, httpClient);
-    }
-
-    @loggedRequest({ purpose: "get test execution" })
-    public async getTestExecution(
-        testExecutionIssueKey: string,
-        query?: Parameters<XrayClientServer["getTestExecution"]>[1]
-    ): Promise<GetTestExecutionResponseServer> {
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Getting test execution results...");
-        let currentPage = query?.page ?? 1;
-        let pagedTests: GetTestExecutionResponseServer = [];
-        const allTests: GetTestExecutionResponseServer = [];
-        do {
-            const testsResponse: AxiosResponse<GetTestExecutionResponseServer> =
-                await this.httpClient.get(
-                    `${this.apiBaseUrl}/api/testexec/${testExecutionIssueKey}/test`,
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                        params: {
-                            detailed: query?.detailed,
-                            limit: query?.limit,
-                            page: currentPage,
-                        },
-                    }
-                );
-            allTests.push(...testsResponse.data);
-            pagedTests = testsResponse.data;
-            currentPage++;
-        } while (pagedTests.length > 0);
-        return allTests;
     }
 
     @loggedRequest({ purpose: "get test run" })
