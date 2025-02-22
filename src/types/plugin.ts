@@ -755,6 +755,15 @@ export interface PluginOptions {
      * in screenshot names, and will replace all other sequences with `_`.
      */
     normalizeScreenshotNames?: boolean;
+    /**
+     * Enables split upload mode for evidence files. When set to `true`, evidence such as
+     * screenshots and videos are uploaded in multiple smaller requests rather than in a single
+     * large request. This approach helps to avoid server-side request size limitations and can also
+     * be useful for avoiding `JSON.stringify` token length errors.
+     *
+     * @defaultValue false
+     */
+    splitUpload?: boolean;
 }
 
 /**
