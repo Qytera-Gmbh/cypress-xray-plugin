@@ -23,11 +23,24 @@ export interface XrayClientServer extends XrayClient {
     /**
      * Returns JSON that represents the test run.
      *
-     * @param id - id of the test run
+     * @param testRun - the ID of the test run to return or a query specifying the test run
      * @returns the test run results
      * @see https://docs.getxray.app/display/XRAY/Test+Runs+-+REST
      */
-    getTestRun(id: number): Promise<GetTestRunResponseServer>;
+    getTestRun(
+        testRun:
+            | {
+                  /**
+                   * The key of the test execution.
+                   */
+                  testExecIssueKey: string;
+                  /**
+                   * The key of the test issue.
+                   */
+                  testIssueKey: string;
+              }
+            | number
+    ): Promise<GetTestRunResponseServer>;
     /**
      * Returns information about the Xray license, including its status and type.
      *
@@ -53,18 +66,33 @@ export class ServerClient
     }
 
     @loggedRequest({ purpose: "get test run" })
-    public async getTestRun(id: number): Promise<GetTestRunResponseServer> {
+    public async getTestRun(
+        ...[testRun]: Parameters<XrayClientServer["getTestRun"]>
+    ): Promise<GetTestRunResponseServer> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message("debug", "Getting test run results...");
-        const response: AxiosResponse<GetTestRunResponseServer> = await this.httpClient.get(
-            `${this.apiBaseUrl}/api/testrun/${id.toString()}`,
-            {
-                headers: {
-                    ...authorizationHeader,
-                },
-            }
-        );
-        return response.data;
+        if (typeof testRun === "number") {
+            const response: AxiosResponse<GetTestRunResponseServer> = await this.httpClient.get(
+                `${this.apiBaseUrl}/api/testrun/${testRun.toString()}`,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                }
+            );
+            return response.data;
+        } else {
+            const response: AxiosResponse<GetTestRunResponseServer> = await this.httpClient.get(
+                `${this.apiBaseUrl}/api/testrun`,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                    params: testRun,
+                }
+            );
+            return response.data;
+        }
     }
 
     @loggedRequest({ purpose: "get Xray license" })
