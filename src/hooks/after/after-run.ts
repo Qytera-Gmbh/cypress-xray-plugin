@@ -368,6 +368,7 @@ class AfterRunBuilder {
                     iterationParameterCollection: this.iterationParameterCollection,
                     normalizeScreenshotNames: this.options.plugin.normalizeScreenshotNames,
                     projectKey: this.options.jira.projectKey,
+                    splitUpload: this.options.plugin.splitUpload,
                     uploadScreenshots: this.options.xray.uploadScreenshots,
                     useCloudStatusFallback: this.clients.kind === "cloud",
                     xrayStatus: this.options.xray.status,

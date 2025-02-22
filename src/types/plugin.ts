@@ -772,7 +772,10 @@ export interface PluginOptions {
  */
 export type InternalPluginOptions = PluginOptions &
     Required<
-        Pick<PluginOptions, "debug" | "enabled" | "logDirectory" | "normalizeScreenshotNames">
+        Pick<
+            PluginOptions,
+            "debug" | "enabled" | "logDirectory" | "normalizeScreenshotNames" | "splitUpload"
+        >
     >;
 
 /**
