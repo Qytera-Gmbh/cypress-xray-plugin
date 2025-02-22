@@ -1,6 +1,10 @@
+import type { AxiosResponse } from "axios";
 import FormData from "form-data";
 import { JsonStreamStringify } from "json-stream-stringify";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type {
+    XrayEvidenceItem,
+    XrayTestExecutionResults,
+} from "../../types/xray/import-test-execution-results";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
@@ -13,6 +17,7 @@ import { dedent } from "../../util/dedent";
 import { LOG } from "../../util/logging";
 import type { JwtCredentials } from "../authentication/credentials";
 import type { AxiosRestClient } from "../https/requests";
+import { loggedRequest } from "../util";
 import { AbstractXrayClient } from "./xray-client";
 
 export class XrayClientCloud extends AbstractXrayClient<
@@ -33,6 +38,101 @@ export class XrayClientCloud extends AbstractXrayClient<
      */
     constructor(credentials: JwtCredentials, httpClient: AxiosRestClient) {
         super(XrayClientCloud.URL, credentials, httpClient);
+    }
+
+    /**
+     * Mutation used to add evidence to a test run.
+     *
+     * @example
+     *
+     * ```ts
+     * addEvidenceToTestRun(
+     *   {
+     *     id: "5acc7ab0a3fe1b6fcdc3c737",
+     *     evidence: [
+     *       {
+     *         filename: "evidence.txt"
+     *         mimeType: "text/plain"
+     *         data: "SGVsbG8gV29ybGQ="
+     *       }
+     *     ]
+     *   },
+     *   (addEvidenceResult) => [
+     *     addEvidenceResult.addedEvidence,
+     *     addEvidenceResult.warnings,
+     *   ]
+     * );
+     *
+     * // Equivalent to:
+     * // mutation {
+     * //   addEvidenceToTestRun(
+     * //     id: "5acc7ab0a3fe1b6fcdc3c737",
+     * //     evidence: [
+     * //       {
+     * //         filename: "evidence.txt"
+     * //         mimeType: "text/plain"
+     * //         data: "SGVsbG8gV29ybGQ="
+     * //       }
+     * //     ]
+     * //   ) {
+     * //     addedEvidence
+     * //     warnings
+     * //   }
+     * // }
+     * ```
+     *
+     * @param variables - the GraphQL variable values
+     * @param resultShape - the desired shape of the result
+     * @returns the result
+     *
+     * @see https://us.xray.cloud.getxray.app/doc/graphql/addevidencetotestrun.doc.html
+     */
+    @loggedRequest({ purpose: "add evidence to test run" })
+    public async addEvidenceToTestRun(variables: {
+        /**
+         * The evidence to add to the test run.
+         */
+        evidence: readonly XrayEvidenceItem[];
+        /**
+         * The ID of the test run.
+         */
+        id: string;
+    }): Promise<{
+        /**
+         * IDs of the added evidence.
+         */
+        addedEvidence: string[];
+        /**
+         * Warnings generated during the operation.
+         */
+        warnings: string[];
+    }> {
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        const mutation = dedent(`
+            mutation {
+                addEvidenceToTestRun(
+                    id: ${JSON.stringify(variables.id)},
+                    evidence: ${JSON.stringify(variables.evidence)}
+                ) {
+                    addedEvidence
+                    warnings
+                }
+            }
+       `);
+        const response: AxiosResponse<{
+            data: { addEvidenceToTestRun: { addedEvidence: string[]; warnings: string[] } };
+        }> = await this.httpClient.post(
+            `${XrayClientCloud.URL}/graphql`,
+            { mutation },
+            { headers: { ...authorizationHeader } }
+        );
+        for (const evidence of variables.evidence) {
+            LOG.message(
+                "debug",
+                `Successfully added evidence ${evidence.filename} to test run ${variables.id}.`
+            );
+        }
+        return response.data.data.addEvidenceToTestRun;
     }
 
     protected onRequest(
