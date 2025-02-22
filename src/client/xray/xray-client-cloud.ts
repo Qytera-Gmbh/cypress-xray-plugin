@@ -1,7 +1,6 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
 import { JsonStreamStringify } from "json-stream-stringify";
-import type { StringMap } from "../../types/util";
 import type {
     XrayEvidenceItem,
     XrayTestExecutionResults,
@@ -10,7 +9,6 @@ import type { CucumberMultipartFeature } from "../../types/xray/requests/import-
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import type { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
 import type { GetTestRunsResponseCloud } from "../../types/xray/responses/graphql/get-test-runs";
-import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
 import type { Test, TestRun } from "../../types/xray/responses/graphql/xray";
 import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
 import type {
@@ -24,18 +22,6 @@ import type { JwtCredentials } from "../authentication/credentials";
 import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
 import { AbstractXrayClient } from "./xray-client";
-
-interface HasTestTypes {
-    /**
-     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
-     * `Generic`.
-     *
-     * @param projectKey - key of the project containing the test issues
-     * @param issueKeys - the keys of the test issues to retrieve test types for
-     * @returns a promise which will contain the mapping of issues to test types
-     */
-    getTestTypes(projectKey: string, ...issueKeys: string[]): Promise<StringMap<string>>;
-}
 
 interface HasTestResults {
     /**
@@ -70,7 +56,7 @@ interface HasTestRunResults {
 
 export class XrayClientCloud
     extends AbstractXrayClient<ImportFeatureResponseCloud, ImportExecutionResponseCloud>
-    implements HasTestTypes, HasTestResults, HasTestRunResults
+    implements HasTestResults, HasTestRunResults
 {
     /**
      * The URLs of Xray's Cloud API.
@@ -277,67 +263,6 @@ export class XrayClientCloud
         } while (start && start < total);
         LOG.message("debug", "Successfully retrieved test run results");
         return runResults;
-    }
-
-    @loggedRequest({ purpose: "get test types" })
-    public async getTestTypes(
-        projectKey: string,
-        ...issueKeys: string[]
-    ): ReturnType<HasTestTypes["getTestTypes"]> {
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Retrieving test types...");
-        const types: StringMap<string> = {};
-        let total = 0;
-        let start = 0;
-        const query = dedent(`
-            query($jql: String, $start: Int!, $limit: Int!) {
-                getTests(jql: $jql, start: $start, limit: $limit) {
-                    total
-                    start
-                    results {
-                        testType {
-                            name
-                            kind
-                        }
-                        jira(fields: ["key"])
-                    }
-                }
-            }
-        `);
-        do {
-            const paginatedRequest = {
-                query: query,
-                variables: {
-                    jql: `project = '${projectKey}' AND issue in (${issueKeys.join(",")})`,
-                    limit: XrayClientCloud.GRAPHQL_LIMIT,
-                    start: start,
-                },
-            };
-            const response: AxiosResponse<GetTestsResponse<{ key: string }>> =
-                await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                });
-            total = response.data.data.getTests.total ?? total;
-            if (response.data.data.getTests.results) {
-                if (typeof response.data.data.getTests.start === "number") {
-                    start =
-                        response.data.data.getTests.start +
-                        response.data.data.getTests.results.length;
-                }
-                for (const test of response.data.data.getTests.results) {
-                    if (test.jira.key && test.testType?.name) {
-                        types[test.jira.key] = test.testType.name;
-                    }
-                }
-            }
-        } while (start && start < total);
-        LOG.message(
-            "debug",
-            `Successfully retrieved test types for ${issueKeys.length.toString()} issues.`
-        );
-        return types;
     }
 
     protected onRequest(
