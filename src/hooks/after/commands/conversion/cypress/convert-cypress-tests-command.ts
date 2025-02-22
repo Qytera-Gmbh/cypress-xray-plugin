@@ -34,7 +34,6 @@ interface Parameters {
     iterationParameterCollection: IterationParameterCollection;
     normalizeScreenshotNames: boolean;
     projectKey: string;
-    splitUpload: boolean;
     uploadScreenshots: boolean;
     useCloudStatusFallback?: boolean;
     xrayStatus: InternalXrayOptions["status"];
@@ -220,11 +219,9 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             status: this.getXrayStatus(runs),
             testKey: issueKey,
         };
-        if (!this.parameters.splitUpload) {
-            const evidence = this.getXrayEvidence(issueKey);
-            if (evidence.length > 0) {
-                xrayTest.evidence = evidence;
-            }
+        const evidence = this.getXrayEvidence(issueKey);
+        if (evidence.length > 0) {
+            xrayTest.evidence = evidence;
         }
         if (runs.length > 1) {
             const iterations: XrayIterationResult[] = [];

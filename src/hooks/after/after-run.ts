@@ -99,6 +99,7 @@ async function addUploadCommands(
         importCypressExecutionCommand = getImportExecutionCypressCommand(graph, clients, builder, {
             reusesExecutionIssue:
                 issueData?.key !== undefined || options.jira.testExecutionIssueKey !== undefined,
+            splitUpload: options.plugin.splitUpload,
             testEnvironments: options.xray.testEnvironments,
             testPlanIssueKey: testPlanIssueKey,
         });
@@ -184,6 +185,7 @@ function getImportExecutionCypressCommand(
     builder: AfterRunBuilder,
     options: {
         reusesExecutionIssue: boolean;
+        splitUpload: boolean;
         testEnvironments?: string[];
         testPlanIssueKey?: string;
     }
@@ -200,6 +202,9 @@ function getImportExecutionCypressCommand(
     const assertConversionValidCommand = builder.addAssertCypressConversionValidCommand({
         xrayTestExecutionResults: combineResultsJsonCommand,
     });
+    if (options.splitUpload) {
+        // ...
+    }
     const importCypressExecutionCommand = builder.addImportExecutionCypressCommand({
         execution: combineResultsJsonCommand,
     });
@@ -368,7 +373,6 @@ class AfterRunBuilder {
                     iterationParameterCollection: this.iterationParameterCollection,
                     normalizeScreenshotNames: this.options.plugin.normalizeScreenshotNames,
                     projectKey: this.options.jira.projectKey,
-                    splitUpload: this.options.plugin.splitUpload,
                     uploadScreenshots: this.options.xray.uploadScreenshots,
                     useCloudStatusFallback: this.clients.kind === "cloud",
                     xrayStatus: this.options.xray.status,

@@ -159,7 +159,6 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
-                    splitUpload: false,
                     uploadScreenshots: true,
                     useCloudStatusFallback: false,
                     xrayStatus: {
@@ -1398,7 +1397,6 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
-                    splitUpload: false,
                     uploadScreenshots: true,
                     useCloudStatusFallback: false,
                     xrayStatus: {
