@@ -93,46 +93,7 @@ export class XrayClientCloud
     /**
      * Mutation used to add evidence to a test run.
      *
-     * @example
-     *
-     * ```ts
-     * addEvidenceToTestRun(
-     *   {
-     *     id: "5acc7ab0a3fe1b6fcdc3c737",
-     *     evidence: [
-     *       {
-     *         filename: "evidence.txt"
-     *         mimeType: "text/plain"
-     *         data: "SGVsbG8gV29ybGQ="
-     *       }
-     *     ]
-     *   },
-     *   (addEvidenceResult) => [
-     *     addEvidenceResult.addedEvidence,
-     *     addEvidenceResult.warnings,
-     *   ]
-     * );
-     *
-     * // Equivalent to:
-     * // mutation {
-     * //   addEvidenceToTestRun(
-     * //     id: "5acc7ab0a3fe1b6fcdc3c737",
-     * //     evidence: [
-     * //       {
-     * //         filename: "evidence.txt"
-     * //         mimeType: "text/plain"
-     * //         data: "SGVsbG8gV29ybGQ="
-     * //       }
-     * //     ]
-     * //   ) {
-     * //     addedEvidence
-     * //     warnings
-     * //   }
-     * // }
-     * ```
-     *
      * @param variables - the GraphQL variable values
-     * @param resultShape - the desired shape of the result
      * @returns the result
      *
      * @see https://us.xray.cloud.getxray.app/doc/graphql/addevidencetotestrun.doc.html
