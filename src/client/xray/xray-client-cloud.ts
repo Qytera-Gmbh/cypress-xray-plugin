@@ -24,8 +24,6 @@ export class XrayClientCloud extends AbstractXrayClient<
      * Note: API v1 would also work, but let's stick to the more recent one.
      */
     public static readonly URL = "https://xray.cloud.getxray.app/api/v2";
-    private static readonly URL_GRAPHQL = `${XrayClientCloud.URL}/graphql`;
-    private static readonly GRAPHQL_LIMIT = 100;
 
     /**
      * Construct a new Xray cloud client using the provided credentials.
