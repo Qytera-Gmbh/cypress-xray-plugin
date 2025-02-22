@@ -1,6 +1,5 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
-import { JsonStreamStringify } from "json-stream-stringify";
 import type {
     XrayEvidenceItem,
     XrayTestExecutionResults,
@@ -214,10 +213,10 @@ export class XrayClientCloud
                     MultipartInfo,
                 ];
                 const formData = new FormData();
-                formData.append("results", new JsonStreamStringify(cucumberJson), {
+                formData.append("results", JSON.stringify(cucumberJson), {
                     filename: "results.json",
                 });
-                formData.append("info", new JsonStreamStringify(cucumberInfo), {
+                formData.append("info", JSON.stringify(cucumberInfo), {
                     filename: "info.json",
                 });
                 return formData;
@@ -229,10 +228,10 @@ export class XrayClientCloud
                     MultipartInfo,
                 ];
                 const formData = new FormData();
-                formData.append("results", new JsonStreamStringify(executionResults), {
+                formData.append("results", JSON.stringify(executionResults), {
                     filename: "results.json",
                 });
-                formData.append("info", new JsonStreamStringify(info), {
+                formData.append("info", JSON.stringify(info), {
                     filename: "info.json",
                 });
                 return formData;

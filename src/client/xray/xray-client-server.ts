@@ -1,6 +1,5 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
-import { JsonStreamStringify } from "json-stream-stringify";
 import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
@@ -162,10 +161,10 @@ export class ServerClient
                     MultipartInfo,
                 ];
                 const formData = new FormData();
-                formData.append("result", new JsonStreamStringify(cucumberJson), {
+                formData.append("result", JSON.stringify(cucumberJson), {
                     filename: "results.json",
                 });
-                formData.append("info", new JsonStreamStringify(cucumberInfo), {
+                formData.append("info", JSON.stringify(cucumberInfo), {
                     filename: "info.json",
                 });
                 return formData;
@@ -177,10 +176,10 @@ export class ServerClient
                     MultipartInfo,
                 ];
                 const formData = new FormData();
-                formData.append("result", new JsonStreamStringify(executionResults), {
+                formData.append("result", JSON.stringify(executionResults), {
                     filename: "results.json",
                 });
-                formData.append("info", new JsonStreamStringify(info), {
+                formData.append("info", JSON.stringify(info), {
                     filename: "info.json",
                 });
                 return formData;
