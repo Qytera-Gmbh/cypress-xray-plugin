@@ -244,6 +244,8 @@ function initPluginOptions(
             parse(env, ENV_NAMES.plugin.normalizeScreenshotNames, asBoolean) ??
             options?.normalizeScreenshotNames ??
             false,
+        splitUpload:
+            parse(env, ENV_NAMES.plugin.splitUpload, asBoolean) ?? options?.splitUpload ?? false,
     };
 }
 
