@@ -21,6 +21,32 @@ import { AbstractXrayClient } from "./xray-client";
 
 export interface XrayClientServer extends XrayClient {
     /**
+     * Add new evidence to a test run.
+     *
+     * @param testRunId - the ID of the test run
+     * @param body - the evidence to add
+     *
+     * @see https://docs.getxray.app/display/XRAY/Test+Runs+-+REST#TestRunsREST-ExecutionEvidence
+     */
+    addEvidence(
+        testRunId: number,
+        body: {
+            /**
+             * The Content-Type representation header is used to indicate the original media type of the
+             * resource.
+             */
+            contentType?: string;
+            /**
+             * The attachment data encoded in base64.
+             */
+            data: string;
+            /**
+             * The file name for the attachment.
+             */
+            filename: string;
+        }
+    ): Promise<void>;
+    /**
      * Returns JSON that represents the test run.
      *
      * @param testRun - the ID of the test run to return or a query specifying the test run
@@ -63,6 +89,23 @@ export class ServerClient
      */
     constructor(apiBaseUrl: string, credentials: HttpCredentials, httpClient: AxiosRestClient) {
         super(`${apiBaseUrl}/rest/raven/latest`, credentials, httpClient);
+    }
+
+    @loggedRequest({ purpose: "add evidence" })
+    public async addEvidence(
+        ...[testRunId, evidence]: Parameters<XrayClientServer["addEvidence"]>
+    ): Promise<void> {
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message("debug", "Adding test run evidence...");
+        await this.httpClient.post(
+            `${this.apiBaseUrl}/testrun/${testRunId.toString()}/attachment`,
+            {
+                data: JSON.stringify(evidence),
+                headers: {
+                    ...authorizationHeader,
+                },
+            }
+        );
     }
 
     @loggedRequest({ purpose: "get test run" })

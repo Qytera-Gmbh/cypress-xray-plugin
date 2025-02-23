@@ -423,7 +423,10 @@ class AfterRunBuilder {
     }) {
         const command = this.graph.place(
             new ImportExecutionCypressCommand(
-                { xrayClient: this.clients.xrayClient },
+                {
+                    splitUpload: this.options.plugin.splitUpload,
+                    xrayClient: this.clients.xrayClient,
+                },
                 this.logger,
                 parameters.execution
             )
