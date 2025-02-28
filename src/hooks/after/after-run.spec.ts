@@ -190,6 +190,7 @@ describe(relative(cwd(), __filename), async () => {
                     testExecutionIssueKey: undefined,
                 });
                 assert.deepStrictEqual(importExecutionCypressCommand.getParameters(), {
+                    splitUpload: false,
                     xrayClient: clients.xrayClient,
                 });
                 assert.deepStrictEqual(fallbackCypressUploadCommand.getParameters(), {
@@ -1430,6 +1431,7 @@ describe(relative(cwd(), __filename), async () => {
                     testExecutionIssueKey: undefined,
                 });
                 assert.deepStrictEqual(importExecutionCypressCommand.getParameters(), {
+                    splitUpload: false,
                     xrayClient: clients.xrayClient,
                 });
                 assert.deepStrictEqual(cucumberResultsCommand.getValue(), cucumberResult);

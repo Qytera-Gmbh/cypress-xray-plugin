@@ -103,6 +103,9 @@ describe(relative(cwd(), __filename), async () => {
                     await it("normalizeScreenshotNames", () => {
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, false);
                     });
+                    await it("splitUpload", () => {
+                        assert.strictEqual(pluginOptions.splitUpload, false);
+                    });
                 });
 
                 await describe("xray", async () => {
@@ -402,6 +405,15 @@ describe(relative(cwd(), __filename), async () => {
                             }
                         );
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
+                    });
+                    await it("splitUpload", () => {
+                        const pluginOptions = globalContext.initPluginOptions(
+                            {},
+                            {
+                                splitUpload: true,
+                            }
+                        );
+                        assert.strictEqual(pluginOptions.splitUpload, true);
                     });
                 });
 
@@ -1124,6 +1136,16 @@ describe(relative(cwd(), __filename), async () => {
                             normalizeScreenshotNames: false,
                         });
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
+                    });
+
+                    await it("PLUGIN_SPLIT_UPLOAD", () => {
+                        const env = {
+                            ["PLUGIN_SPLIT_UPLOAD"]: "true",
+                        };
+                        const pluginOptions = globalContext.initPluginOptions(env, {
+                            splitUpload: false,
+                        });
+                        assert.strictEqual(pluginOptions.splitUpload, true);
                     });
                 });
             });
@@ -2139,6 +2161,7 @@ describe(relative(cwd(), __filename), async () => {
                         enabled: true,
                         logDirectory: "./logs",
                         normalizeScreenshotNames: false,
+                        splitUpload: false,
                     },
                     xray: {
                         status: {},

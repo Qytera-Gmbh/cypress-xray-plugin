@@ -1,13 +1,13 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
-import type { StringMap } from "../../types/util";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type {
+    XrayEvidenceItem,
+    XrayTestExecutionResults,
+} from "../../types/xray/import-test-execution-results";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import type { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
 import type { GetTestRunsResponseCloud } from "../../types/xray/responses/graphql/get-test-runs";
-import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
-import type { Test, TestRun } from "../../types/xray/responses/graphql/xray";
+import type { TestRun } from "../../types/xray/responses/graphql/xray";
 import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
 import type {
     ImportFeatureResponse,
@@ -20,29 +20,6 @@ import type { JwtCredentials } from "../authentication/credentials";
 import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
 import { AbstractXrayClient } from "./xray-client";
-
-interface HasTestTypes {
-    /**
-     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
-     * `Generic`.
-     *
-     * @param projectKey - key of the project containing the test issues
-     * @param issueKeys - the keys of the test issues to retrieve test types for
-     * @returns a promise which will contain the mapping of issues to test types
-     */
-    getTestTypes(projectKey: string, ...issueKeys: string[]): Promise<StringMap<string>>;
-}
-
-interface HasTestResults {
-    /**
-     * Returns a test execution by issue ID.
-     *
-     * @param issueId - the id of the test execution issue to be returned
-     * @returns the tests contained in the test execution
-     * @see https://us.xray.cloud.getxray.app/doc/graphql/gettestexecution.doc.html
-     */
-    getTestResults(issueId: string): Promise<Test<{ key: string; summary: string }>[]>;
-}
 
 interface HasTestRunResults {
     /**
@@ -66,7 +43,7 @@ interface HasTestRunResults {
 
 export class XrayClientCloud
     extends AbstractXrayClient<ImportFeatureResponseCloud, ImportExecutionResponseCloud>
-    implements HasTestTypes, HasTestResults, HasTestRunResults
+    implements HasTestRunResults
 {
     /**
      * The URLs of Xray's Cloud API.
@@ -86,65 +63,60 @@ export class XrayClientCloud
         super(XrayClientCloud.URL, credentials, httpClient);
     }
 
-    @loggedRequest({ purpose: "get test results" })
-    public async getTestResults(issueId: string): ReturnType<HasTestResults["getTestResults"]> {
+    /**
+     * Mutation used to add evidence to a test run.
+     *
+     * @param variables - the GraphQL variable values
+     * @returns the result
+     *
+     * @see https://us.xray.cloud.getxray.app/doc/graphql/addevidencetotestrun.doc.html
+     */
+    @loggedRequest({ purpose: "add evidence to test run" })
+    public async addEvidenceToTestRun(variables: {
+        /**
+         * The evidence to add to the test run.
+         */
+        evidence: readonly XrayEvidenceItem[];
+        /**
+         * The ID of the test run.
+         */
+        id: string;
+    }): Promise<{
+        /**
+         * IDs of the added evidence.
+         */
+        addedEvidence: string[];
+        /**
+         * Warnings generated during the operation.
+         */
+        warnings: string[];
+    }> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Retrieving test results...");
-        const tests: Test<{ key: string; summary: string }>[] = [];
-        let total = 0;
-        let start = 0;
-        const query = dedent(`
-            query($issueId: String, $start: Int!, $limit: Int!) {
-                getTestExecution(issueId: $issueId) {
-                    tests(start: $start, limit: $limit) {
-                        total
-                        start
-                        limit
-                        results {
-                            issueId
-                            status {
-                                name
-                            }
-                            jira(fields: ["key", "summary"])
-                        }
-                    }
+        const mutation = dedent(`
+            mutation {
+                addEvidenceToTestRun(
+                    id: ${JSON.stringify(variables.id)},
+                    evidence: ${JSON.stringify(variables.evidence)}
+                ) {
+                    addedEvidence
+                    warnings
                 }
             }
-        `);
-        do {
-            const paginatedRequest = {
-                query: query,
-                variables: {
-                    issueId: issueId,
-                    limit: XrayClientCloud.GRAPHQL_LIMIT,
-                    start: start,
-                },
-            };
-            const response: AxiosResponse<
-                GetTestExecutionResponseCloud<{ key: string; summary: string }>
-            > = await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
-                headers: {
-                    ...authorizationHeader,
-                },
-            });
-            const data = response.data.data.getTestExecution;
-            total = data.tests?.total ?? total;
-            if (data.tests?.results) {
-                if (typeof data.tests.start === "number") {
-                    start = data.tests.start + data.tests.results.length;
-                }
-                for (const test of data.tests.results) {
-                    if (test.status?.name) {
-                        tests.push(test);
-                    }
-                }
-            }
-        } while (start && start < total);
-        LOG.message(
-            "debug",
-            `Successfully retrieved test results for test execution issue: ${issueId}`
+       `);
+        const response: AxiosResponse<{
+            data: { addEvidenceToTestRun: { addedEvidence: string[]; warnings: string[] } };
+        }> = await this.httpClient.post(
+            XrayClientCloud.URL_GRAPHQL,
+            { mutation },
+            { headers: { ...authorizationHeader } }
         );
-        return tests;
+        for (const evidence of variables.evidence) {
+            LOG.message(
+                "debug",
+                `Successfully added evidence ${evidence.filename} to test run ${variables.id}.`
+            );
+        }
+        return response.data.data.addEvidenceToTestRun;
     }
 
     @loggedRequest({ purpose: "get test run results" })
@@ -219,67 +191,6 @@ export class XrayClientCloud
         return runResults;
     }
 
-    @loggedRequest({ purpose: "get test types" })
-    public async getTestTypes(
-        projectKey: string,
-        ...issueKeys: string[]
-    ): ReturnType<HasTestTypes["getTestTypes"]> {
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Retrieving test types...");
-        const types: StringMap<string> = {};
-        let total = 0;
-        let start = 0;
-        const query = dedent(`
-            query($jql: String, $start: Int!, $limit: Int!) {
-                getTests(jql: $jql, start: $start, limit: $limit) {
-                    total
-                    start
-                    results {
-                        testType {
-                            name
-                            kind
-                        }
-                        jira(fields: ["key"])
-                    }
-                }
-            }
-        `);
-        do {
-            const paginatedRequest = {
-                query: query,
-                variables: {
-                    jql: `project = '${projectKey}' AND issue in (${issueKeys.join(",")})`,
-                    limit: XrayClientCloud.GRAPHQL_LIMIT,
-                    start: start,
-                },
-            };
-            const response: AxiosResponse<GetTestsResponse<{ key: string }>> =
-                await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                });
-            total = response.data.data.getTests.total ?? total;
-            if (response.data.data.getTests.results) {
-                if (typeof response.data.data.getTests.start === "number") {
-                    start =
-                        response.data.data.getTests.start +
-                        response.data.data.getTests.results.length;
-                }
-                for (const test of response.data.data.getTests.results) {
-                    if (test.jira.key && test.testType?.name) {
-                        types[test.jira.key] = test.testType.name;
-                    }
-                }
-            }
-        } while (start && start < total);
-        LOG.message(
-            "debug",
-            `Successfully retrieved test types for ${issueKeys.length.toString()} issues.`
-        );
-        return types;
-    }
-
     protected onRequest(
         event: "import-execution-cucumber-multipart",
         cucumberJson: CucumberMultipartFeature[],
@@ -301,13 +212,11 @@ export class XrayClientCloud
                     CucumberMultipartFeature[],
                     MultipartInfo,
                 ];
-                const resultString = JSON.stringify(cucumberJson);
-                const infoString = JSON.stringify(cucumberInfo);
                 const formData = new FormData();
-                formData.append("results", resultString, {
+                formData.append("results", JSON.stringify(cucumberJson), {
                     filename: "results.json",
                 });
-                formData.append("info", infoString, {
+                formData.append("info", JSON.stringify(cucumberInfo), {
                     filename: "info.json",
                 });
                 return formData;
@@ -318,13 +227,11 @@ export class XrayClientCloud
                     XrayTestExecutionResults[],
                     MultipartInfo,
                 ];
-                const resultString = JSON.stringify(executionResults);
-                const infoString = JSON.stringify(info);
                 const formData = new FormData();
-                formData.append("results", resultString, {
+                formData.append("results", JSON.stringify(executionResults), {
                     filename: "results.json",
                 });
-                formData.append("info", infoString, {
+                formData.append("info", JSON.stringify(info), {
                     filename: "info.json",
                 });
                 return formData;

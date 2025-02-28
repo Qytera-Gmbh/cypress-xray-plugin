@@ -99,6 +99,7 @@ async function addUploadCommands(
         importCypressExecutionCommand = getImportExecutionCypressCommand(graph, clients, builder, {
             reusesExecutionIssue:
                 issueData?.key !== undefined || options.jira.testExecutionIssueKey !== undefined,
+            splitUpload: options.plugin.splitUpload,
             testEnvironments: options.xray.testEnvironments,
             testPlanIssueKey: testPlanIssueKey,
         });
@@ -184,6 +185,7 @@ function getImportExecutionCypressCommand(
     builder: AfterRunBuilder,
     options: {
         reusesExecutionIssue: boolean;
+        splitUpload: boolean;
         testEnvironments?: string[];
         testPlanIssueKey?: string;
     }
@@ -418,7 +420,10 @@ class AfterRunBuilder {
     }) {
         const command = this.graph.place(
             new ImportExecutionCypressCommand(
-                { xrayClient: this.clients.xrayClient },
+                {
+                    splitUpload: this.options.plugin.splitUpload,
+                    xrayClient: this.clients.xrayClient,
+                },
                 this.logger,
                 parameters.execution
             )

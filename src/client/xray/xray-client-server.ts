@@ -3,7 +3,6 @@ import FormData from "form-data";
 import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import type { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution";
 import type { GetTestRunResponseServer } from "../../types/xray/responses/graphql/get-test-runs";
 import type { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution";
 import type {
@@ -22,37 +21,52 @@ import { AbstractXrayClient } from "./xray-client";
 
 export interface XrayClientServer extends XrayClient {
     /**
-     * Return a list of the tests associated with the test execution.
+     * Add new evidence to a test run.
      *
-     * @param testExecutionIssueKey - the test execution issue key
-     * @returns the tests
+     * @param testRunId - the ID of the test run
+     * @param body - the evidence to add
+     *
+     * @see https://docs.getxray.app/display/XRAY/Test+Runs+-+REST#TestRunsREST-ExecutionEvidence
      */
-    getTestExecution(
-        testExecutionIssueKey: string,
-        query?: {
+    addEvidence(
+        testRunId: number,
+        body: {
             /**
-             * Whether detailed information about the test run should be returned.
+             * The Content-Type representation header is used to indicate the original media type of the
+             * resource.
              */
-            detailed?: boolean;
+            contentType?: string;
             /**
-             * Limits the number of results per page. Should be greater or equal to 0 and lower or
-             * equal to the maximum set in Xray's global configuration.
+             * The attachment data encoded in base64.
              */
-            limit?: number;
+            data: string;
             /**
-             * Number of the page to be retuned. Should be greater or equal to 1.
+             * The file name for the attachment.
              */
-            page?: number;
+            filename: string;
         }
-    ): Promise<GetTestExecutionResponseServer>;
+    ): Promise<void>;
     /**
      * Returns JSON that represents the test run.
      *
-     * @param id - id of the test run
+     * @param testRun - the ID of the test run to return or a query specifying the test run
      * @returns the test run results
      * @see https://docs.getxray.app/display/XRAY/Test+Runs+-+REST
      */
-    getTestRun(id: number): Promise<GetTestRunResponseServer>;
+    getTestRun(
+        testRun:
+            | {
+                  /**
+                   * The key of the test execution.
+                   */
+                  testExecIssueKey: string;
+                  /**
+                   * The key of the test issue.
+                   */
+                  testIssueKey: string;
+              }
+            | number
+    ): Promise<GetTestRunResponseServer>;
     /**
      * Returns information about the Xray license, including its status and type.
      *
@@ -77,51 +91,51 @@ export class ServerClient
         super(`${apiBaseUrl}/rest/raven/latest`, credentials, httpClient);
     }
 
-    @loggedRequest({ purpose: "get test execution" })
-    public async getTestExecution(
-        testExecutionIssueKey: string,
-        query?: Parameters<XrayClientServer["getTestExecution"]>[1]
-    ): Promise<GetTestExecutionResponseServer> {
+    @loggedRequest({ purpose: "add evidence" })
+    public async addEvidence(
+        ...[testRunId, evidence]: Parameters<XrayClientServer["addEvidence"]>
+    ): Promise<void> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Getting test execution results...");
-        let currentPage = query?.page ?? 1;
-        let pagedTests: GetTestExecutionResponseServer = [];
-        const allTests: GetTestExecutionResponseServer = [];
-        do {
-            const testsResponse: AxiosResponse<GetTestExecutionResponseServer> =
-                await this.httpClient.get(
-                    `${this.apiBaseUrl}/api/testexec/${testExecutionIssueKey}/test`,
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                        params: {
-                            detailed: query?.detailed,
-                            limit: query?.limit,
-                            page: currentPage,
-                        },
-                    }
-                );
-            allTests.push(...testsResponse.data);
-            pagedTests = testsResponse.data;
-            currentPage++;
-        } while (pagedTests.length > 0);
-        return allTests;
-    }
-
-    @loggedRequest({ purpose: "get test run" })
-    public async getTestRun(id: number): Promise<GetTestRunResponseServer> {
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Getting test run results...");
-        const response: AxiosResponse<GetTestRunResponseServer> = await this.httpClient.get(
-            `${this.apiBaseUrl}/api/testrun/${id.toString()}`,
+        LOG.message("debug", "Adding test run evidence...");
+        await this.httpClient.post(
+            `${this.apiBaseUrl}/testrun/${testRunId.toString()}/attachment`,
             {
+                data: JSON.stringify(evidence),
                 headers: {
                     ...authorizationHeader,
                 },
             }
         );
-        return response.data;
+    }
+
+    @loggedRequest({ purpose: "get test run" })
+    public async getTestRun(
+        ...[testRun]: Parameters<XrayClientServer["getTestRun"]>
+    ): Promise<GetTestRunResponseServer> {
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message("debug", "Getting test run results...");
+        if (typeof testRun === "number") {
+            const response: AxiosResponse<GetTestRunResponseServer> = await this.httpClient.get(
+                `${this.apiBaseUrl}/api/testrun/${testRun.toString()}`,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                }
+            );
+            return response.data;
+        } else {
+            const response: AxiosResponse<GetTestRunResponseServer> = await this.httpClient.get(
+                `${this.apiBaseUrl}/api/testrun`,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                    params: testRun,
+                }
+            );
+            return response.data;
+        }
     }
 
     @loggedRequest({ purpose: "get Xray license" })
@@ -160,13 +174,11 @@ export class ServerClient
                     CucumberMultipartFeature[],
                     MultipartInfo,
                 ];
-                const resultString = JSON.stringify(cucumberJson);
-                const infoString = JSON.stringify(cucumberInfo);
                 const formData = new FormData();
-                formData.append("result", resultString, {
+                formData.append("result", JSON.stringify(cucumberJson), {
                     filename: "results.json",
                 });
-                formData.append("info", infoString, {
+                formData.append("info", JSON.stringify(cucumberInfo), {
                     filename: "info.json",
                 });
                 return formData;
@@ -177,13 +189,11 @@ export class ServerClient
                     XrayTestExecutionResults[],
                     MultipartInfo,
                 ];
-                const resultString = JSON.stringify(executionResults);
-                const infoString = JSON.stringify(info);
                 const formData = new FormData();
-                formData.append("result", resultString, {
+                formData.append("result", JSON.stringify(executionResults), {
                     filename: "results.json",
                 });
-                formData.append("info", infoString, {
+                formData.append("info", JSON.stringify(info), {
                     filename: "info.json",
                 });
                 return formData;
