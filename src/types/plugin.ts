@@ -518,15 +518,21 @@ export interface XrayOptions {
      * *Note: For this option to work properly, you need to overwrite the `cy.request` command.*
      *
      * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
+     *
+     * @defaultValue false
      */
     uploadRequests?: boolean;
     /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).
+     *
+     * @defaultValue true
      */
     uploadResults?: boolean;
     /**
      * Turns on or off the upload of screenshots Cypress takes during test execution.
+     *
+     * @defaultValue true
      */
     uploadScreenshots?: boolean;
 }
@@ -550,6 +556,8 @@ export interface CucumberOptions {
      *
      * *Note: Enable this option if the source of truth for test cases are step definitions in Xray
      * and Cypress is only used for running tests.*
+     *
+     * @defaultValue false
      */
     downloadFeatures?: boolean;
     /**
@@ -625,6 +633,8 @@ export interface CucumberOptions {
      *
      * *Note: Enable this option if the source of truth for test cases are local feature files in
      * Cypress and Xray is only used for tracking execution status/history.*
+     *
+     * @defaultValue false
      */
     uploadFeatures?: boolean;
 }
@@ -699,15 +709,21 @@ export type InternalHttpOptions = HttpOptions;
 export interface PluginOptions {
     /**
      * Enables or disables extensive debugging output.
+     *
+     * @defaultValue false
      */
     debug?: boolean;
     /**
      * Enables or disables the entire plugin. Setting this option to false will disable all plugin
      * functions, including authentication checks, uploads or feature file synchronization.
+     *
+     * @defaultValue true
      */
     enabled?: boolean;
     /**
      * The directory which all error and debug log files will be written to.
+     *
+     * @defaultValue "logs"
      */
     logDirectory?: string;
     /**
@@ -753,8 +769,17 @@ export interface PluginOptions {
      * Some Xray setups may have problems with uploaded evidence if the filenames contain non-ASCII
      * characters. With this option enabled, the plugin will only allow the characters `a-zA-Z0-9.`
      * in screenshot names, and will replace all other sequences with `_`.
+     *
+     * @defaultValue false
      */
     normalizeScreenshotNames?: boolean;
+    /**
+     * If set to `true`, test retries and their associated screenshots will be omitted from the
+     * upload to Xray, i.e. only the last attempt of each test will be included.
+     *
+     * @defaultValue false
+     */
+    omitRetries?: boolean;
     /**
      * Enables split upload mode for evidence files. When set to `true`, evidence such as
      * screenshots and videos are uploaded in multiple smaller requests rather than in a single

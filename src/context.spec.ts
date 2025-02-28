@@ -103,6 +103,9 @@ describe(relative(cwd(), __filename), async () => {
                     await it("normalizeScreenshotNames", () => {
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, false);
                     });
+                    await it("omitRetries", () => {
+                        assert.strictEqual(pluginOptions.omitRetries, false);
+                    });
                     await it("splitUpload", () => {
                         assert.strictEqual(pluginOptions.splitUpload, false);
                     });
@@ -405,6 +408,15 @@ describe(relative(cwd(), __filename), async () => {
                             }
                         );
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
+                    });
+                    await it("omitRetries", () => {
+                        const pluginOptions = globalContext.initPluginOptions(
+                            {},
+                            {
+                                omitRetries: true,
+                            }
+                        );
+                        assert.strictEqual(pluginOptions.omitRetries, true);
                     });
                     await it("splitUpload", () => {
                         const pluginOptions = globalContext.initPluginOptions(
@@ -1136,6 +1148,16 @@ describe(relative(cwd(), __filename), async () => {
                             normalizeScreenshotNames: false,
                         });
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
+                    });
+
+                    await it("PLUGIN_OMIT_RETRIES", () => {
+                        const env = {
+                            ["PLUGIN_OMIT_RETRIES"]: "true",
+                        };
+                        const pluginOptions = globalContext.initPluginOptions(env, {
+                            omitRetries: false,
+                        });
+                        assert.strictEqual(pluginOptions.omitRetries, true);
                     });
 
                     await it("PLUGIN_SPLIT_UPLOAD", () => {
@@ -2161,6 +2183,7 @@ describe(relative(cwd(), __filename), async () => {
                         enabled: true,
                         logDirectory: "./logs",
                         normalizeScreenshotNames: false,
+                        omitRetries: false,
                         splitUpload: false,
                     },
                     xray: {

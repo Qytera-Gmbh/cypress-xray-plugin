@@ -46,6 +46,7 @@ export const ENV_NAMES = {
         enabled: "PLUGIN_ENABLED",
         logDirectory: "PLUGIN_LOG_DIRECTORY",
         normalizeScreenshotNames: "PLUGIN_NORMALIZE_SCREENSHOT_NAMES",
+        omitRetries: "PLUGIN_OMIT_RETRIES",
         splitUpload: "PLUGIN_SPLIT_UPLOAD",
     },
     xray: {
