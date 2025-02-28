@@ -1,8 +1,9 @@
+import { basename, extname } from "node:path";
 import type {
     RunResult as RunResult_V12,
     TestResult as TestResult_V12,
 } from "../../../../../../types/cypress/12.0.0/api";
-import type { CypressStatus } from "../../../../../../types/cypress/status";
+import { CypressStatus } from "../../../../../../types/cypress/status";
 import type { StringMap } from "../../../../../../types/util";
 import { getTestIssueKeys } from "../../../../util";
 import { toCypressStatus } from "./status-conversion";
@@ -60,16 +61,21 @@ export interface FailedConversion {
  * Converts a Cypress v12 (or before) run result into several {@link SuccessfulConversion} objects.
  *
  * @param runResult - the run result
+ * @param options - additional conversion options
  * @returns a mapping of test titles to their test data
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function convertTestRuns_V12(
-    runResult: RunResult_V12
+    runResult: RunResult_V12,
+    options: { uploadLastAttempt: boolean }
 ): Map<string, (FailedConversion | SuccessfulConversion)[]> {
     const map = new Map<string, (FailedConversion | SuccessfulConversion)[]>();
     runResult.tests.forEach((test: TestResult_V12) => {
         const title = test.title.join(" ");
-        const runs: (FailedConversion | SuccessfulConversion)[] = test.attempts.map((attempt) => {
+        const attempts = options.uploadLastAttempt
+            ? [test.attempts[test.attempts.length - 1]]
+            : test.attempts;
+        const runs: (FailedConversion | SuccessfulConversion)[] = attempts.map((attempt) => {
             try {
                 return {
                     duration: attempt.duration,
@@ -100,18 +106,22 @@ export function convertTestRuns_V12(
  * objects.
  *
  * @param runResult - the run result
- * @param options - additional extraction options to consider
+ * @param options - additional conversion options
  * @returns a mapping of test titles to their test data
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function convertTestRuns_V13(
-    runResult: CypressCommandLine.RunResult
+    runResult: CypressCommandLine.RunResult,
+    options: { uploadLastAttempt: boolean }
 ): Map<string, (FailedConversion | SuccessfulConversion)[]> {
     const map = new Map<string, (FailedConversion | SuccessfulConversion)[]>();
     const testStarts = startTimesByTest(runResult);
     runResult.tests.forEach((test: CypressCommandLine.TestResult) => {
         const title = test.title.join(" ");
-        const runs: (FailedConversion | SuccessfulConversion)[] = test.attempts.map((attempt) => {
+        const attempts = options.uploadLastAttempt
+            ? [test.attempts[test.attempts.length - 1]]
+            : test.attempts;
+        const runs: (FailedConversion | SuccessfulConversion)[] = attempts.map((attempt) => {
             try {
                 return {
                     duration: test.duration,
@@ -160,21 +170,26 @@ function startTimesByTest(run: CypressCommandLine.RunResult): StringMap<Date> {
  * Extracts screenshots from test results and maps them to their tests' corresponding issue keys.
  *
  * @param runResult - the run result
- * @param projectKey -  required for mapping screenshots to test cases
+ * @param projectKey - required for mapping screenshots to test cases
+ * @param options - additional screenshot extraction options
  * @returns the mapping of test issues to screenshots
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function getScreenshotsByIssueKey_V12(
     runResult: RunResult_V12,
-    projectKey: string
+    projectKey: string,
+    options: { uploadLastAttempt: boolean }
 ): Map<string, Set<string>> {
     const map = new Map<string, Set<string>>();
     for (const test of runResult.tests) {
         const title = test.title.join(" ");
+        const attempts = options.uploadLastAttempt
+            ? [test.attempts[test.attempts.length - 1]]
+            : test.attempts;
         try {
             const testTitleKeys = getTestIssueKeys(title, projectKey);
             for (const issueKey of testTitleKeys) {
-                for (const attempt of test.attempts) {
+                for (const attempt of attempts) {
                     for (const screenshot of attempt.screenshots) {
                         const screenshots = map.get(issueKey);
                         if (!screenshots) {
@@ -197,26 +212,58 @@ export function getScreenshotsByIssueKey_V12(
  *
  * @param runResult - the run result
  * @param projectKey -  required for mapping screenshots to test cases
+ * @param options - additional screenshot extraction options
  * @returns the mapping of test issues to screenshots
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function getScreenshotsByIssueKey_V13(
     run: CypressCommandLine.RunResult,
-    projectKey: string
+    projectKey: string,
+    options: { uploadLastAttempt: boolean }
 ): Map<string, Set<string>> {
     const map = new Map<string, Set<string>>();
+    const keysByTest: Record<string, string[]> = {};
     for (const test of run.tests) {
         const title = test.title.join(" ");
         try {
             const testTitleKeys = getTestIssueKeys(title, projectKey);
+            keysByTest[title] = testTitleKeys;
             for (const issueKey of testTitleKeys) {
                 for (const screenshot of run.screenshots) {
-                    if (screenshot.path.includes(issueKey)) {
-                        const screenshots = map.get(issueKey);
-                        if (!screenshots) {
-                            map.set(issueKey, new Set([screenshot.path]));
+                    if (!screenshot.path.includes(issueKey)) {
+                        continue;
+                    }
+                    const screenshots = map.get(issueKey);
+                    if (!screenshots) {
+                        map.set(issueKey, new Set([screenshot.path]));
+                    } else {
+                        screenshots.add(screenshot.path);
+                    }
+                }
+            }
+            if (options.uploadLastAttempt) {
+                const screenshotsToUpload = new Set<string>();
+                // See: https://docs.cypress.io/app/guides/test-retries#Screenshots
+                // Initial run: template spec -- test passes eventually (failed).png
+                //       Retry: template spec -- test passes eventually (failed) (attempt 2).png
+                const attemptScreenshotRegex = new RegExp(
+                    `${test.title[test.title.length - 1]} \\(${CypressStatus.FAILED}|${CypressStatus.PASSED}|${CypressStatus.PENDING}|${CypressStatus.SKIPPED}\\)`
+                );
+                let expectedSuffix;
+                if (test.attempts.length > 1) {
+                    expectedSuffix = `${test.title[test.title.length - 1]} (${test.state}) (attempt ${test.attempts.length.toString()})`;
+                } else {
+                    expectedSuffix = `${test.title[test.title.length - 1]} (${test.state})`;
+                }
+                for (const issueKey of testTitleKeys) {
+                    for (const screenshot of map.get(issueKey) ?? []) {
+                        const filename = basename(screenshot, extname(screenshot));
+                        if (attemptScreenshotRegex.exec(filename)) {
+                            if (filename.endsWith(expectedSuffix)) {
+                                screenshotsToUpload.add(screenshot);
+                            }
                         } else {
-                            screenshots.add(screenshot.path);
+                            screenshotsToUpload.add(screenshot);
                         }
                     }
                 }
@@ -225,5 +272,48 @@ export function getScreenshotsByIssueKey_V13(
             continue;
         }
     }
+    if (options.uploadLastAttempt) {
+        removeAttemptScreenshots(run, map, keysByTest);
+    }
     return map;
+}
+
+function removeAttemptScreenshots(
+    run: CypressCommandLine.RunResult,
+    screenshotsByKey: Map<string, Set<string>>,
+    keysByTest: Record<string, string[]>
+) {
+    const screenshotsToUpload = new Set<string>();
+    for (const test of run.tests) {
+        const title = test.title.join(" ");
+        const testKeys = keysByTest[title];
+        // See: https://docs.cypress.io/app/guides/test-retries#Screenshots
+        // Initial run: template spec -- test passes eventually (failed).png
+        //       Retry: template spec -- test passes eventually (failed) (attempt 2).png
+        const attemptScreenshotRegex = new RegExp(
+            `${test.title[test.title.length - 1]} \\(${CypressStatus.FAILED}|${CypressStatus.PASSED}|${CypressStatus.PENDING}|${CypressStatus.SKIPPED}\\)`
+        );
+        let lastAttemptSuffix = `${test.title[test.title.length - 1]} (${test.state})`;
+        if (test.attempts.length > 1) {
+            lastAttemptSuffix = `${lastAttemptSuffix} (attempt ${test.attempts.length.toString()})`;
+        }
+        for (const issueKey of testKeys) {
+            for (const screenshot of screenshotsByKey.get(issueKey) ?? []) {
+                const filename = basename(screenshot, extname(screenshot));
+                if (attemptScreenshotRegex.exec(filename)) {
+                    if (filename.endsWith(lastAttemptSuffix)) {
+                        screenshotsToUpload.add(screenshot);
+                    }
+                } else {
+                    screenshotsToUpload.add(screenshot);
+                }
+            }
+        }
+    }
+    for (const [issueKey, screenshots] of screenshotsByKey.entries()) {
+        screenshotsByKey.set(
+            issueKey,
+            new Set([...screenshots].filter((s) => screenshotsToUpload.has(s)))
+        );
+    }
 }

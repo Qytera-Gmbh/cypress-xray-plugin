@@ -1,0 +1,283 @@
+{
+    "browserName": "electron",
+    "browserPath": "",
+    "browserVersion": "130.0.6723.137",
+    "config": {
+        "retries": 2,
+        "video": true,
+        "projectRoot": "/home/csvtuda/repositories/cypress/451",
+        "projectName": "451",
+        "configFile": "cypress.config.js",
+        "isTextTerminal": true,
+        "animationDistanceThreshold": 5,
+        "arch": "x64",
+        "baseUrl": null,
+        "blockHosts": null,
+        "chromeWebSecurity": true,
+        "clientCertificates": [],
+        "defaultBrowser": null,
+        "defaultCommandTimeout": 4000,
+        "downloadsFolder": "/home/csvtuda/repositories/cypress/451/cypress/downloads",
+        "env": {},
+        "execTimeout": 60000,
+        "experimentalCspAllowList": false,
+        "experimentalInteractiveRunEvents": false,
+        "experimentalRunAllSpecs": false,
+        "experimentalMemoryManagement": false,
+        "experimentalModifyObstructiveThirdPartyCode": false,
+        "injectDocumentDomain": false,
+        "experimentalOriginDependencies": false,
+        "experimentalSourceRewriting": false,
+        "experimentalSingleTabRunMode": false,
+        "experimentalStudio": false,
+        "experimentalWebKitSupport": false,
+        "fileServerFolder": "/home/csvtuda/repositories/cypress/451",
+        "fixturesFolder": "/home/csvtuda/repositories/cypress/451/cypress/fixtures",
+        "excludeSpecPattern": "*.hot-update.js",
+        "includeShadowDom": false,
+        "justInTimeCompile": true,
+        "keystrokeDelay": 0,
+        "modifyObstructiveCode": true,
+        "numTestsKeptInMemory": 0,
+        "platform": "win32",
+        "pageLoadTimeout": 60000,
+        "port": 63263,
+        "projectId": null,
+        "redirectionLimit": 20,
+        "reporter": "spec",
+        "reporterOptions": null,
+        "requestTimeout": 5000,
+        "resolvedNodePath": "/opt/Node/22.11.0/node.exe",
+        "resolvedNodeVersion": "22.11.0",
+        "responseTimeout": 30000,
+        "screenshotOnRunFailure": true,
+        "screenshotsFolder": "/home/csvtuda/repositories/cypress/451/cypress/screenshots",
+        "slowTestThreshold": 10000,
+        "scrollBehavior": "top",
+        "supportFile": "/home/csvtuda/repositories/cypress/451/cypress/support/e2e.js",
+        "taskTimeout": 60000,
+        "testIsolation": true,
+        "trashAssetsBeforeRuns": true,
+        "userAgent": null,
+        "videoCompression": false,
+        "videosFolder": "/home/csvtuda/repositories/cypress/451/cypress/videos",
+        "viewportHeight": 660,
+        "viewportWidth": 1000,
+        "waitForAnimations": true,
+        "watchForFileChanges": false,
+        "specPattern": "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
+        "browsers": [
+            {
+                "channel": "stable",
+                "displayName": "Chrome",
+                "family": "chromium",
+                "majorVersion": "133",
+                "name": "chrome",
+                "path": "/opt/Google/Chrome/Application/chrome.exe",
+                "version": "133.0.6943.142"
+            },
+            {
+                "channel": "stable",
+                "displayName": "Firefox",
+                "family": "firefox",
+                "majorVersion": "135",
+                "name": "firefox",
+                "path": "/opt/Mozilla Firefox/firefox.exe",
+                "version": "135.0.1"
+            },
+            {
+                "channel": "stable",
+                "displayName": "Edge",
+                "family": "chromium",
+                "majorVersion": "133",
+                "name": "edge",
+                "path": "/opt/Microsoft/Edge/Application/msedge.exe",
+                "version": "133.0.3065.92"
+            },
+            {
+                "channel": "stable",
+                "displayName": "Electron",
+                "family": "chromium",
+                "majorVersion": 130,
+                "name": "electron",
+                "path": "",
+                "version": "130.0.6723.137"
+            }
+        ],
+        "cypressBinaryRoot": "/opt/Cypress/Cache/14.1.0/Cypress/resources/app",
+        "hosts": null,
+        "isInteractive": true,
+        "version": "14.1.0",
+        "testingType": "e2e",
+        "browser": null,
+        "cypressInternalEnv": "production"
+    },
+    "cypressVersion": "14.1.0",
+    "endedTestsAt": "2025-02-28T20:58:24.082Z",
+    "osName": "win32",
+    "osVersion": "10.0.19045",
+    "runs": [
+        {
+            "error": null,
+            "reporter": "spec",
+            "reporterStats": {
+                "suites": 1,
+                "tests": 3,
+                "passes": 2,
+                "pending": 0,
+                "failures": 1,
+                "start": "2025-02-28T20:58:21.880Z",
+                "end": "2025-02-28T20:58:24.085Z",
+                "duration": 2205
+            },
+            "screenshots": [
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-123 passes eventually (failed).png",
+                    "takenAt": "2025-02-28T20:58:21.922Z",
+                    "width": 1280
+                },
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-123 passes eventually (failed) (attempt 2).png",
+                    "takenAt": "2025-02-28T20:58:22.240Z",
+                    "width": 1280
+                },
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-123 passes eventually (failed) (attempt 3).png",
+                    "takenAt": "2025-02-28T20:58:22.721Z",
+                    "width": 1280
+                },
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-123 passes eventually (failed) (attempt 4).png",
+                    "takenAt": "2025-02-28T20:58:22.963Z",
+                    "width": 1280
+                },
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-123 passes eventually (failed) (attempt 5).png",
+                    "takenAt": "2025-02-28T20:58:23.230Z",
+                    "width": 1280
+                },
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test (failed).png",
+                    "takenAt": "2025-02-28T20:58:23.545Z",
+                    "width": 1280
+                },
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test (failed) (attempt 2).png",
+                    "takenAt": "2025-02-28T20:58:23.726Z",
+                    "width": 1280
+                },
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test (failed) (attempt 3).png",
+                    "takenAt": "2025-02-28T20:58:23.902Z",
+                    "width": 1280
+                },
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test manual screenshot.png",
+                    "takenAt": "2025-02-28T20:58:23.982Z",
+                    "width": 1280
+                }
+            ],
+            "spec": {
+                "absolute": "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
+                "fileExtension": ".js",
+                "fileName": "spec",
+                "name": "spec.cy.js",
+                "relative": "cypress/e2e/spec.cy.js"
+            },
+            "stats": {
+                "duration": 2208,
+                "endedAt": "2025-02-28T20:58:24.082Z",
+                "failures": 1,
+                "passes": 2,
+                "pending": 0,
+                "skipped": 0,
+                "startedAt": "2025-02-28T20:58:21.874Z",
+                "suites": 1,
+                "tests": 3
+            },
+            "tests": [
+                {
+                    "attempts": [
+                        {
+                            "state": "failed"
+                        },
+                        {
+                            "state": "failed"
+                        },
+                        {
+                            "state": "failed"
+                        },
+                        {
+                            "state": "failed"
+                        },
+                        {
+                            "state": "failed"
+                        },
+                        {
+                            "state": "passed"
+                        }
+                    ],
+                    "displayError": null,
+                    "duration": 1504,
+                    "state": "passed",
+                    "title": ["template spec", "CYP-123 passes eventually"]
+                },
+                {
+                    "attempts": [
+                        {
+                            "state": "failed"
+                        },
+                        {
+                            "state": "failed"
+                        },
+                        {
+                            "state": "failed"
+                        }
+                    ],
+                    "displayError": "AssertionError: expected true to be false\n    at Object.proxyGetter [as get] (http://localhost:63263/__cypress/runner/cypress_runner.js:77938:22)\n    at Context.eval (webpack://451/./cypress/e2e/spec.cy.js:7:23)",
+                    "duration": 512,
+                    "state": "failed",
+                    "title": ["template spec", "CYP-456 split test"]
+                },
+                {
+                    "attempts": [
+                        {
+                            "state": "passed"
+                        }
+                    ],
+                    "displayError": null,
+                    "duration": 23,
+                    "state": "passed",
+                    "title": ["template spec", "CYP-456 split test"]
+                }
+            ],
+            "video": "/home/csvtuda/repositories/cypress/451/cypress/videos/spec.cy.js.mp4"
+        }
+    ],
+    "startedTestsAt": "2025-02-28T20:58:21.874Z",
+    "totalDuration": 2208,
+    "totalFailed": 1,
+    "totalPassed": 2,
+    "totalPending": 0,
+    "totalSkipped": 0,
+    "totalSuites": 1,
+    "totalTests": 3
+}
