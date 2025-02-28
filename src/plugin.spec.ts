@@ -149,8 +149,8 @@ describe(relative(cwd(), __filename), async () => {
                     enabled: true,
                     logDirectory: "xyz",
                     normalizeScreenshotNames: true,
-                    omitRetries: false,
                     splitUpload: false,
+                    uploadLastAttempt: false,
                 },
                 xray: {
                     status: {

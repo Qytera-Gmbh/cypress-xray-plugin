@@ -774,13 +774,6 @@ export interface PluginOptions {
      */
     normalizeScreenshotNames?: boolean;
     /**
-     * If set to `true`, test retries and their associated screenshots will be omitted from the
-     * upload to Xray, i.e. only the last attempt of each test will be included.
-     *
-     * @defaultValue false
-     */
-    omitRetries?: boolean;
-    /**
      * Enables split upload mode for evidence files. When set to `true`, evidence such as
      * screenshots and videos are uploaded in multiple smaller requests rather than in a single
      * large request. This approach helps to avoid server-side request size limitations and can also
@@ -789,6 +782,13 @@ export interface PluginOptions {
      * @defaultValue false
      */
     splitUpload?: boolean;
+    /**
+     * If set to `true`, test retries and their associated screenshots will be omitted from the
+     * upload to Xray, i.e. only the last attempt of each test will be included.
+     *
+     * @defaultValue false
+     */
+    uploadLastAttempt?: boolean;
 }
 
 /**
@@ -799,7 +799,12 @@ export type InternalPluginOptions = PluginOptions &
     Required<
         Pick<
             PluginOptions,
-            "debug" | "enabled" | "logDirectory" | "normalizeScreenshotNames" | "splitUpload"
+            | "debug"
+            | "enabled"
+            | "logDirectory"
+            | "normalizeScreenshotNames"
+            | "splitUpload"
+            | "uploadLastAttempt"
         >
     >;
 

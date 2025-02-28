@@ -244,10 +244,12 @@ function initPluginOptions(
             parse(env, ENV_NAMES.plugin.normalizeScreenshotNames, asBoolean) ??
             options?.normalizeScreenshotNames ??
             false,
-        omitRetries:
-            parse(env, ENV_NAMES.plugin.omitRetries, asBoolean) ?? options?.omitRetries ?? false,
         splitUpload:
             parse(env, ENV_NAMES.plugin.splitUpload, asBoolean) ?? options?.splitUpload ?? false,
+        uploadLastAttempt:
+            parse(env, ENV_NAMES.plugin.uploadLastAttempt, asBoolean) ??
+            options?.uploadLastAttempt ??
+            false,
     };
 }
 

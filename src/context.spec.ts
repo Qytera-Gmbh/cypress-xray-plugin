@@ -103,8 +103,8 @@ describe(relative(cwd(), __filename), async () => {
                     await it("normalizeScreenshotNames", () => {
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, false);
                     });
-                    await it("omitRetries", () => {
-                        assert.strictEqual(pluginOptions.omitRetries, false);
+                    await it("uploadLastAttempt", () => {
+                        assert.strictEqual(pluginOptions.uploadLastAttempt, false);
                     });
                     await it("splitUpload", () => {
                         assert.strictEqual(pluginOptions.splitUpload, false);
@@ -409,14 +409,14 @@ describe(relative(cwd(), __filename), async () => {
                         );
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
                     });
-                    await it("omitRetries", () => {
+                    await it("uploadLastAttempt", () => {
                         const pluginOptions = globalContext.initPluginOptions(
                             {},
                             {
-                                omitRetries: true,
+                                uploadLastAttempt: true,
                             }
                         );
-                        assert.strictEqual(pluginOptions.omitRetries, true);
+                        assert.strictEqual(pluginOptions.uploadLastAttempt, true);
                     });
                     await it("splitUpload", () => {
                         const pluginOptions = globalContext.initPluginOptions(
@@ -1150,14 +1150,14 @@ describe(relative(cwd(), __filename), async () => {
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
                     });
 
-                    await it("PLUGIN_OMIT_RETRIES", () => {
+                    await it("PLUGIN_UPLOAD_LAST_ATTEMPT", () => {
                         const env = {
-                            ["PLUGIN_OMIT_RETRIES"]: "true",
+                            ["PLUGIN_UPLOAD_LAST_ATTEMPT"]: "true",
                         };
                         const pluginOptions = globalContext.initPluginOptions(env, {
-                            omitRetries: false,
+                            uploadLastAttempt: false,
                         });
-                        assert.strictEqual(pluginOptions.omitRetries, true);
+                        assert.strictEqual(pluginOptions.uploadLastAttempt, true);
                     });
 
                     await it("PLUGIN_SPLIT_UPLOAD", () => {
@@ -2183,8 +2183,8 @@ describe(relative(cwd(), __filename), async () => {
                         enabled: true,
                         logDirectory: "./logs",
                         normalizeScreenshotNames: false,
-                        omitRetries: false,
                         splitUpload: false,
+                        uploadLastAttempt: false,
                     },
                     xray: {
                         status: {},

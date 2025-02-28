@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -182,7 +183,7 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", () => {
-            const map = convertTestRuns_V12(passedResult);
+            const map = convertTestRuns_V12(passedResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("xray upload demo should look for paragraph elements");
             assert.ok(testRuns);
@@ -199,7 +200,9 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("includes screenshots in runs", () => {
-            const screenshotMap = getScreenshotsByIssueKey_V12(failedResult, "CYP");
+            const screenshotMap = getScreenshotsByIssueKey_V12(failedResult, "CYP", {
+                uploadLastAttempt: false,
+            });
             assert.deepStrictEqual(
                 screenshotMap,
                 new Map([["CYP-123", new Set(["./test/resources/turtle.png"])]])
@@ -207,7 +210,7 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("rejects invalid runs", () => {
-            const map = convertTestRuns_V12(invalidResult);
+            const map = convertTestRuns_V12(invalidResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("xray upload demo should fail");
             assert.ok(testRuns);
@@ -386,7 +389,7 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", () => {
-            const map = convertTestRuns_V13(passedResult);
+            const map = convertTestRuns_V13(passedResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 2);
             let testRuns = map.get("something CYP-237 happens");
             assert.ok(testRuns);
@@ -419,7 +422,9 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("includes relevant screenshots in runs", () => {
-            const screenshotMap = getScreenshotsByIssueKey_V13(failedResult, "CYP");
+            const screenshotMap = getScreenshotsByIssueKey_V13(failedResult, "CYP", {
+                uploadLastAttempt: false,
+            });
             assert.deepStrictEqual(
                 screenshotMap,
                 new Map([
@@ -434,8 +439,31 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
+        await it("omits screenshots of retries", () => {
+            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                readFileSync("./test/resources/iteratedResult_14_1_0_retries.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
+
+            const screenshotMap = getScreenshotsByIssueKey_V13(result.runs[0], "CYP", {
+                uploadLastAttempt: true,
+            });
+            assert.deepStrictEqual(
+                screenshotMap,
+                new Map([
+                    ["CYP-123", new Set([])],
+                    [
+                        "CYP-456",
+                        new Set([
+                            "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test (failed) (attempt 3).png",
+                            "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test manual screenshot.png",
+                        ]),
+                    ],
+                ])
+            );
+        });
+
         await it("rejects invalid runs", () => {
-            const map = convertTestRuns_V13(invalidResult);
+            const map = convertTestRuns_V13(invalidResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("something CYP-237 happens");
             assert.ok(testRuns);
