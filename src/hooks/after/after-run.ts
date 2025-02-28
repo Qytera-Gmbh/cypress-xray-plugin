@@ -202,9 +202,6 @@ function getImportExecutionCypressCommand(
     const assertConversionValidCommand = builder.addAssertCypressConversionValidCommand({
         xrayTestExecutionResults: combineResultsJsonCommand,
     });
-    if (options.splitUpload) {
-        // ...
-    }
     const importCypressExecutionCommand = builder.addImportExecutionCypressCommand({
         execution: combineResultsJsonCommand,
     });
