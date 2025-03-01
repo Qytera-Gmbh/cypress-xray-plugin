@@ -47,6 +47,7 @@ export const ENV_NAMES = {
         logDirectory: "PLUGIN_LOG_DIRECTORY",
         normalizeScreenshotNames: "PLUGIN_NORMALIZE_SCREENSHOT_NAMES",
         splitUpload: "PLUGIN_SPLIT_UPLOAD",
+        uploadLastAttempt: "PLUGIN_UPLOAD_LAST_ATTEMPT",
     },
     xray: {
         status: {
@@ -66,4 +67,4 @@ export const ENV_NAMES = {
         uploadResults: "XRAY_UPLOAD_RESULTS",
         uploadScreenshots: "XRAY_UPLOAD_SCREENSHOTS",
     },
-};
+} as const;

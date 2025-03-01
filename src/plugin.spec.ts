@@ -150,6 +150,7 @@ describe(relative(cwd(), __filename), async () => {
                     logDirectory: "xyz",
                     normalizeScreenshotNames: true,
                     splitUpload: false,
+                    uploadLastAttempt: false,
                 },
                 xray: {
                     status: {

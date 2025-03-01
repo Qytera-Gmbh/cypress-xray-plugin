@@ -34,6 +34,7 @@ interface Parameters {
     iterationParameterCollection: IterationParameterCollection;
     normalizeScreenshotNames: boolean;
     projectKey: string;
+    uploadLastAttempt: boolean;
     uploadScreenshots: boolean;
     useCloudStatusFallback?: boolean;
     xrayStatus: InternalXrayOptions["status"];
@@ -49,7 +50,9 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     protected async computeResult(): Promise<[XrayTest, ...XrayTest[]]> {
         const results = await this.results.compute();
         const version = lt(results.cypressVersion, "13.0.0") ? "<13" : ">=13";
-        const convertedTests = this.convertTestRuns(results, version);
+        const convertedTests = this.convertTestRuns(results, version, {
+            uploadLastAttempt: this.parameters.uploadLastAttempt,
+        });
         const runsByKey = new Map<string, [SuccessfulConversion, ...SuccessfulConversion[]]>();
         for (const convertedTest of convertedTests) {
             try {
@@ -91,7 +94,8 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
     private convertTestRuns(
         runResults: CypressRunResultType,
-        version: "<13" | ">=13"
+        version: "<13" | ">=13",
+        options: { uploadLastAttempt: boolean }
     ): SuccessfulConversion[] {
         const conversions: [string, FailedConversion | SuccessfulConversion][] = [];
         const cypressRuns = runResults.runs.filter((run) => {
@@ -106,9 +110,13 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
         const extractor = (run: CypressRunResultType["runs"][number]) => {
             if (version === "<13") {
-                return convertTestRuns_V12(run as RunResult_V12);
+                return convertTestRuns_V12(run as RunResult_V12, {
+                    uploadLastAttempt: options.uploadLastAttempt,
+                });
             } else {
-                return convertTestRuns_V13(run as CypressCommandLine.RunResult);
+                return convertTestRuns_V13(run as CypressCommandLine.RunResult, {
+                    uploadLastAttempt: options.uploadLastAttempt,
+                });
             }
         };
         for (const run of cypressRuns) {
@@ -120,7 +128,9 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             }
         }
         if (this.parameters.uploadScreenshots) {
-            this.addScreenshotEvidence(runResults, version);
+            this.addScreenshotEvidence(runResults, version, {
+                uploadLastAttempt: options.uploadLastAttempt,
+            });
         }
 
         const testRunData: SuccessfulConversion[] = [];
@@ -143,17 +153,23 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         return testRunData;
     }
 
-    private addScreenshotEvidence(runResults: CypressRunResultType, version: "<13" | ">=13") {
+    private addScreenshotEvidence(
+        runResults: CypressRunResultType,
+        version: "<13" | ">=13",
+        options: { uploadLastAttempt: boolean }
+    ) {
         const extractor = (run: CypressRunResultType["runs"][number]) => {
             if (version === "<13") {
                 return getScreenshotsByIssueKey_V12(
                     run as RunResult_V12,
-                    this.parameters.projectKey
+                    this.parameters.projectKey,
+                    { uploadLastAttempt: options.uploadLastAttempt }
                 );
             } else {
                 return getScreenshotsByIssueKey_V13(
                     run as CypressCommandLine.RunResult,
-                    this.parameters.projectKey
+                    this.parameters.projectKey,
+                    { uploadLastAttempt: options.uploadLastAttempt }
                 );
             }
         };

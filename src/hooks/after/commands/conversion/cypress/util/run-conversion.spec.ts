@@ -1,8 +1,12 @@
 import assert from "node:assert";
+import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
+import type {
+    CypressRunResult,
+    RunResult as RunResult_V12,
+} from "../../../../../../types/cypress/12.0.0/api";
 import { CypressStatus } from "../../../../../../types/cypress/status";
 import {
     convertTestRuns_V12,
@@ -182,7 +186,7 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", () => {
-            const map = convertTestRuns_V12(passedResult);
+            const map = convertTestRuns_V12(passedResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("xray upload demo should look for paragraph elements");
             assert.ok(testRuns);
@@ -198,16 +202,96 @@ describe(relative(cwd(), __filename), async () => {
             });
         });
 
+        await it("omits retries", () => {
+            const result: CypressRunResult = JSON.parse(
+                readFileSync("./test/resources/iteratedResult_12_17_4_retries.json", "utf-8")
+            ) as CypressRunResult;
+
+            const map = convertTestRuns_V12(result.runs[0], { uploadLastAttempt: true });
+            assert.deepStrictEqual(
+                map,
+                new Map([
+                    [
+                        "template spec CYP-123 passes eventually",
+                        [
+                            {
+                                duration: 85,
+                                kind: "success",
+                                spec: {
+                                    filepath:
+                                        "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
+                                },
+                                startedAt: new Date("2025-02-28T22:08:44.112Z"),
+                                status: "passed",
+                                title: "template spec CYP-123 passes eventually",
+                            },
+                        ],
+                    ],
+                    [
+                        "template spec CYP-456 split test",
+                        [
+                            {
+                                duration: 202,
+                                kind: "success",
+                                spec: {
+                                    filepath:
+                                        "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
+                                },
+                                startedAt: new Date("2025-02-28T22:08:44.644Z"),
+                                status: "failed",
+                                title: "template spec CYP-456 split test",
+                            },
+                            {
+                                duration: 31,
+                                kind: "success",
+                                spec: {
+                                    filepath:
+                                        "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
+                                },
+                                startedAt: new Date("2025-02-28T22:08:44.867Z"),
+                                status: "passed",
+                                title: "template spec CYP-456 split test",
+                            },
+                        ],
+                    ],
+                ])
+            );
+        });
+
         await it("includes screenshots in runs", () => {
-            const screenshotMap = getScreenshotsByIssueKey_V12(failedResult, "CYP");
+            const screenshotMap = getScreenshotsByIssueKey_V12(failedResult, "CYP", {
+                uploadLastAttempt: false,
+            });
             assert.deepStrictEqual(
                 screenshotMap,
                 new Map([["CYP-123", new Set(["./test/resources/turtle.png"])]])
             );
         });
 
+        await it("omits screenshots of retries", () => {
+            const result: CypressRunResult = JSON.parse(
+                readFileSync("./test/resources/iteratedResult_12_17_4_retries.json", "utf-8")
+            ) as CypressRunResult;
+
+            const screenshotMap = getScreenshotsByIssueKey_V12(result.runs[0], "CYP", {
+                uploadLastAttempt: true,
+            });
+            assert.deepStrictEqual(
+                screenshotMap,
+                new Map([
+                    [
+                        "CYP-456",
+                        new Set([
+                            "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test (failed) (attempt 3).png",
+                            "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test manual screenshot.png",
+                        ]),
+                    ],
+                ])
+            );
+        });
+
         await it("rejects invalid runs", () => {
-            const map = convertTestRuns_V12(invalidResult);
+            const map = convertTestRuns_V12(invalidResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("xray upload demo should fail");
             assert.ok(testRuns);
@@ -386,7 +470,7 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", () => {
-            const map = convertTestRuns_V13(passedResult);
+            const map = convertTestRuns_V13(passedResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 2);
             let testRuns = map.get("something CYP-237 happens");
             assert.ok(testRuns);
@@ -418,8 +502,66 @@ describe(relative(cwd(), __filename), async () => {
             ]);
         });
 
+        await it("omits retries", () => {
+            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                readFileSync("./test/resources/iteratedResult_14_1_0_retries.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
+
+            const map = convertTestRuns_V13(result.runs[0], { uploadLastAttempt: true });
+            assert.deepStrictEqual(
+                map,
+                new Map([
+                    [
+                        "template spec CYP-123 passes eventually",
+                        [
+                            {
+                                duration: 1504,
+                                kind: "success",
+                                spec: {
+                                    filepath:
+                                        "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
+                                },
+                                startedAt: new Date("2025-02-28T20:58:21.874Z"),
+                                status: "passed",
+                                title: "template spec CYP-123 passes eventually",
+                            },
+                        ],
+                    ],
+                    [
+                        "template spec CYP-456 split test",
+                        [
+                            {
+                                duration: 512,
+                                kind: "success",
+                                spec: {
+                                    filepath:
+                                        "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
+                                },
+                                startedAt: new Date("2025-02-28T20:58:23.890Z"),
+                                status: "failed",
+                                title: "template spec CYP-456 split test",
+                            },
+                            {
+                                duration: 23,
+                                kind: "success",
+                                spec: {
+                                    filepath:
+                                        "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
+                                },
+                                startedAt: new Date("2025-02-28T20:58:23.890Z"),
+                                status: "passed",
+                                title: "template spec CYP-456 split test",
+                            },
+                        ],
+                    ],
+                ])
+            );
+        });
+
         await it("includes relevant screenshots in runs", () => {
-            const screenshotMap = getScreenshotsByIssueKey_V13(failedResult, "CYP");
+            const screenshotMap = getScreenshotsByIssueKey_V13(failedResult, "CYP", {
+                uploadLastAttempt: false,
+            });
             assert.deepStrictEqual(
                 screenshotMap,
                 new Map([
@@ -434,8 +576,30 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
+        await it("omits screenshots of retries", () => {
+            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                readFileSync("./test/resources/iteratedResult_14_1_0_retries.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
+
+            const screenshotMap = getScreenshotsByIssueKey_V13(result.runs[0], "CYP", {
+                uploadLastAttempt: true,
+            });
+            assert.deepStrictEqual(
+                screenshotMap,
+                new Map([
+                    [
+                        "CYP-456",
+                        new Set([
+                            "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test (failed) (attempt 3).png",
+                            "/home/csvtuda/repositories/cypress/451/cypress/screenshots/spec.cy.js/template spec -- CYP-456 split test manual screenshot.png",
+                        ]),
+                    ],
+                ])
+            );
+        });
+
         await it("rejects invalid runs", () => {
-            const map = convertTestRuns_V13(invalidResult);
+            const map = convertTestRuns_V13(invalidResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("something CYP-237 happens");
             assert.ok(testRuns);

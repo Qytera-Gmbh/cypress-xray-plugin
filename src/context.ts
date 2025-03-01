@@ -246,6 +246,10 @@ function initPluginOptions(
             false,
         splitUpload:
             parse(env, ENV_NAMES.plugin.splitUpload, asBoolean) ?? options?.splitUpload ?? false,
+        uploadLastAttempt:
+            parse(env, ENV_NAMES.plugin.uploadLastAttempt, asBoolean) ??
+            options?.uploadLastAttempt ??
+            false,
     };
 }
 
