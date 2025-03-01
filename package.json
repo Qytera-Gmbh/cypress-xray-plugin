@@ -63,7 +63,7 @@
         "@bahmutov/cypress-esbuild-preprocessor": "^2.2.4",
         "@eslint/js": "^9.17.0",
         "@qytera/xray-client": "^2.1.0",
-        "@types/node": "^22.7.4",
+        "@types/node": "^22.13.7",
         "@types/semver": "^7.5.8",
         "c8": "^10.1.3",
         "cypress": "^14.0.0",
