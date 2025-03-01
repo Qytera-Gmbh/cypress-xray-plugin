@@ -1,5 +1,15 @@
 # Changelog
 
+# `8.2.0`
+
+## Notable changes
+
+- Added `plugin.uploadLastAttempt` option ([#451](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/451))
+
+- Added `plugin.splitUpload` option ([#450](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/450))
+
+- Added task for defining Xray iteration parameters ([#454](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/454))
+
 # `8.1.0`
 
 ## Notable changes
@@ -68,8 +78,6 @@
 
 ## Dependency updates
 
-- Bumped @bahmutov/cypress-esbuild-preprocessor from 2.2.2 to 2.2.3
-
 - Bumped axios from 1.7.5 to 1.7.7
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 20.1.1 to 21.0.0
@@ -99,8 +107,6 @@
 - Added `http.rateLimiting` options ([#373](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/373))
 
 ## Dependency updates
-
-- Bumped @bahmutov/cypress-esbuild-preprocessor from 2.2.1 to 2.2.2
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 20.1.0 to 20.1.1
 
