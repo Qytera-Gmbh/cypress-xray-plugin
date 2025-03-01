@@ -241,33 +241,6 @@ export function getScreenshotsByIssueKey_V13(
                     }
                 }
             }
-            if (options.uploadLastAttempt) {
-                const screenshotsToUpload = new Set<string>();
-                // See: https://docs.cypress.io/app/guides/test-retries#Screenshots
-                // Initial run: template spec -- test passes eventually (failed).png
-                //       Retry: template spec -- test passes eventually (failed) (attempt 2).png
-                const attemptScreenshotRegex = new RegExp(
-                    `${test.title[test.title.length - 1]} \\(${CypressStatus.FAILED}|${CypressStatus.PASSED}|${CypressStatus.PENDING}|${CypressStatus.SKIPPED}\\)`
-                );
-                let expectedSuffix;
-                if (test.attempts.length > 1) {
-                    expectedSuffix = `${test.title[test.title.length - 1]} (${test.state}) (attempt ${test.attempts.length.toString()})`;
-                } else {
-                    expectedSuffix = `${test.title[test.title.length - 1]} (${test.state})`;
-                }
-                for (const issueKey of testTitleKeys) {
-                    for (const screenshot of map.get(issueKey) ?? []) {
-                        const filename = basename(screenshot, extname(screenshot));
-                        if (attemptScreenshotRegex.exec(filename)) {
-                            if (filename.endsWith(expectedSuffix)) {
-                                screenshotsToUpload.add(screenshot);
-                            }
-                        } else {
-                            screenshotsToUpload.add(screenshot);
-                        }
-                    }
-                }
-            }
         } catch {
             continue;
         }
