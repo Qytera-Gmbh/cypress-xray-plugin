@@ -70,7 +70,7 @@
         "cypress-on-fix": "^1.1.0",
         "dotenv": "^16.4.7",
         "eslint": "^9.19.0",
-        "eslint-plugin-perfectionist": "^3.8.0",
+        "eslint-plugin-perfectionist": "^4.9.0",
         "eslint-plugin-tsdoc": "^0.4.0",
         "graphql": "^16.10.0",
         "graphql-tag": "^2.12.6",
