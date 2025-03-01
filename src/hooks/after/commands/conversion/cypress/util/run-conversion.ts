@@ -310,10 +310,13 @@ function removeAttemptScreenshots(
             }
         }
     }
-    for (const [issueKey, screenshots] of screenshotsByKey.entries()) {
+    for (const [issueKey, screenshots] of [...screenshotsByKey.entries()]) {
         screenshotsByKey.set(
             issueKey,
             new Set([...screenshots].filter((s) => screenshotsToUpload.has(s)))
         );
+        if (screenshotsByKey.get(issueKey)?.size === 0) {
+            screenshotsByKey.delete(issueKey);
+        }
     }
 }
