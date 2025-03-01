@@ -1333,6 +1333,7 @@ describe(relative(cwd(), __filename), async () => {
                 iterationParameterCollection: new SimpleIterationParameterCollection(),
                 normalizeScreenshotNames: true,
                 projectKey: "CYP",
+                uploadLastAttempt: false,
                 uploadScreenshots: false,
                 xrayStatus: {
                     failed: "FAILED",
