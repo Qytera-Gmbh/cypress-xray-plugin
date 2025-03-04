@@ -98,9 +98,9 @@ export class ServerClient
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message("debug", "Adding test run evidence...");
         await this.httpClient.post(
-            `${this.apiBaseUrl}/testrun/${testRunId.toString()}/attachment`,
+            `${this.apiBaseUrl}/api/testrun/${testRunId.toString()}/attachment`,
+            evidence,
             {
-                data: JSON.stringify(evidence),
                 headers: {
                     ...authorizationHeader,
                 },

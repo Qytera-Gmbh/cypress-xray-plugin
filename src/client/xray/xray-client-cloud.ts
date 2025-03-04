@@ -93,11 +93,8 @@ export class XrayClientCloud
     }> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         const mutation = dedent(`
-            mutation {
-                addEvidenceToTestRun(
-                    id: ${JSON.stringify(variables.id)},
-                    evidence: ${JSON.stringify(variables.evidence)}
-                ) {
+            mutation($id: String!, $evidence: [AttachmentDataInput]!) {
+                addEvidenceToTestRun(id: $id, evidence: $evidence) {
                     addedEvidence
                     warnings
                 }
@@ -107,7 +104,19 @@ export class XrayClientCloud
             data: { addEvidenceToTestRun: { addedEvidence: string[]; warnings: string[] } };
         }> = await this.httpClient.post(
             XrayClientCloud.URL_GRAPHQL,
-            { mutation },
+            {
+                query: mutation,
+                variables: {
+                    evidence: variables.evidence.map((evidence) => {
+                        return {
+                            data: evidence.data,
+                            filename: evidence.filename,
+                            mimeType: evidence.contentType,
+                        };
+                    }),
+                    id: variables.id,
+                },
+            },
             { headers: { ...authorizationHeader } }
         );
         for (const evidence of variables.evidence) {
@@ -135,6 +144,7 @@ export class XrayClientCloud
                     limit
                     start
                     results {
+                        id
                         status {
                             name
                         }

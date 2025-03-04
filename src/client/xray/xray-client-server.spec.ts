@@ -28,6 +28,33 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
+        await describe("add evidence", async () => {
+            await it("calls the correct endpoint", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
+                });
+
+                await client.addEvidence(12345, {
+                    contentType: "text/plain",
+                    data: Buffer.from("hello world").toString("base64"),
+                    filename: "evidence.txt",
+                });
+
+                assert.strictEqual(post.mock.calls.length, 1);
+                assert.strictEqual(
+                    post.mock.calls[0].arguments[0],
+                    "http://localhost:1234/rest/raven/latest/api/testrun/12345/attachment"
+                );
+            });
+        });
+
         await describe("import execution", async () => {
             await it("calls the correct endpoint", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
