@@ -99,8 +99,8 @@ export class ServerClient
         LOG.message("debug", "Adding test run evidence...");
         await this.httpClient.post(
             `${this.apiBaseUrl}/api/testrun/${testRunId.toString()}/attachment`,
+            evidence,
             {
-                data: JSON.stringify(evidence),
                 headers: {
                     ...authorizationHeader,
                 },
