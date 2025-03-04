@@ -222,12 +222,12 @@ export function getScreenshotsByIssueKey_V13(
     options: { uploadLastAttempt: boolean }
 ): Map<string, Set<string>> {
     const map = new Map<string, Set<string>>();
-    const keysByTest: Record<string, string[]> = {};
+    const keysByTest = new Map<string, string[]>();
     for (const test of run.tests) {
         const title = test.title.join(" ");
         try {
             const testTitleKeys = getTestIssueKeys(title, projectKey);
-            keysByTest[title] = testTitleKeys;
+            keysByTest.set(title, testTitleKeys);
             for (const issueKey of testTitleKeys) {
                 for (const screenshot of run.screenshots) {
                     if (!screenshot.path.includes(issueKey)) {
@@ -254,12 +254,16 @@ export function getScreenshotsByIssueKey_V13(
 function removeAttemptScreenshots(
     run: CypressCommandLine.RunResult,
     screenshotsByKey: Map<string, Set<string>>,
-    keysByTest: Record<string, string[]>
+    keysByTest: Map<string, string[]>
 ) {
     const screenshotsToUpload = new Set<string>();
     for (const test of run.tests) {
         const title = test.title.join(" ");
-        const testKeys = keysByTest[title];
+        const testKeys = keysByTest.get(title);
+        // If a test does not contain any test issue keys, we cannot find its screenshots.
+        if (!testKeys) {
+            continue;
+        }
         // See: https://docs.cypress.io/app/guides/test-retries#Screenshots
         // Initial run: template spec -- test passes eventually (failed).png
         //       Retry: template spec -- test passes eventually (failed) (attempt 2).png
