@@ -598,6 +598,17 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
+        await it("omits screenshots of retries and ignores non-attributable screenshots", () => {
+            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                readFileSync("./test/resources/iteratedResult_14_1_0_retries.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
+
+            const screenshotMap = getScreenshotsByIssueKey_V13(result.runs[0], "ABC", {
+                uploadLastAttempt: true,
+            });
+            assert.deepStrictEqual(screenshotMap, new Map());
+        });
+
         await it("rejects invalid runs", () => {
             const map = convertTestRuns_V13(invalidResult, { uploadLastAttempt: false });
             assert.strictEqual(map.size, 1);
