@@ -1,5 +1,21 @@
 # Changelog
 
+# `8.2.1`
+
+## Notable changes
+
+- Fixed plugin trying to attribute screenshots without issue keys
+
+- Fixed evidence attachment problems for Xray server and cloud
+
+- Moved @badeball/cypress-cucumber-preprocessor to optional peer dependencies
+
+## Dependency updates
+
+- Bump @badeball/cypress-cucumber-preprocessor from 22.0.0 to 22.0.1
+
+- Bumped @cucumber/messages from 27.0.2 to 27.2.0
+
 # `8.2.0`
 
 ## Notable changes
