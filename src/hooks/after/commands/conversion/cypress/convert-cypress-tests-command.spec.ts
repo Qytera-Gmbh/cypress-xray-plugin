@@ -75,6 +75,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidence: [
                             {
+                                contentType: "image/png",
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small.png",
                             },
@@ -114,6 +115,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidence: [
                             {
+                                contentType: "image/png",
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small.png",
                             },
@@ -126,6 +128,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidence: [
                             {
+                                contentType: "image/png",
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small.png",
                             },
@@ -138,6 +141,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidence: [
                             {
+                                contentType: "image/png",
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small.png",
                             },
@@ -188,6 +192,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidence: [
                             {
+                                contentType: "image/png",
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small CYP-237.png",
                             },
@@ -245,6 +250,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidence: [
                             {
+                                contentType: "image/png",
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small CYP-123 CYP-125.png",
                             },
@@ -263,6 +269,7 @@ describe(relative(cwd(), __filename), async () => {
                     {
                         evidence: [
                             {
+                                contentType: "image/png",
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small CYP-123 CYP-125.png",
                             },
@@ -752,6 +759,7 @@ describe(relative(cwd(), __filename), async () => {
                             filename: "goodbye.txt",
                         },
                         {
+                            contentType: "image/png",
                             data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                             filename: "small CYP-237.png",
                         },
@@ -887,6 +895,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidence: [
                         {
+                            contentType: "image/png",
                             data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                             filename: "small CYP-237.png",
                         },

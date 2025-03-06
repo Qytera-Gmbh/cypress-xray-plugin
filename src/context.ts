@@ -82,7 +82,7 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
         return this.logger;
     }
 
-    public addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
+    public addEvidence(issueKey: string, evidence: Required<XrayEvidenceItem>): void {
         this.evidenceCollection.addEvidence(issueKey, evidence);
         LOG.message("debug", `Added evidence for test ${issueKey}: ${evidence.filename}`);
     }
@@ -105,7 +105,7 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
 }
 
 export interface EvidenceCollection {
-    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
+    addEvidence(issueKey: string, evidence: Required<XrayEvidenceItem>): void;
     getEvidence(issueKey: string): XrayEvidenceItem[];
 }
 

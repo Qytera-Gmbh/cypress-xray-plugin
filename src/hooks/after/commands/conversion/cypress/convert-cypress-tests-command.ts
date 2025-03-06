@@ -1,4 +1,4 @@
-import path from "node:path";
+import { basename, extname, parse } from "node:path";
 import { lt } from "semver";
 import type { EvidenceCollection, IterationParameterCollection } from "../../../../../context";
 import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
@@ -178,11 +178,12 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             const allScreenshots = extractor(run);
             for (const [issueKey, screenshots] of allScreenshots) {
                 for (const screenshot of screenshots) {
-                    let filename = path.basename(screenshot);
+                    let filename = basename(screenshot);
                     if (this.parameters.normalizeScreenshotNames) {
                         filename = normalizedFilename(filename);
                     }
                     this.parameters.evidenceCollection.addEvidence(issueKey, {
+                        contentType: `image/${extname(screenshot).replace(".", "")}`,
                         data: encodeFile(screenshot),
                         filename: filename,
                     });
@@ -200,7 +201,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 }
                 for (const screenshot of run.screenshots) {
                     if (!includedScreenshots.includes(screenshot.path)) {
-                        const screenshotName = path.parse(screenshot.path).name;
+                        const screenshotName = parse(screenshot.path).name;
                         this.logger.message(
                             "warning",
                             dedent(`
