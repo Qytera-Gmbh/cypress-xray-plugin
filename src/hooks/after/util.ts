@@ -7,10 +7,7 @@ export function containsCypressTest(
     featureFileExtension?: string
 ): boolean {
     return runResult.runs.some((run) => {
-        if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
-            return false;
-        }
-        return true;
+        return !featureFileExtension || !run.spec.absolute.endsWith(featureFileExtension);
     });
 }
 
@@ -19,10 +16,7 @@ export function containsCucumberTest(
     featureFileExtension?: string
 ): boolean {
     return runResult.runs.some((run) => {
-        if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
-            return true;
-        }
-        return false;
+        return featureFileExtension && run.spec.absolute.endsWith(featureFileExtension);
     });
 }
 
