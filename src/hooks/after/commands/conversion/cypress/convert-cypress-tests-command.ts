@@ -12,20 +12,14 @@ import type {
 } from "../../../../../types/xray/import-test-execution-results";
 import { encodeFile } from "../../../../../util/base64";
 import { dedent } from "../../../../../util/dedent";
-import { errorMessage } from "../../../../../util/errors";
+import { errorMessage, missingTestKeyInTestTitleError } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
 import type { Logger } from "../../../../../util/logging";
 import { earliestDate, latestDate, truncateIsoTime } from "../../../../../util/time";
 import type { Computable } from "../../../../command";
 import { Command } from "../../../../command";
-import { getTestIssueKeys } from "../../../util";
-import type { FailedConversion, SuccessfulConversion } from "./util/run-conversion";
-import {
-    convertTestRuns_V12,
-    convertTestRuns_V13,
-    getScreenshotsByIssueKey_V12,
-    getScreenshotsByIssueKey_V13,
-} from "./util/run-conversion";
+import type { RunConverter } from "./util/converter";
+import { RunConverterV12, RunConverterV13, type SuccessfulConversion } from "./util/converter";
 import { getXrayStatus } from "./util/status-conversion";
 
 interface Parameters {
@@ -50,22 +44,10 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     protected async computeResult(): Promise<[XrayTest, ...XrayTest[]]> {
         const results = await this.results.compute();
         const version = lt(results.cypressVersion, "13.0.0") ? "<13" : ">=13";
-        const convertedTests = this.convertTestRuns(results, version, {
-            uploadLastAttempt: this.parameters.uploadLastAttempt,
-        });
+        const convertedTests = this.convertTestRuns(results, version);
         const runsByKey = new Map<string, [SuccessfulConversion, ...SuccessfulConversion[]]>();
         for (const convertedTest of convertedTests) {
-            try {
-                const issueKeys = getTestIssueKeys(convertedTest.title, this.parameters.projectKey);
-                for (const issueKey of issueKeys) {
-                    const runs = runsByKey.get(issueKey);
-                    if (runs) {
-                        runs.push(convertedTest);
-                    } else {
-                        runsByKey.set(issueKey, [convertedTest]);
-                    }
-                }
-            } catch (error: unknown) {
+            if (convertedTest.issueKey === null) {
                 this.logger.message(
                     "warning",
                     dedent(`
@@ -75,9 +57,16 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
                             Skipping result upload.
 
-                              Caused by: ${errorMessage(error)}
+                              Caused by: ${errorMessage(missingTestKeyInTestTitleError(convertedTest.title, this.parameters.projectKey))}
                     `)
                 );
+            } else {
+                const runs = runsByKey.get(convertedTest.issueKey);
+                if (runs) {
+                    runs.push(convertedTest);
+                } else {
+                    runsByKey.set(convertedTest.issueKey, [convertedTest]);
+                }
             }
         }
         const xrayTests: XrayTest[] = [];
@@ -94,52 +83,33 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
     private convertTestRuns(
         runResults: CypressRunResultType,
-        version: "<13" | ">=13",
-        options: { uploadLastAttempt: boolean }
+        version: "<13" | ">=13"
     ): SuccessfulConversion[] {
-        const conversions: [string, FailedConversion | SuccessfulConversion][] = [];
-        const cypressRuns = runResults.runs.filter((run) => {
-            return (
+        const cypressRuns = runResults.runs.filter(
+            (run) =>
                 !this.parameters.featureFileExtension ||
                 !run.spec.relative.endsWith(this.parameters.featureFileExtension)
-            );
-        });
+        );
         if (cypressRuns.length === 0) {
             throw new Error("Failed to extract test run data: Only Cucumber tests were executed");
         }
-
-        const extractor = (run: CypressRunResultType["runs"][number]) => {
-            if (version === "<13") {
-                return convertTestRuns_V12(run as RunResult_V12, {
-                    uploadLastAttempt: options.uploadLastAttempt,
-                });
-            } else {
-                return convertTestRuns_V13(run as CypressCommandLine.RunResult, {
-                    uploadLastAttempt: options.uploadLastAttempt,
-                });
-            }
-        };
-        for (const run of cypressRuns) {
-            const testRuns = extractor(run);
-            for (const [title, runs] of testRuns) {
-                for (const conversion of runs) {
-                    conversions.push([title, conversion]);
-                }
-            }
-        }
-        if (this.parameters.uploadScreenshots) {
-            this.addScreenshotEvidence(runResults, version, {
-                uploadLastAttempt: options.uploadLastAttempt,
-            });
-        }
-
+        const converter: RunConverter =
+            version === "<13"
+                ? new RunConverterV12(this.parameters.projectKey, cypressRuns as RunResult_V12[])
+                : new RunConverterV13(
+                      this.parameters.projectKey,
+                      cypressRuns as CypressCommandLine.RunResult[]
+                  );
+        const conversions = converter.getConversions({
+            onlyLastAttempt: this.parameters.uploadLastAttempt,
+        });
         const testRunData: SuccessfulConversion[] = [];
-        for (const [title, conversion] of conversions) {
+        for (const conversion of conversions) {
             if (conversion.kind === "error") {
                 this.logger.message(
                     "warning",
                     dedent(`
-                        Test: ${title}
+                        Test: ${conversion.title}
 
                           Skipping result upload.
 
@@ -150,73 +120,48 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 testRunData.push(conversion);
             }
         }
+        if (this.parameters.uploadScreenshots) {
+            this.addScreenshotEvidence(testRunData, converter);
+        }
         return testRunData;
     }
 
-    private addScreenshotEvidence(
-        runResults: CypressRunResultType,
-        version: "<13" | ">=13",
-        options: { uploadLastAttempt: boolean }
-    ) {
-        const extractor = (run: CypressRunResultType["runs"][number]) => {
-            if (version === "<13") {
-                return getScreenshotsByIssueKey_V12(
-                    run as RunResult_V12,
-                    this.parameters.projectKey,
-                    { uploadLastAttempt: options.uploadLastAttempt }
-                );
-            } else {
-                return getScreenshotsByIssueKey_V13(
-                    run as CypressCommandLine.RunResult,
-                    this.parameters.projectKey,
-                    { uploadLastAttempt: options.uploadLastAttempt }
-                );
-            }
-        };
-        const includedScreenshots: string[] = [];
-        for (const run of runResults.runs) {
-            const allScreenshots = extractor(run);
-            for (const [issueKey, screenshots] of allScreenshots) {
-                for (const screenshot of screenshots) {
-                    let filename = basename(screenshot);
-                    if (this.parameters.normalizeScreenshotNames) {
-                        filename = normalizedFilename(filename);
-                    }
-                    this.parameters.evidenceCollection.addEvidence(issueKey, {
-                        contentType: `image/${extname(screenshot).replace(".", "")}`,
-                        data: encodeFile(screenshot),
-                        filename: filename,
-                    });
-                    includedScreenshots.push(screenshot);
+    private addScreenshotEvidence(conversions: SuccessfulConversion[], converter: RunConverter) {
+        const testIssueKeys = conversions
+            .map((conversion) => conversion.issueKey)
+            .filter((key) => key !== null);
+        for (const issueKey of new Set(testIssueKeys)) {
+            const screenshots = converter.getScreenshots(issueKey, {
+                onlyLastAttempt: this.parameters.uploadLastAttempt,
+            });
+            for (const screenshot of screenshots) {
+                let filename = basename(screenshot);
+                if (this.parameters.normalizeScreenshotNames) {
+                    filename = normalizedFilename(filename);
                 }
+                this.parameters.evidenceCollection.addEvidence(issueKey, {
+                    contentType: `image/${extname(screenshot).replace(".", "")}`,
+                    data: encodeFile(screenshot),
+                    filename: filename,
+                });
             }
         }
-        if (version === ">=13") {
-            for (const run of runResults.runs as CypressCommandLine.RunResult[]) {
-                if (
-                    this.parameters.featureFileExtension &&
-                    run.spec.fileExtension.endsWith(this.parameters.featureFileExtension)
-                ) {
-                    continue;
-                }
-                for (const screenshot of run.screenshots) {
-                    if (!includedScreenshots.includes(screenshot.path)) {
-                        const screenshotName = parse(screenshot.path).name;
-                        this.logger.message(
-                            "warning",
-                            dedent(`
-                                ${screenshot.path}
+        for (const screenshot of converter.getNonAttributableScreenshots({
+            onlyLastAttempt: this.parameters.uploadLastAttempt,
+        })) {
+            const screenshotName = parse(screenshot).name;
+            this.logger.message(
+                "warning",
+                dedent(`
+                    ${screenshot}
 
-                                  Screenshot cannot be attributed to a test and will not be uploaded.
+                      Screenshot cannot be attributed to a test and will not be uploaded.
 
-                                  To upload screenshots, include test issue keys anywhere in their name:
+                      To upload screenshots, include test issue keys anywhere in their name:
 
-                                    cy.screenshot("${this.parameters.projectKey}-123 ${screenshotName}")
-                            `)
-                        );
-                    }
-                }
-            }
+                        cy.screenshot("${this.parameters.projectKey}-123 ${screenshotName}")
+                `)
+            );
         }
     }
 

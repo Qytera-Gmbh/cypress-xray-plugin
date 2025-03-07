@@ -43,6 +43,10 @@ export interface SuccessfulConversion {
      */
     duration: number;
     /**
+     * The Jira test issue key or `null` if the test could not be mapped to an issue.
+     */
+    issueKey: null | string;
+    /**
      * Denotes a successful test run conversion.
      */
     kind: "success";
@@ -81,12 +85,25 @@ export interface FailedConversion {
      * Denotes a failed test run conversion.
      */
     kind: "error";
+    /**
+     * The test's title.
+     */
+    title: string;
 }
 
+/**
+ * Converts Cypress test results for Cypress versions &lt;13.
+ */
 export class RunConverterV12 implements RunConverter {
     private readonly projectKey: string;
     private readonly runResults: RunResult[];
 
+    /**
+     * Constructs a new converter for the specified run results.
+     *
+     * @param projectKey - the project key
+     * @param runResults - the run results
+     */
     constructor(projectKey: string, runResults: RunResult[]) {
         this.projectKey = projectKey;
         this.runResults = runResults;
@@ -102,18 +119,27 @@ export class RunConverterV12 implements RunConverter {
                 const attempts = options.onlyLastAttempt
                     ? [test.attempts[test.attempts.length - 1]]
                     : test.attempts;
+                let issueKeys;
+                try {
+                    issueKeys = getTestIssueKeys(title, this.projectKey);
+                } catch {
+                    issueKeys = [null];
+                }
                 for (const attempt of attempts) {
-                    try {
-                        conversions.push({
-                            duration: attempt.duration,
-                            kind: "success",
-                            spec: { filepath: run.spec.absolute },
-                            startedAt: new Date(attempt.startedAt),
-                            status: toCypressStatus(attempt.state),
-                            title: title,
-                        });
-                    } catch (error: unknown) {
-                        conversions.push({ error, kind: "error" });
+                    for (const issueKey of issueKeys) {
+                        try {
+                            conversions.push({
+                                duration: attempt.duration,
+                                issueKey,
+                                kind: "success",
+                                spec: { filepath: run.spec.absolute },
+                                startedAt: new Date(attempt.startedAt),
+                                status: toCypressStatus(attempt.state),
+                                title: title,
+                            });
+                        } catch (error: unknown) {
+                            conversions.push({ error, kind: "error", title });
+                        }
                     }
                 }
             }
@@ -151,10 +177,19 @@ export class RunConverterV12 implements RunConverter {
     }
 }
 
+/**
+ * Converts Cypress test results for Cypress versions &ge;13.
+ */
 export class RunConverterV13 implements RunConverter {
     private readonly projectKey: string;
     private readonly runResults: CypressCommandLine.RunResult[];
 
+    /**
+     * Constructs a new converter for the specified run results.
+     *
+     * @param projectKey - the project key
+     * @param runResults - the run results
+     */
     constructor(projectKey: string, runResults: CypressCommandLine.RunResult[]) {
         this.projectKey = projectKey;
         this.runResults = runResults;
@@ -185,18 +220,27 @@ export class RunConverterV13 implements RunConverter {
                 const attempts = options.onlyLastAttempt
                     ? [test.attempts[test.attempts.length - 1]]
                     : test.attempts;
+                let issueKeys;
+                try {
+                    issueKeys = getTestIssueKeys(title, this.projectKey);
+                } catch {
+                    issueKeys = [null];
+                }
                 for (const attempt of attempts) {
-                    try {
-                        conversions.push({
-                            duration: test.duration,
-                            kind: "success",
-                            spec: { filepath: run.spec.absolute },
-                            startedAt: testStarts[title],
-                            status: toCypressStatus(attempt.state),
-                            title: title,
-                        });
-                    } catch (error: unknown) {
-                        conversions.push({ error, kind: "error" });
+                    for (const issueKey of issueKeys) {
+                        try {
+                            conversions.push({
+                                duration: test.duration,
+                                issueKey,
+                                kind: "success",
+                                spec: { filepath: run.spec.absolute },
+                                startedAt: testStarts[title],
+                                status: toCypressStatus(attempt.state),
+                                title: title,
+                            });
+                        } catch (error: unknown) {
+                            conversions.push({ error, kind: "error", title });
+                        }
                     }
                 }
             }

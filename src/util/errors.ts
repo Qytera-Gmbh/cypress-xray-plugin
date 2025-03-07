@@ -154,3 +154,29 @@ export function missingTestKeyInCucumberScenarioError(
         `)
     );
 }
+
+/**
+ * Returns an error describing that a test issue key is missing in a test title.
+ *
+ * @param title - the test title
+ * @param projectKey - the project key
+ * @returns the error
+ */
+export function missingTestKeyInTestTitleError(title: string, projectKey: string) {
+    return new Error(
+        dedent(`
+            Test: ${title}
+
+              No test issue keys found in title.
+
+              You can target existing test issues by adding a corresponding issue key:
+
+                it("${projectKey}-123 ${title}", () => {
+                  // ...
+                });
+
+              For more information, visit:
+              - ${HELP.plugin.guides.targetingExistingIssues}
+        `)
+    );
+}
