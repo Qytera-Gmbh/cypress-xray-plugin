@@ -1,23 +1,93 @@
 import { basename, extname } from "node:path";
-import type { CypressRunResult as CypressRunResult_V_12 } from "../../../../../../types/cypress/12.0.0/api";
+import type { RunResult } from "../../../../../../types/cypress/12.0.0/api";
 import { CypressStatus } from "../../../../../../types/cypress/status";
 import { getTestIssueKeys } from "../../../../util";
-import type { FailedConversion, SuccessfulConversion } from "./run-conversion";
 import { toCypressStatus } from "./status-conversion";
 
 export interface RunConverter {
+    /**
+     * Returns intermediate run results which the plugin can use further down the line.
+     *
+     * @param options - additional conversion options
+     * @returns an array of successful and failed conversions
+     */
     getConversions(options: {
+        /**
+         * Whether to convert and return the last attempts only.
+         */
         onlyLastAttempt: boolean;
     }): (FailedConversion | SuccessfulConversion)[];
+    /**
+     * Returns all screenshots that cannot be attributed to any test issue.
+     *
+     * @param options - additional screenshot retrieval options
+     * @returns the screenshot paths
+     */
     getNonAttributableScreenshots(options: { onlyLastAttempt: boolean }): string[];
+    /**
+     * Returns all screenshots that can be attributed to the specified test.
+     *
+     * @param issueKey - the test issue
+     * @param options - additional screenshot retrieval options
+     * @returns the screenshot paths of all attributed screenshots
+     */
     getScreenshots(issueKey: string, options: { onlyLastAttempt: boolean }): string[];
+}
+
+/**
+ * Test data extracted from Cypress tests, ready to be converted into an Xray JSON test.
+ */
+export interface SuccessfulConversion {
+    /**
+     * The duration of the test in milliseconds.
+     */
+    duration: number;
+    /**
+     * Denotes a successful test run conversion.
+     */
+    kind: "success";
+    /**
+     * Information about the spec the test was run in.
+     */
+    spec: {
+        /**
+         * The spec's file path.
+         */
+        filepath: string;
+    };
+    /**
+     * When the test was started.
+     */
+    startedAt: Date;
+    /**
+     * The test's status.
+     */
+    status: CypressStatus;
+    /**
+     * The test's title.
+     */
+    title: string;
+}
+
+/**
+ * Models a failed test run conversion.
+ */
+export interface FailedConversion {
+    /**
+     * The conversion failure.
+     */
+    error: unknown;
+    /**
+     * Denotes a failed test run conversion.
+     */
+    kind: "error";
 }
 
 export class RunConverterV12 implements RunConverter {
     private readonly projectKey: string;
-    private readonly runResults: CypressRunResult_V_12;
+    private readonly runResults: RunResult[];
 
-    constructor(projectKey: string, runResults: CypressRunResult_V_12) {
+    constructor(projectKey: string, runResults: RunResult[]) {
         this.projectKey = projectKey;
         this.runResults = runResults;
     }
@@ -26,7 +96,7 @@ export class RunConverterV12 implements RunConverter {
         onlyLastAttempt: boolean;
     }): (FailedConversion | SuccessfulConversion)[] {
         const conversions: (FailedConversion | SuccessfulConversion)[] = [];
-        for (const run of this.runResults.runs) {
+        for (const run of this.runResults) {
             for (const test of run.tests) {
                 const title = test.title.join(" ");
                 const attempts = options.onlyLastAttempt
@@ -57,7 +127,7 @@ export class RunConverterV12 implements RunConverter {
 
     public getScreenshots(issueKey: string, options: { onlyLastAttempt: boolean }): string[] {
         const screenshots: string[] = [];
-        for (const run of this.runResults.runs) {
+        for (const run of this.runResults) {
             for (const test of run.tests) {
                 const title = test.title.join(" ");
                 const attempts = options.onlyLastAttempt
@@ -65,7 +135,7 @@ export class RunConverterV12 implements RunConverter {
                     : test.attempts;
                 try {
                     const testTitleKeys = getTestIssueKeys(title, this.projectKey);
-                    if (issueKey in testTitleKeys) {
+                    if (testTitleKeys.includes(issueKey)) {
                         for (const attempt of attempts) {
                             for (const screenshot of attempt.screenshots) {
                                 screenshots.push(screenshot.path);
@@ -77,15 +147,15 @@ export class RunConverterV12 implements RunConverter {
                 }
             }
         }
-        return screenshots;
+        return [...new Set([...screenshots])];
     }
 }
 
 export class RunConverterV13 implements RunConverter {
     private readonly projectKey: string;
-    private readonly runResults: CypressCommandLine.CypressRunResult;
+    private readonly runResults: CypressCommandLine.RunResult[];
 
-    constructor(projectKey: string, runResults: CypressCommandLine.CypressRunResult) {
+    constructor(projectKey: string, runResults: CypressCommandLine.RunResult[]) {
         this.projectKey = projectKey;
         this.runResults = runResults;
     }
@@ -95,20 +165,21 @@ export class RunConverterV13 implements RunConverter {
     }): (FailedConversion | SuccessfulConversion)[] {
         const conversions: (FailedConversion | SuccessfulConversion)[] = [];
         const testStarts: Record<string, Date> = {};
-        for (const run of this.runResults.runs) {
+        for (const run of this.runResults) {
+            const startTime = new Date(run.stats.startedAt).getTime();
             let totalDuration = 0;
             for (let i = 0; i < run.tests.length; i++) {
                 let date;
                 if (i === 0) {
-                    date = new Date(run.stats.startedAt);
+                    date = new Date(startTime);
                 } else {
-                    totalDuration = totalDuration + run.tests[i - 1].duration;
-                    date = new Date(totalDuration);
+                    date = new Date(startTime + totalDuration);
                 }
+                totalDuration = totalDuration + run.tests[i].duration;
                 testStarts[run.tests[i].title.join(" ")] = date;
             }
         }
-        for (const run of this.runResults.runs) {
+        for (const run of this.runResults) {
             for (const test of run.tests) {
                 const title = test.title.join(" ");
                 const attempts = options.onlyLastAttempt
@@ -134,7 +205,7 @@ export class RunConverterV13 implements RunConverter {
     }
 
     public getNonAttributableScreenshots(options: { onlyLastAttempt: boolean }): string[] {
-        let screenshots = this.runResults.runs
+        let screenshots = this.runResults
             .flatMap((run) => run.screenshots)
             .map((screenshot) => screenshot.path);
         if (options.onlyLastAttempt) {
@@ -146,9 +217,9 @@ export class RunConverterV13 implements RunConverter {
         }
         screenshots = screenshots.filter((screenshot) => {
             try {
-                return getTestIssueKeys(screenshot, this.projectKey).length > 0;
+                return getTestIssueKeys(screenshot, this.projectKey).length === 0;
             } catch {
-                return false;
+                return true;
             }
         });
         return screenshots;
@@ -156,7 +227,7 @@ export class RunConverterV13 implements RunConverter {
 
     public getScreenshots(issueKey: string, options: { onlyLastAttempt: boolean }): string[] {
         let screenshots = [];
-        for (const run of this.runResults.runs) {
+        for (const run of this.runResults) {
             for (const screenshot of run.screenshots) {
                 if (!screenshot.path.includes(issueKey)) {
                     continue;
@@ -171,21 +242,27 @@ export class RunConverterV13 implements RunConverter {
                     this.isLastAttemptScreenshot(screenshot)
             );
         }
-        return screenshots;
+        return [...new Set([...screenshots])];
     }
 
     private isAttemptScreenshot(screenshotPath: string) {
         const filename = basename(screenshotPath, extname(screenshotPath));
-        for (const run of this.runResults.runs) {
+        for (const run of this.runResults) {
             for (const test of run.tests) {
                 const testName = test.title[test.title.length - 1];
                 // See: https://docs.cypress.io/app/guides/test-retries#Screenshots
                 // Initial run: test passes eventually (failed).png
-                const attemptScreenshotPattern = new RegExp(
-                    `${testName} \\(${CypressStatus.FAILED}|${CypressStatus.PASSED}|${CypressStatus.PENDING}|${CypressStatus.SKIPPED}\\)`
-                );
-                if (attemptScreenshotPattern.exec(filename)) {
-                    return true;
+                //       Retry: test passes eventually (failed) (attempt 2).png
+                for (const status of [
+                    CypressStatus.FAILED,
+                    CypressStatus.PASSED,
+                    CypressStatus.PENDING,
+                    CypressStatus.SKIPPED,
+                ]) {
+                    const attemptFilename = `${testName} (${status})`;
+                    if (filename.includes(attemptFilename)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -194,17 +271,17 @@ export class RunConverterV13 implements RunConverter {
 
     private isLastAttemptScreenshot(screenshotPath: string) {
         const filename = basename(screenshotPath, extname(screenshotPath));
-        for (const run of this.runResults.runs) {
+        for (const run of this.runResults) {
             for (const test of run.tests) {
                 const testName = test.title[test.title.length - 1];
                 // See: https://docs.cypress.io/app/guides/test-retries#Screenshots
                 // Initial run: test passes eventually (failed).png
                 //       Retry: test passes eventually (failed) (attempt 2).png
-                let lastAttemptSuffix = `${testName} (${test.state})`;
+                let attemptFilename = `${testName} (${test.state})`;
                 if (test.attempts.length > 1) {
-                    lastAttemptSuffix = `${lastAttemptSuffix} (attempt ${test.attempts.length.toString()})`;
+                    attemptFilename = `${attemptFilename} (attempt ${test.attempts.length.toString()})`;
                 }
-                if (filename.endsWith(lastAttemptSuffix)) {
+                if (filename.endsWith(attemptFilename)) {
                     return true;
                 }
             }
