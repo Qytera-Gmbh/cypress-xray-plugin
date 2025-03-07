@@ -1,5 +1,5 @@
 describe("template spec", () => {
-    it("CYP-2414 split evidence upload", { retries: 5 }, () => {
+    it("CYP-2414 split evidence upload", () => {
         cy.screenshot("CYP-2414 screenshot #1");
         cy.screenshot("CYP-2414 screenshot #2");
         cy.screenshot("CYP-2414 screenshot #3");

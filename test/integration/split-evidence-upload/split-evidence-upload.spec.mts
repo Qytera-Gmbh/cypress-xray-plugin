@@ -20,6 +20,13 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             service: "cloud",
             title: "evidence uploads can be split into multiple requests (cloud)",
         },
+        {
+            linkedTest: "CYPLUG-1672",
+            projectDirectory: join(import.meta.dirname, "server"),
+            projectKey: "CYPLUG",
+            service: "server",
+            title: "evidence uploads can be split into multiple requests (server)",
+        },
     ] as const) {
         await it(testCase.title, async () => {
             const output = runCypress(testCase.projectDirectory, {
@@ -86,43 +93,9 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     testExecIssueKey: testExecutionIssueKey,
                     testIssueKey: testCase.linkedTest,
                 });
-                assert.deepStrictEqual(testRun.status, "PASS");
-                assert.deepStrictEqual(testRun.testKey, testCase.linkedTest);
-                assert.strictEqual(testRun.iterations?.length, 4);
-                // Workarounds because of configured status automations for which I don't have permission.
-                // "TODO" Would be "PASS" normally.
-                assert.strictEqual(testRun.iterations[0].status, "TODO");
-                assert.deepStrictEqual(testRun.iterations[0].parameters, [
-                    { name: "iteration", value: "1" },
-                    { name: "hello", value: "there" },
-                    { name: "good", value: "morning" },
-                    { name: "using", value: "cy.task" },
-                    { name: "id", value: "#1" },
-                ]);
-                assert.strictEqual(testRun.iterations[1].status, "TODO");
-                assert.deepStrictEqual(testRun.iterations[1].parameters, [
-                    { name: "iteration", value: "2" },
-                    { name: "hello", value: "there" },
-                    { name: "good", value: "morning" },
-                    { name: "using", value: "cy.task" },
-                    { name: "id", value: "#2" },
-                ]);
-                assert.strictEqual(testRun.iterations[2].status, "TODO");
-                assert.deepStrictEqual(testRun.iterations[2].parameters, [
-                    { name: "iteration", value: "3" },
-                    { name: "hello", value: "there" },
-                    { name: "good", value: "morning" },
-                    { name: "using", value: "cy.task" },
-                    { name: "id", value: "#3" },
-                ]);
-                assert.strictEqual(testRun.iterations[3].status, "TODO");
-                assert.deepStrictEqual(testRun.iterations[3].parameters, [
-                    { name: "iteration", value: "4" },
-                    { name: "hello", value: "there" },
-                    { name: "good", value: "morning" },
-                    { name: "using", value: "enqueueTask" },
-                    { name: "id", value: "" },
-                ]);
+                assert.strictEqual(testRun.evidences[0].fileName, "CYPLUG-1572 screenshot #1.png");
+                assert.strictEqual(testRun.evidences[1].fileName, "CYPLUG-1572 screenshot #2.png");
+                assert.strictEqual(testRun.evidences[2].fileName, "CYPLUG-1572 screenshot #3.png");
             }
         });
     }
