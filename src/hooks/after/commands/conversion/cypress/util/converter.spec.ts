@@ -472,6 +472,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(conversions, [
                 {
                     duration: 244,
+                    issueKey: null,
                     kind: "success",
                     spec: {
                         filepath: "~/repositories/xray/cypress/e2e/demo/example.cy.ts",
@@ -489,6 +490,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(conversions, [
                 {
                     duration: 85,
+                    issueKey: "CYP-123",
                     kind: "success",
                     spec: {
                         filepath: "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
@@ -499,6 +501,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
                 {
                     duration: 202,
+                    issueKey: "CYP-456",
                     kind: "success",
                     spec: {
                         filepath: "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
@@ -509,6 +512,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
                 {
                     duration: 31,
+                    issueKey: "CYP-456",
                     kind: "success",
                     spec: {
                         filepath: "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
@@ -1055,6 +1059,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(conversions, [
                 {
                     duration: 638,
+                    issueKey: "CYP-237",
                     kind: "success",
                     spec: {
                         filepath: "~/Repositories/cypress/85/cypress/e2e/cyp/cypress.spec.cy.ts",
@@ -1065,6 +1070,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
                 {
                     duration: 123,
+                    issueKey: null,
                     kind: "success",
                     spec: {
                         filepath: "~/Repositories/cypress/85/cypress/e2e/cyp/cypress.spec.cy.ts",
@@ -1082,6 +1088,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(conversions, [
                 {
                     duration: 1504,
+                    issueKey: "CYP-123",
                     kind: "success",
                     spec: {
                         filepath: "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
@@ -1092,6 +1099,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
                 {
                     duration: 512,
+                    issueKey: "CYP-456",
                     kind: "success",
                     spec: {
                         filepath: "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
@@ -1102,6 +1110,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
                 {
                     duration: 23,
+                    issueKey: "CYP-456",
                     kind: "success",
                     spec: {
                         filepath: "/home/csvtuda/repositories/cypress/451/cypress/e2e/spec.cy.js",
