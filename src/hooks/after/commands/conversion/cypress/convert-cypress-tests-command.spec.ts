@@ -157,9 +157,9 @@ describe(relative(cwd(), __filename), async () => {
         await describe(">=13", async () => {
             await it("converts test results into xray results json", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                const result = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-                ) as CypressCommandLine.CypressRunResult;
+                ) as CypressRunResult<"13" | "14">;
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -218,12 +218,12 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("converts test results with multiple issue keys into xray results json", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                const result = JSON.parse(
                     readFileSync(
                         "./test/resources/runResult_13_0_0_multipleTestIssueKeys.json",
                         "utf-8"
                     )
-                ) as CypressCommandLine.CypressRunResult;
+                ) as CypressRunResult<"13" | "14">;
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -283,9 +283,9 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("warns about non-attributable screenshots", async (context) => {
                 const message = context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                const result = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-                ) as CypressCommandLine.CypressRunResult;
+                ) as CypressRunResult<"13" | "14">;
                 result.runs[0].screenshots[0].path = join(".", "test", "resources", "small.png");
                 const command = new ConvertCypressTestsCommand(
                     {
@@ -589,9 +589,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("skips cucumber screenshots", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResult = JSON.parse(
+            const result = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0_mixed.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResult<"13" | "14">;
             result.runs[0].screenshots[0].path = join(
                 ".",
                 "test",
@@ -701,9 +701,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("includes all evidence", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResult<"13" | "14">;
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-452", {
                 contentType: "text/plain",
@@ -785,9 +785,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("includes iteration parameters", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResult<"13" | "14">;
             result.runs[0].tests = [
                 {
                     attempts: [{ state: "passed" }],

@@ -3,10 +3,7 @@ import { existsSync, readdirSync, rmSync } from "node:fs";
 import { before } from "node:test";
 import os from "os";
 import path from "path";
-import type {
-    CypressFailedRunResultType,
-    CypressRunResultType,
-} from "../src/types/cypress/cypress";
+import type { CypressFailedRunResult, CypressRunResult, RunResult } from "../src/types/cypress";
 import { unknownToString } from "../src/util/string";
 
 export const TEST_TMP_DIR = path.join(os.tmpdir(), "cypress-xray-plugin");
@@ -85,11 +82,11 @@ interface ActionCallbacks {
         browser: Cypress.Browser,
         browserLaunchOptions: Cypress.AfterBrowserLaunchDetails
     ) => Promise<Cypress.BeforeBrowserLaunchOptions>;
-    ["after:run"]: (results: CypressFailedRunResultType | CypressRunResultType) => Promise<void>;
+    ["after:run"]: (results: CypressFailedRunResult | CypressRunResult) => Promise<void>;
     ["after:screenshot"]: (
         details: Cypress.ScreenshotDetails
     ) => Promise<Cypress.AfterScreenshotReturnObject>;
-    ["after:spec"]: (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => Promise<void>;
+    ["after:spec"]: (spec: Cypress.Spec, results: RunResult) => Promise<void>;
     ["before:browser:launch"]: (
         browser: Cypress.Browser,
         browserLaunchOptions: Cypress.BeforeBrowserLaunchOptions

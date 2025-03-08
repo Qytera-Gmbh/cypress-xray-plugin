@@ -576,7 +576,7 @@ describe(relative(cwd(), __filename), async () => {
     });
 
     await describe(RunConverterLatest.name, async () => {
-        const passedResult: CypressCommandLine.RunResult = {
+        const passedResult: RunResult<"13" | "14"> = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -626,7 +626,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: null,
         };
-        const failedResult: CypressCommandLine.RunResult = {
+        const failedResult: RunResult<"13" | "14"> = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -691,7 +691,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: null,
         };
-        const invalidResult: CypressCommandLine.RunResult = {
+        const invalidResult: RunResult<"13" | "14"> = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -742,7 +742,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: null,
         };
-        const retriedResult: CypressCommandLine.RunResult = {
+        const retriedResult: RunResult<"13" | "14"> = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -920,7 +920,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: null,
         };
-        const retriedIteratedResult: CypressCommandLine.RunResult = {
+        const retriedIteratedResult: RunResult<"13" | "14"> = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -1372,7 +1372,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: null,
         };
-        const unkeyedResult: CypressCommandLine.RunResult = {
+        const unkeyedResult: RunResult<"13" | "14"> = {
             error: null,
             reporter: "spec",
             reporterStats: {
