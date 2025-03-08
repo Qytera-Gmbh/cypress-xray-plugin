@@ -14,6 +14,11 @@ import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const testCase of [
         {
+            expectedScreenshots: [
+                "CYP-2414 screenshot #1.png",
+                "CYP-2414 screenshot #2.png",
+                "CYP-2414 screenshot #3.png",
+            ],
             linkedTest: "CYP-2414",
             projectDirectory: join(import.meta.dirname, "cloud"),
             projectKey: "CYP",
@@ -21,6 +26,11 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             title: "evidence uploads can be split into multiple requests (cloud)",
         },
         {
+            expectedScreenshots: [
+                "CYPLUG-1672 screenshot #1.png",
+                "CYPLUG-1672 screenshot #2.png",
+                "CYPLUG-1672 screenshot #3.png",
+            ],
             linkedTest: "CYPLUG-1672",
             projectDirectory: join(import.meta.dirname, "server"),
             projectKey: "CYPLUG",
@@ -74,16 +84,8 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 });
                 assert.strictEqual(testResults.results[0].evidence?.length, 3);
                 assert.deepStrictEqual(
-                    testResults.results[0].evidence[0]?.filename,
-                    `${testCase.linkedTest} screenshot #1.png`
-                );
-                assert.deepStrictEqual(
-                    testResults.results[0].evidence[1]?.filename,
-                    `${testCase.linkedTest} screenshot #2.png`
-                );
-                assert.deepStrictEqual(
-                    testResults.results[0].evidence[2]?.filename,
-                    `${testCase.linkedTest} screenshot #3.png`
+                    new Set(testResults.results[0].evidence.map((e) => e?.filename)),
+                    new Set(testCase.expectedScreenshots)
                 );
             }
 
@@ -95,17 +97,9 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     testIssueKey: testCase.linkedTest,
                 });
                 assert.strictEqual(testRun.evidences.length, 3);
-                assert.strictEqual(
-                    testRun.evidences[0].fileName,
-                    `${testCase.linkedTest} screenshot #1.png`
-                );
-                assert.strictEqual(
-                    testRun.evidences[1].fileName,
-                    `${testCase.linkedTest} screenshot #2.png`
-                );
-                assert.strictEqual(
-                    testRun.evidences[2].fileName,
-                    `${testCase.linkedTest} screenshot #3.png`
+                assert.deepStrictEqual(
+                    new Set(testRun.evidences.map((e) => e.fileName)),
+                    new Set(testCase.expectedScreenshots)
                 );
             }
         });

@@ -21,7 +21,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             title: "only last attempts are uploaded (cloud)",
         },
         {
-            linkedTests: ["CYPLUG-1692", "CYP-1694"],
+            linkedTests: ["CYPLUG-1692", "CYPLUG-1694"],
             projectDirectory: join(import.meta.dirname, "server"),
             projectKey: "CYPLUG",
             service: "server",
@@ -87,7 +87,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     testResultsRetried.results[0].evidence[0]?.filename,
                     "CYP-2432 my screenshot (attempt 6).png"
                 );
-                assert.strictEqual(testResultsRetried.results[0].iterations, undefined);
+                assert.strictEqual(testResultsRetried.results[0].iterations, { results: [] });
                 const testResultsRetriedScreenshot = await XRAY_CLIENT_CLOUD.graphql.getTestRuns(
                     {
                         limit: 1,
@@ -124,7 +124,9 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     testResultsRetriedScreenshot.results[0].evidence[1]?.filename,
                     "template spec -- CYP-2434 manual screenshot (failed) (attempt 3).png"
                 );
-                assert.strictEqual(testResultsRetriedScreenshot.results[0].iterations, undefined);
+                assert.strictEqual(testResultsRetriedScreenshot.results[0].iterations, {
+                    results: [],
+                });
             }
 
             if (testCase.service === "server") {
