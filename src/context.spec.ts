@@ -17,6 +17,7 @@ import globalContext, {
     SimpleEvidenceCollection,
     SimpleIterationParameterCollection,
 } from "./context";
+import type { PluginConfigOptions } from "./types/cypress";
 import type { User } from "./types/jira/responses/user";
 import type {
     InternalCucumberOptions,
@@ -2193,7 +2194,7 @@ describe(relative(cwd(), __filename), async () => {
                         uploadScreenshots: false,
                     },
                 },
-                {} as Cypress.PluginConfigOptions,
+                {} as PluginConfigOptions<"<13">,
                 new SimpleEvidenceCollection(),
                 new SimpleIterationParameterCollection(),
                 new ExecutableGraph(),

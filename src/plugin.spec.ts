@@ -17,7 +17,12 @@ import globalContext, {
 import afterRun from "./hooks/after/after-run";
 import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
-import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
+import type {
+    CypressFailedRunResult,
+    CypressRunResult,
+    FileObject,
+    PluginConfigOptions,
+} from "./types/cypress";
 import type { CypressXrayPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
@@ -25,13 +30,13 @@ import { CapturingLogger, LOG } from "./util/logging";
 
 describe(relative(cwd(), __filename), async () => {
     let jiraClient: JiraClient;
-    let config: Cypress.PluginConfigOptions;
+    let config: PluginConfigOptions<"14">;
     let pluginContext: PluginContext;
 
     beforeEach(() => {
         config = JSON.parse(
             fs.readFileSync("./test/resources/cypress.config.json", "utf-8")
-        ) as Cypress.PluginConfigOptions;
+        ) as PluginConfigOptions<"14">;
         jiraClient = new BaseJiraClient(
             "http://localhost:1234",
             new PatCredentials("token"),
@@ -399,14 +404,14 @@ describe(relative(cwd(), __filename), async () => {
                 "addUploadCommands",
                 context.mock.fn()
             );
-            const afterRunResult: CypressRunResultType = JSON.parse(
+            const afterRunResult: CypressRunResult = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const mockedOn = context.mock.fn();
             await configureXrayPlugin(mockedOn, config, pluginContext.getOptions());
             await (
                 mockedOn.mock.calls[1].arguments[1] as (
-                    results: CypressFailedRunResultType | CypressRunResultType
+                    results: CypressFailedRunResult | CypressRunResult
                 ) => Promise<void>
             )(afterRunResult);
             const expectedContext = new PluginContext(
@@ -456,7 +461,7 @@ describe(relative(cwd(), __filename), async () => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
             context.mock.method(globalContext, "getGlobalContext", () => pluginContext);
-            const failedResults: CypressFailedRunResultType = {
+            const failedResults: CypressFailedRunResult = {
                 failures: 47,
                 message: "Pretty messed up",
                 status: "failed",
@@ -490,7 +495,7 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("does not display an error for failed runs if disabled", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
-            const failedResults: CypressFailedRunResultType = {
+            const failedResults: CypressFailedRunResult = {
                 failures: 47,
                 message: "Pretty messed up",
                 status: "failed",
@@ -511,9 +516,9 @@ describe(relative(cwd(), __filename), async () => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
             context.mock.method(globalContext, "getGlobalContext", () => pluginContext);
-            const afterRunResult: CypressRunResultType = JSON.parse(
+            const afterRunResult: CypressRunResult = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             pluginContext.getOptions().xray.uploadResults = false;
             globalContext.setGlobalContext(pluginContext);
             await configureXrayPlugin(
@@ -531,9 +536,9 @@ describe(relative(cwd(), __filename), async () => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
             context.mock.method(jiraClient, "getIssueTypes", () => [{ name: "Test Execution" }]);
-            const afterRunResult: CypressRunResultType = JSON.parse(
+            const afterRunResult: CypressRunResult = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
@@ -695,7 +700,7 @@ describe(relative(cwd(), __filename), async () => {
         });
         const afterRunResult = JSON.parse(
             fs.readFileSync("./test/resources/runResult_13_0_0_mixed.json", "utf-8")
-        ) as CypressRunResultType;
+        ) as CypressRunResult;
         const spy = context.mock.fn();
         await configureXrayPlugin(spy, config, {
             cucumber: {
@@ -715,10 +720,10 @@ describe(relative(cwd(), __filename), async () => {
         });
         syncFeatureFile({
             filePath: "./test/resources/features/invalid.feature",
-        } as Cypress.FileObject);
+        } as FileObject);
         const [eventName, callback] = spy.mock.calls[1].arguments as [
             string,
-            (results: CypressFailedRunResultType | CypressRunResultType) => Promise<void> | void,
+            (results: CypressFailedRunResult | CypressRunResult) => Promise<void> | void,
         ];
         assert.strictEqual(eventName, "after:run");
         await callback(afterRunResult);
@@ -760,10 +765,10 @@ describe(relative(cwd(), __filename), async () => {
     });
 
     await describe(syncFeatureFile.name, async () => {
-        let file: Cypress.FileObject;
+        let file: FileObject;
         beforeEach(() => {
             file = {
-                ...({} as Cypress.FileObject),
+                ...({} as FileObject),
                 filePath: "./test/resources/features/taggedCloud.feature",
                 outputPath: "",
                 shouldWatch: false,

@@ -9,6 +9,7 @@ import { AxiosRestClient } from "../../client/https/requests";
 import { BaseJiraClient } from "../../client/jira/jira-client";
 import { ServerClient } from "../../client/xray/xray-client-server";
 import globalContext from "../../context";
+import type { FileObject } from "../../types/cypress";
 import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { LOG } from "../../util/logging";
@@ -78,7 +79,7 @@ describe(relative(cwd(), __filename), async () => {
 
     await describe(filePreprocessor.addSynchronizationCommands.name, async () => {
         const file = {
-            ...({} as Cypress.FileObject),
+            ...({} as FileObject),
             filePath: "./path/to/file.feature",
             outputPath: "no.idea",
             shouldWatch: false,
