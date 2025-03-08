@@ -93,9 +93,9 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     testExecIssueKey: testExecutionIssueKey,
                     testIssueKey: testCase.linkedTest,
                 });
-                assert.strictEqual(testRun.evidences[0].fileName, "CYPLUG-1572 screenshot #1.png");
-                assert.strictEqual(testRun.evidences[1].fileName, "CYPLUG-1572 screenshot #2.png");
-                assert.strictEqual(testRun.evidences[2].fileName, "CYPLUG-1572 screenshot #3.png");
+                assert.strictEqual(testRun.evidences[0].fileName, "CYPLUG-1672 screenshot #1.png");
+                assert.strictEqual(testRun.evidences[1].fileName, "CYPLUG-1672 screenshot #2.png");
+                assert.strictEqual(testRun.evidences[2].fileName, "CYPLUG-1672 screenshot #3.png");
             }
         });
     }

@@ -5,7 +5,7 @@ describe("template spec", () => {
     });
 
     it("CYP-2434 manual screenshot", { retries: 2 }, () => {
-        cy.screenshot("CYP-2434 my screenshot");
+        cy.screenshot("CYP-2434 my other screenshot");
         cy.then(() => expect(true).to.be.false);
     });
 });
