@@ -13,6 +13,7 @@ import type { XrayClientServer } from "./client/xray/xray-client-server";
 import { ServerClient } from "./client/xray/xray-client-server";
 import { ENV_NAMES } from "./env";
 import type { Command } from "./hooks/command";
+import type { ObjectLike, PluginConfigOptions, ScreenshotDetails } from "./types/cypress";
 import type {
     ClientCombination,
     CypressXrayPluginOptions,
@@ -35,21 +36,25 @@ import type { Logger } from "./util/logging";
 import { LOG } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
 
-export class PluginContext implements EvidenceCollection, IterationParameterCollection {
+export class PluginContext
+    implements EvidenceCollection, IterationParameterCollection, ScreenshotCollection
+{
     private readonly clients: ClientCombination;
     private readonly internalOptions: InternalCypressXrayPluginOptions;
-    private readonly cypressOptions: Cypress.PluginConfigOptions;
+    private readonly cypressOptions: PluginConfigOptions;
     private readonly evidenceCollection: EvidenceCollection;
     private readonly iterationParameterCollection: IterationParameterCollection;
+    private readonly screenshotCollection: ScreenshotCollection;
     private readonly graph: ExecutableGraph<Command>;
     private readonly logger: Logger;
 
     constructor(
         clients: ClientCombination,
         internalOptions: InternalCypressXrayPluginOptions,
-        cypressOptions: Cypress.PluginConfigOptions,
+        cypressOptions: PluginConfigOptions,
         evidenceCollection: EvidenceCollection,
         iterationParameterCollection: IterationParameterCollection,
+        screenshotCollection: ScreenshotCollection,
         graph: ExecutableGraph<Command>,
         logger: Logger
     ) {
@@ -58,6 +63,7 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
         this.cypressOptions = cypressOptions;
         this.evidenceCollection = evidenceCollection;
         this.iterationParameterCollection = iterationParameterCollection;
+        this.screenshotCollection = screenshotCollection;
         this.graph = graph;
         this.logger = logger;
     }
@@ -70,7 +76,7 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
         return this.internalOptions;
     }
 
-    public getCypressOptions(): Cypress.PluginConfigOptions {
+    public getCypressOptions(): PluginConfigOptions {
         return this.cypressOptions;
     }
 
@@ -80,6 +86,14 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
 
     public getLogger(): Logger {
         return this.logger;
+    }
+
+    public addScreenshot(screenshot: ScreenshotDetails) {
+        this.screenshotCollection.addScreenshot(screenshot);
+    }
+
+    public getScreenshots(): ScreenshotDetails[] {
+        return this.screenshotCollection.getScreenshots();
     }
 
     public addEvidence(issueKey: string, evidence: Required<XrayEvidenceItem>): void {
@@ -152,6 +166,21 @@ export class SimpleIterationParameterCollection implements IterationParameterCol
     }
 }
 
+export interface ScreenshotCollection {
+    addScreenshot(screenshot: ScreenshotDetails): void;
+    getScreenshots(): ScreenshotDetails[];
+}
+
+export class SimpleScreenshotCollection implements ScreenshotCollection {
+    private readonly screenshots: ScreenshotDetails[] = [];
+    public addScreenshot(screenshot: ScreenshotDetails): void {
+        this.screenshots.push(screenshot);
+    }
+    public getScreenshots(): ScreenshotDetails[] {
+        return this.screenshots;
+    }
+}
+
 let context: PluginContext | undefined = undefined;
 
 function getGlobalContext(): PluginContext | undefined {
@@ -172,7 +201,7 @@ function setGlobalContext(newContext?: PluginContext): void {
  * @returns the constructed internal Jira options
  */
 function initJiraOptions(
-    env: Cypress.ObjectLike,
+    env: ObjectLike,
     options: CypressXrayPluginOptions["jira"]
 ): InternalJiraOptions {
     const projectKey = parse(env, ENV_NAMES.jira.projectKey, asString) ?? options.projectKey;
@@ -231,7 +260,7 @@ function initJiraOptions(
  * @returns the constructed internal plugin options
  */
 function initPluginOptions(
-    env: Cypress.ObjectLike,
+    env: ObjectLike,
     options: CypressXrayPluginOptions["plugin"]
 ): InternalPluginOptions {
     return {
@@ -263,7 +292,7 @@ function initPluginOptions(
  * @returns the constructed internal Xray options
  */
 function initXrayOptions(
-    env: Cypress.ObjectLike,
+    env: ObjectLike,
     options: CypressXrayPluginOptions["xray"]
 ): InternalXrayOptions {
     return {
@@ -452,7 +481,7 @@ function initHttpClients(
 
 async function initClients(
     jiraOptions: InternalJiraOptions,
-    env: Cypress.ObjectLike,
+    env: ObjectLike,
     httpClients: HttpClientCombination
 ): Promise<ClientCombination> {
     if (

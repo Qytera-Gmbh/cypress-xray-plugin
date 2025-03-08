@@ -6,9 +6,9 @@ import { beforeEach, describe, it } from "node:test";
 import globalContext, {
     SimpleEvidenceCollection,
     SimpleIterationParameterCollection,
+    SimpleScreenshotCollection,
 } from "../../../../../context";
-import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
-import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import type { CypressRunResult } from "../../../../../types/cypress";
 import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
 import { LOG } from "../../../../../util/logging";
@@ -43,7 +43,7 @@ describe(relative(cwd(), __filename), async () => {
                 context.mock.method(LOG, "message", context.mock.fn());
                 const result = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-                ) as CypressRunResult_V12;
+                ) as CypressRunResult<"<13">;
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -51,6 +51,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
+                        screenshotCollection: new SimpleScreenshotCollection(),
                         uploadLastAttempt: false,
                         uploadScreenshots: options.xray.uploadScreenshots,
                         xrayStatus: options.xray.status,
@@ -95,7 +96,7 @@ describe(relative(cwd(), __filename), async () => {
                         "./test/resources/runResultExistingTestIssuesMultiple.json",
                         "utf-8"
                     )
-                ) as CypressRunResult_V12;
+                ) as CypressRunResult<"<13">;
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -103,6 +104,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
+                        screenshotCollection: new SimpleScreenshotCollection(),
                         uploadLastAttempt: false,
                         uploadScreenshots: options.xray.uploadScreenshots,
                         xrayStatus: options.xray.status,
@@ -158,9 +160,24 @@ describe(relative(cwd(), __filename), async () => {
         await describe(">=13", async () => {
             await it("converts test results into xray results json", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                const result = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-                ) as CypressCommandLine.CypressRunResult;
+                ) as CypressRunResult<"13" | "14">;
+                const screenshotCollection = new SimpleScreenshotCollection();
+                screenshotCollection.addScreenshot({
+                    blackout: [],
+                    dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                    duration: 123,
+                    multipart: false,
+                    name: "null",
+                    path: "./test/resources/small CYP-237.png",
+                    pixelRatio: 1,
+                    scaled: true,
+                    size: 12345,
+                    specName: "cypress.spec.cy.ts",
+                    takenAt: "2023-09-09T10:59:31.366Z",
+                    testFailure: true,
+                });
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -168,6 +185,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
+                        screenshotCollection: screenshotCollection,
                         uploadLastAttempt: false,
                         uploadScreenshots: options.xray.uploadScreenshots,
                         xrayStatus: options.xray.status,
@@ -219,12 +237,27 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("converts test results with multiple issue keys into xray results json", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                const result = JSON.parse(
                     readFileSync(
                         "./test/resources/runResult_13_0_0_multipleTestIssueKeys.json",
                         "utf-8"
                     )
-                ) as CypressCommandLine.CypressRunResult;
+                ) as CypressRunResult<"13" | "14">;
+                const screenshotCollection = new SimpleScreenshotCollection();
+                screenshotCollection.addScreenshot({
+                    blackout: [],
+                    dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                    duration: 123,
+                    multipart: false,
+                    name: "null",
+                    path: "./test/resources/small CYP-123 CYP-125.png",
+                    pixelRatio: 1,
+                    scaled: true,
+                    size: 12345,
+                    specName: "cypress.spec.cy.ts",
+                    takenAt: "2022-11-28T17:41:19.702Z",
+                    testFailure: true,
+                });
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -232,6 +265,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
+                        screenshotCollection: screenshotCollection,
                         uploadLastAttempt: false,
                         uploadScreenshots: options.xray.uploadScreenshots,
                         xrayStatus: options.xray.status,
@@ -284,10 +318,24 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("warns about non-attributable screenshots", async (context) => {
                 const message = context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                const result = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-                ) as CypressCommandLine.CypressRunResult;
-                result.runs[0].screenshots[0].path = join(".", "test", "resources", "small.png");
+                ) as CypressRunResult<"13" | "14">;
+                const screenshotCollection = new SimpleScreenshotCollection();
+                screenshotCollection.addScreenshot({
+                    blackout: [],
+                    dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                    duration: 123,
+                    multipart: false,
+                    name: "null",
+                    path: join(".", "test", "resources", "small.png"),
+                    pixelRatio: 1,
+                    scaled: true,
+                    size: 12345,
+                    specName: "cypress.spec.cy.ts",
+                    takenAt: "2023-09-09T10:59:31.366Z",
+                    testFailure: true,
+                });
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -295,6 +343,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
+                        screenshotCollection: screenshotCollection,
                         uploadLastAttempt: false,
                         uploadScreenshots: options.xray.uploadScreenshots,
                         xrayStatus: options.xray.status,
@@ -352,9 +401,9 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("uses default iterated passing statuses", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressRunResultType = JSON.parse(
+                const result: CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult;
                 result.runs[0].tests[0].attempts[0].state = "passed";
                 result.runs[0].tests[0].attempts[1].state = "passed";
                 result.runs[0].tests[0].attempts[2].state = "passed";
@@ -365,6 +414,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
+                        screenshotCollection: new SimpleScreenshotCollection(),
                         uploadLastAttempt: false,
                         uploadScreenshots: true,
                         useCloudStatusFallback: true,
@@ -384,9 +434,9 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("uses default iterated pending statuses", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressRunResultType = JSON.parse(
+                const result: CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult;
                 result.runs[0].tests[0].attempts[0].state = "pending";
                 result.runs[0].tests[0].attempts[1].state = "pending";
                 result.runs[0].tests[0].attempts[2].state = "pending";
@@ -397,6 +447,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
+                        screenshotCollection: new SimpleScreenshotCollection(),
                         uploadLastAttempt: false,
                         uploadScreenshots: true,
                         useCloudStatusFallback: true,
@@ -416,9 +467,9 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("uses default iterated skipped statuses", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressRunResultType = JSON.parse(
+                const result: CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult;
                 result.runs[0].tests[0].attempts[0].state = "pending";
                 result.runs[0].tests[0].attempts[1].state = "pending";
                 result.runs[0].tests[0].attempts[2].state = "pending";
@@ -429,6 +480,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
+                        screenshotCollection: new SimpleScreenshotCollection(),
                         uploadLastAttempt: false,
                         uploadScreenshots: true,
                         useCloudStatusFallback: true,
@@ -448,15 +500,16 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("uses default iterated failed statuses", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressRunResultType = JSON.parse(
+                const result: CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult;
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
+                        screenshotCollection: new SimpleScreenshotCollection(),
                         uploadLastAttempt: false,
                         uploadScreenshots: true,
                         useCloudStatusFallback: true,
@@ -476,15 +529,16 @@ describe(relative(cwd(), __filename), async () => {
 
             await it("uses custom aggregated statuses", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const result: CypressRunResultType = JSON.parse(
+                const result: CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult;
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
+                        screenshotCollection: new SimpleScreenshotCollection(),
                         uploadLastAttempt: false,
                         uploadScreenshots: true,
                         useCloudStatusFallback: true,
@@ -518,9 +572,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("skips tests when encountering unknown statuses", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -528,6 +582,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -563,9 +618,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uploads screenshots by default", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -573,6 +628,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -590,15 +646,24 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("skips cucumber screenshots", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0_mixed.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
-            result.runs[0].screenshots[0].path = join(
-                ".",
-                "test",
-                "resources",
-                "small CYP-237.png"
-            );
+            ) as CypressRunResult<"13" | "14">;
+            const screenshotCollection = new SimpleScreenshotCollection();
+            screenshotCollection.addScreenshot({
+                blackout: [],
+                dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                duration: 123,
+                multipart: false,
+                name: "null",
+                path: "./test/resources/small CYP-237.png",
+                pixelRatio: 1,
+                scaled: true,
+                size: 12345,
+                specName: "cypress.spec.cy.ts",
+                takenAt: "2023-09-09T10:59:31.366Z",
+                testFailure: true,
+            });
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -606,6 +671,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
+                    screenshotCollection: screenshotCollection,
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     xrayStatus: {},
@@ -624,9 +690,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("skips screenshot upload if disabled", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             options.xray.uploadScreenshots = false;
             const command = new ConvertCypressTestsCommand(
                 {
@@ -635,6 +701,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -651,9 +718,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("normalizes screenshot filenames if enabled", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             options.plugin.normalizeScreenshotNames = true;
             const command = new ConvertCypressTestsCommand(
                 {
@@ -662,6 +729,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -677,9 +745,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("does not normalize screenshot filenames by default", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -687,6 +755,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -702,9 +771,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("includes all evidence", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResult<"13" | "14">;
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-452", {
                 contentType: "text/plain",
@@ -716,6 +785,21 @@ describe(relative(cwd(), __filename), async () => {
                 data: "Z29vZGJ5ZQ==",
                 filename: "goodbye.txt",
             });
+            const screenshotCollection = new SimpleScreenshotCollection();
+            screenshotCollection.addScreenshot({
+                blackout: [],
+                dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                duration: 123,
+                multipart: false,
+                name: "null",
+                path: "./test/resources/small CYP-237.png",
+                pixelRatio: 1,
+                scaled: true,
+                size: 12345,
+                specName: "cypress.spec.cy.ts",
+                takenAt: "2023-09-09T10:59:31.366Z",
+                testFailure: true,
+            });
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: evidenceCollection,
@@ -723,6 +807,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: screenshotCollection,
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -786,9 +871,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("includes iteration parameters", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResult<"13" | "14">;
             result.runs[0].tests = [
                 {
                     attempts: [{ state: "passed" }],
@@ -859,6 +944,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: iterationParameterCollection,
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -893,13 +979,6 @@ describe(relative(cwd(), __filename), async () => {
                     testKey: "CYP-452",
                 },
                 {
-                    evidence: [
-                        {
-                            contentType: "image/png",
-                            data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
-                            filename: "small CYP-237.png",
-                        },
-                    ],
                     finish: "2023-09-09T10:59:29Z",
                     iterations: [
                         {
@@ -928,9 +1007,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses custom passed statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             options.xray.status = { passed: "it worked" };
             const command = new ConvertCypressTestsCommand(
                 {
@@ -939,6 +1018,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -953,9 +1033,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses custom failed statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             options.xray.status = { failed: "it did not work" };
             const command = new ConvertCypressTestsCommand(
                 {
@@ -964,6 +1044,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -977,9 +1058,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses custom pending statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultPending.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             options.xray.status = { pending: "still pending" };
             const command = new ConvertCypressTestsCommand(
                 {
@@ -988,6 +1069,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -1004,9 +1086,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses custom skipped statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultSkipped.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             options.xray.status = { skipped: "omit" };
             const command = new ConvertCypressTestsCommand(
                 {
@@ -1015,6 +1097,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -1028,9 +1111,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses default iterated passing statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/iteratedResult.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             result.runs[0].tests[0].attempts[0].state = "passed";
             result.runs[0].tests[0].attempts[1].state = "passed";
             result.runs[0].tests[0].attempts[2].state = "passed";
@@ -1041,6 +1124,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     xrayStatus: options.xray.status,
@@ -1059,9 +1143,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses default iterated pending statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/iteratedResult.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             result.runs[0].tests[0].attempts[0].state = "pending";
             result.runs[0].tests[0].attempts[1].state = "pending";
             result.runs[0].tests[0].attempts[2].state = "pending";
@@ -1072,6 +1156,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     xrayStatus: options.xray.status,
@@ -1090,9 +1175,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses default iterated skipped statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/iteratedResult.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             result.runs[0].tests[0].attempts[0].state = "pending";
             result.runs[0].tests[0].attempts[1].state = "pending";
             result.runs[0].tests[0].attempts[2].state = "pending";
@@ -1103,6 +1188,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     xrayStatus: options.xray.status,
@@ -1121,15 +1207,16 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses default iterated failed statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/iteratedResult.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     xrayStatus: options.xray.status,
@@ -1148,15 +1235,16 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses custom aggregated statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/iteratedResult.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     xrayStatus: {
@@ -1188,9 +1276,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("does not modify test information", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -1198,6 +1286,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -1214,9 +1303,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("includes test issue keys", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -1224,6 +1313,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -1240,9 +1330,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("defaults to server status values", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -1250,6 +1340,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -1266,9 +1357,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("uses cloud status values", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -1276,6 +1367,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     useCloudStatusFallback: true,
@@ -1292,9 +1384,9 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("throws if no native cypress tests were executed", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -1302,6 +1394,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -1316,15 +1409,16 @@ describe(relative(cwd(), __filename), async () => {
 
         await it("returns its parameters", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const result: CypressRunResultType = JSON.parse(
+            const result: CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
+            ) as CypressRunResult;
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: true,
                     projectKey: "CYP",
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: false,
                     xrayStatus: {
@@ -1342,6 +1436,7 @@ describe(relative(cwd(), __filename), async () => {
                 iterationParameterCollection: new SimpleIterationParameterCollection(),
                 normalizeScreenshotNames: true,
                 projectKey: "CYP",
+                screenshotCollection: new SimpleScreenshotCollection(),
                 uploadLastAttempt: false,
                 uploadScreenshots: false,
                 xrayStatus: {

@@ -3,12 +3,13 @@ import globalContext, {
     PluginContext,
     SimpleEvidenceCollection,
     SimpleIterationParameterCollection,
+    SimpleScreenshotCollection,
 } from "./context";
 import type { PluginTaskParameterType } from "./cypress/tasks";
 import { PluginTaskListener } from "./cypress/tasks";
 import afterRun from "./hooks/after/after-run";
 import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
-import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
+import type { CypressFailedRunResult, CypressRunResult } from "./types/cypress";
 import type {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,
@@ -35,9 +36,13 @@ export function resetPlugin(): void {
  * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
  * `options`. Environment variables always override values specified in `options`.
  *
- * *Note: This method will register upload hooks under the Cypress `before:run`, `after:run` and
- * `task` events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if
- * you have these hooks registered to prevent the plugin from replacing them.*
+ * Note: This method will register upload hooks under the following Cypress events:
+ *   - `after:run`
+ *   - `on:screenshot`
+ *   - `task`
+ *
+ * Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if you have these
+ * hooks registered to prevent the plugin from replacing them.
  *
  * @param on - the Cypress event registration functon
  * @param config - the Cypress configuration
@@ -98,6 +103,7 @@ export async function configureXrayPlugin(
         config,
         new SimpleEvidenceCollection(),
         new SimpleIterationParameterCollection(),
+        new SimpleScreenshotCollection(),
         new ExecutableGraph(),
         logger
     );
@@ -131,7 +137,10 @@ export async function configureXrayPlugin(
             return args.response;
         },
     });
-    on("after:run", async (results: CypressFailedRunResultType | CypressRunResultType) => {
+    on("after:screenshot", (screenshot) => {
+        context.addScreenshot(screenshot);
+    });
+    on("after:run", async (results: CypressFailedRunResult | CypressRunResult) => {
         if (context.getOptions().xray.uploadResults) {
             if ("status" in results && results.status === "failed") {
                 const failedResult = results;
@@ -149,6 +158,7 @@ export async function configureXrayPlugin(
                     context.getCypressOptions().projectRoot,
                     context.getOptions(),
                     context.getClients(),
+                    context,
                     context,
                     context,
                     context.getGraph(),

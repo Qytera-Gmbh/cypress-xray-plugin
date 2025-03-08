@@ -1,28 +1,21 @@
-import type { CypressRunResultType } from "../../types/cypress/cypress";
-import { dedent } from "../../util/dedent";
-import { HELP } from "../../util/help";
+import type { CypressRunResult } from "../../types/cypress";
+import { missingTestKeyInTestTitleError } from "../../util/errors";
 
 export function containsCypressTest(
-    runResult: CypressRunResultType,
+    runResult: CypressRunResult,
     featureFileExtension?: string
 ): boolean {
     return runResult.runs.some((run) => {
-        if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
-            return false;
-        }
-        return true;
+        return !featureFileExtension || !run.spec.absolute.endsWith(featureFileExtension);
     });
 }
 
 export function containsCucumberTest(
-    runResult: CypressRunResultType,
+    runResult: CypressRunResult,
     featureFileExtension?: string
 ): boolean {
     return runResult.runs.some((run) => {
-        if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
-            return true;
-        }
-        return false;
+        return featureFileExtension && run.spec.absolute.endsWith(featureFileExtension);
     });
 }
 
@@ -39,22 +32,7 @@ export function getTestIssueKeys(title: string, projectKey: string): [string, ..
     const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
     const matches = title.match(regex);
     if (!matches) {
-        throw new Error(
-            dedent(`
-                Test: ${title}
-
-                  No test issue keys found in title.
-
-                  You can target existing test issues by adding a corresponding issue key:
-
-                    it("${projectKey}-123 ${title}", () => {
-                      // ...
-                    });
-
-                  For more information, visit:
-                  - ${HELP.plugin.guides.targetingExistingIssues}
-            `)
-        );
+        throw missingTestKeyInTestTitleError(title, projectKey);
     }
     const [key, ...keys] = matches;
     return [key, ...keys];

@@ -12,8 +12,9 @@ import { ServerClient } from "../../client/xray/xray-client-server";
 import globalContext, {
     SimpleEvidenceCollection,
     SimpleIterationParameterCollection,
+    SimpleScreenshotCollection,
 } from "../../context";
-import type { CypressRunResultType } from "../../types/cypress/cypress";
+import type { CypressRunResult } from "../../types/cypress";
 import type { ClientCombination } from "../../types/plugin";
 import {
     type InternalCucumberOptions,
@@ -105,12 +106,12 @@ describe(relative(cwd(), __filename), async () => {
 
     await describe(afterRun.addUploadCommands.name, async () => {
         await describe("cypress", async () => {
-            let result: CypressRunResultType;
+            let result: CypressRunResult;
 
             beforeEach(() => {
                 result = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult;
             });
 
             await it("adds commands necessary for cypress results upload", async () => {
@@ -122,6 +123,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -159,6 +161,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     useCloudStatusFallback: false,
@@ -250,6 +253,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -320,6 +324,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -357,6 +362,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -392,6 +398,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -420,6 +427,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -467,6 +475,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -507,6 +516,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -522,13 +532,13 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await describe("cucumber", async () => {
-            let cypressResult: CypressRunResultType;
+            let cypressResult: CypressRunResult;
             let cucumberResult: CucumberMultipartFeature[];
 
             beforeEach(() => {
                 cypressResult = JSON.parse(
                     readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult;
                 options.cucumber = {
                     downloadFeatures: false,
                     featureFileExtension: ".feature",
@@ -561,6 +571,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -710,6 +721,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -751,6 +763,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -780,6 +793,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -821,6 +835,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -851,6 +866,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -893,6 +909,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -934,6 +951,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -1003,6 +1021,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -1199,6 +1218,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     ),
@@ -1220,6 +1240,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -1280,6 +1301,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -1306,13 +1328,13 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await describe("mixed", async () => {
-            let cypressResult: CypressRunResultType;
+            let cypressResult: CypressRunResult;
             let cucumberResult: CucumberMultipart;
 
             beforeEach(() => {
                 cypressResult = JSON.parse(
                     readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult;
                 cucumberResult = JSON.parse(
                     readFileSync(
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
@@ -1344,6 +1366,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -1399,6 +1422,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
+                    screenshotCollection: new SimpleScreenshotCollection(),
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     useCloudStatusFallback: false,

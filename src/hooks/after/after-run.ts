@@ -1,8 +1,12 @@
 import fs from "fs";
 import path from "path";
 import type { XrayClient } from "../../client/xray/xray-client";
-import type { EvidenceCollection, IterationParameterCollection } from "../../context";
-import type { CypressRunResultType } from "../../types/cypress/cypress";
+import type {
+    EvidenceCollection,
+    IterationParameterCollection,
+    ScreenshotCollection,
+} from "../../context";
+import type { CypressRunResult } from "../../types/cypress";
 import type { IssueTransition } from "../../types/jira/responses/issue-transition";
 import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import type {
@@ -48,12 +52,13 @@ import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-com
 import { containsCucumberTest, containsCypressTest } from "./util";
 
 async function addUploadCommands(
-    results: CypressRunResultType,
+    results: CypressRunResult,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     evidenceCollection: EvidenceCollection,
     iterationParameterCollection: IterationParameterCollection,
+    screenshotCollection: ScreenshotCollection,
     graph: ExecutableGraph<Command>,
     logger: Logger
 ) {
@@ -88,10 +93,11 @@ async function addUploadCommands(
         evidenceCollection: evidenceCollection,
         graph: graph,
         issueData: issueData,
-        iterationParameterCollection: iterationParameterCollection,
+        iterationParameterCollection,
         logger: logger,
         options: options,
         results: results,
+        screenshotCollection,
     });
     let importCypressExecutionCommand;
     let importCucumberExecutionCommand;
@@ -310,11 +316,12 @@ function addConvertMultipartInfoCommand(
 
 class AfterRunBuilder {
     private readonly graph: ExecutableGraph<Command>;
-    private readonly results: CypressRunResultType;
+    private readonly results: CypressRunResult;
     private readonly options: InternalCypressXrayPluginOptions;
     private readonly issueData: PluginIssueUpdate | undefined;
     private readonly evidenceCollection: EvidenceCollection;
     private readonly iterationParameterCollection: IterationParameterCollection;
+    private readonly screenshotCollection: ScreenshotCollection;
     private readonly clients: ClientCombination;
     private readonly logger: Logger;
     private readonly constants: {
@@ -323,7 +330,7 @@ class AfterRunBuilder {
             issueUpdate?: Command<PluginIssueUpdate | undefined>;
             summary?: Command<string>;
         };
-        results?: ConstantCommand<CypressRunResultType>;
+        results?: ConstantCommand<CypressRunResult>;
     };
 
     constructor(args: {
@@ -334,7 +341,8 @@ class AfterRunBuilder {
         iterationParameterCollection: IterationParameterCollection;
         logger: Logger;
         options: InternalCypressXrayPluginOptions;
-        results: CypressRunResultType;
+        results: CypressRunResult;
+        screenshotCollection: ScreenshotCollection;
     }) {
         this.graph = args.graph;
         this.results = args.results;
@@ -342,6 +350,7 @@ class AfterRunBuilder {
         this.issueData = args.issueData;
         this.evidenceCollection = args.evidenceCollection;
         this.iterationParameterCollection = args.iterationParameterCollection;
+        this.screenshotCollection = args.screenshotCollection;
         this.clients = args.clients;
         this.logger = args.logger;
         this.constants = {};
@@ -370,6 +379,7 @@ class AfterRunBuilder {
                     iterationParameterCollection: this.iterationParameterCollection,
                     normalizeScreenshotNames: this.options.plugin.normalizeScreenshotNames,
                     projectKey: this.options.jira.projectKey,
+                    screenshotCollection: this.screenshotCollection,
                     uploadLastAttempt: this.options.plugin.uploadLastAttempt,
                     uploadScreenshots: this.options.xray.uploadScreenshots,
                     useCloudStatusFallback: this.clients.kind === "cloud",

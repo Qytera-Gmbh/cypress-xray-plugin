@@ -4,6 +4,7 @@ import process from "node:process";
 import { describe, it } from "node:test";
 import { getMockedCypress } from "../../test/mocks";
 import { SimpleEvidenceCollection, SimpleIterationParameterCollection } from "../context";
+import type { RequestOptions } from "../types/cypress";
 import { dedent } from "../util/dedent";
 import { LOG } from "../util/logging";
 import * as tasks from "./tasks";
@@ -17,7 +18,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             tasks.enqueueTask(
                 tasks.PluginTask.OUTGOING_REQUEST,
                 "urlOnly.json",
-                "https://example.org" as unknown as Cypress.RequestOptions // https://docs.cypress.io/api/commands/request#Syntax
+                "https://example.org" as unknown as RequestOptions // https://docs.cypress.io/api/commands/request#Syntax
             );
             assert.deepStrictEqual(task.mock.calls[0].arguments, [
                 tasks.PluginTask.OUTGOING_REQUEST,

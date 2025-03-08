@@ -1,3 +1,4 @@
+import type { FileObject } from "../../types/cypress";
 import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import type { ExecutableGraph } from "../../util/graph/executable-graph";
 import type { Logger } from "../../util/logging";
@@ -15,7 +16,7 @@ import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command";
 import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
 
 function addSynchronizationCommands(
-    file: Cypress.FileObject,
+    file: FileObject,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,

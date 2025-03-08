@@ -1,3 +1,4 @@
+import type { ObjectLike } from "../types/cypress";
 import { dedent } from "./dedent";
 import { unknownToString } from "./string";
 
@@ -133,7 +134,7 @@ export function asObject(value: unknown): object {
  * @returns the parsed data or undefined if the variable does not exist
  */
 export function parse<T>(
-    env: Cypress.ObjectLike,
+    env: ObjectLike,
     variable: string,
     parser: (parameter: string) => T
 ): T | undefined {

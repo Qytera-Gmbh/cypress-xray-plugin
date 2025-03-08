@@ -1,4 +1,4 @@
-import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import type { CypressRunResult } from "../../../../../types/cypress";
 import type { IssueUpdate } from "../../../../../types/jira/responses/issue-update";
 import type {
     MultipartInfo,
@@ -10,7 +10,7 @@ import { dedent } from "../../../../../util/dedent";
  * Interface containing general/minimal Cypress run data.
  */
 export type RunData = Pick<
-    CypressRunResultType,
+    CypressRunResult,
     "browserName" | "browserVersion" | "cypressVersion" | "endedTestsAt" | "startedTestsAt"
 >;
 
