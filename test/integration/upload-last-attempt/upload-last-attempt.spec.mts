@@ -112,7 +112,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 });
                 assert.deepStrictEqual(testResultsRetriedScreenshot.results[0].test, {
                     jira: {
-                        key: testCase.linkedTests[0],
+                        key: testCase.linkedTests[1],
                     },
                 });
                 assert.strictEqual(testResultsRetriedScreenshot.results[0].evidence?.length, 2);
