@@ -163,6 +163,21 @@ describe(relative(cwd(), __filename), async () => {
                 const result = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
                 ) as CypressRunResult<"13" | "14">;
+                const screenshotCollection = new SimpleScreenshotCollection();
+                screenshotCollection.addScreenshot({
+                    blackout: [],
+                    dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                    duration: 123,
+                    multipart: false,
+                    name: "null",
+                    path: "./test/resources/small CYP-237.png",
+                    pixelRatio: 1,
+                    scaled: true,
+                    size: 12345,
+                    specName: "cypress.spec.cy.ts",
+                    takenAt: "2023-09-09T10:59:31.366Z",
+                    testFailure: true,
+                });
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -170,7 +185,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
-                        screenshotCollection: new SimpleScreenshotCollection(),
+                        screenshotCollection: screenshotCollection,
                         uploadLastAttempt: false,
                         uploadScreenshots: options.xray.uploadScreenshots,
                         xrayStatus: options.xray.status,
@@ -228,6 +243,21 @@ describe(relative(cwd(), __filename), async () => {
                         "utf-8"
                     )
                 ) as CypressRunResult<"13" | "14">;
+                const screenshotCollection = new SimpleScreenshotCollection();
+                screenshotCollection.addScreenshot({
+                    blackout: [],
+                    dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                    duration: 123,
+                    multipart: false,
+                    name: "null",
+                    path: "./test/resources/small CYP-123 CYP-125.png",
+                    pixelRatio: 1,
+                    scaled: true,
+                    size: 12345,
+                    specName: "cypress.spec.cy.ts",
+                    takenAt: "2022-11-28T17:41:19.702Z",
+                    testFailure: true,
+                });
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -235,7 +265,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
-                        screenshotCollection: new SimpleScreenshotCollection(),
+                        screenshotCollection: screenshotCollection,
                         uploadLastAttempt: false,
                         uploadScreenshots: options.xray.uploadScreenshots,
                         xrayStatus: options.xray.status,
@@ -291,7 +321,21 @@ describe(relative(cwd(), __filename), async () => {
                 const result = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
                 ) as CypressRunResult<"13" | "14">;
-                result.runs[0].screenshots[0].path = join(".", "test", "resources", "small.png");
+                const screenshotCollection = new SimpleScreenshotCollection();
+                screenshotCollection.addScreenshot({
+                    blackout: [],
+                    dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                    duration: 123,
+                    multipart: false,
+                    name: "null",
+                    path: join(".", "test", "resources", "small.png"),
+                    pixelRatio: 1,
+                    scaled: true,
+                    size: 12345,
+                    specName: "cypress.spec.cy.ts",
+                    takenAt: "2023-09-09T10:59:31.366Z",
+                    testFailure: true,
+                });
                 const command = new ConvertCypressTestsCommand(
                     {
                         evidenceCollection: new SimpleEvidenceCollection(),
@@ -299,7 +343,7 @@ describe(relative(cwd(), __filename), async () => {
                         iterationParameterCollection: new SimpleIterationParameterCollection(),
                         normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                         projectKey: options.jira.projectKey,
-                        screenshotCollection: new SimpleScreenshotCollection(),
+                        screenshotCollection: screenshotCollection,
                         uploadLastAttempt: false,
                         uploadScreenshots: options.xray.uploadScreenshots,
                         xrayStatus: options.xray.status,
@@ -605,12 +649,21 @@ describe(relative(cwd(), __filename), async () => {
             const result = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0_mixed.json", "utf-8")
             ) as CypressRunResult<"13" | "14">;
-            result.runs[0].screenshots[0].path = join(
-                ".",
-                "test",
-                "resources",
-                "small CYP-237.png"
-            );
+            const screenshotCollection = new SimpleScreenshotCollection();
+            screenshotCollection.addScreenshot({
+                blackout: [],
+                dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                duration: 123,
+                multipart: false,
+                name: "null",
+                path: "./test/resources/small CYP-237.png",
+                pixelRatio: 1,
+                scaled: true,
+                size: 12345,
+                specName: "cypress.spec.cy.ts",
+                takenAt: "2023-09-09T10:59:31.366Z",
+                testFailure: true,
+            });
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
@@ -618,7 +671,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: false,
                     projectKey: "CYP",
-                    screenshotCollection: new SimpleScreenshotCollection(),
+                    screenshotCollection: screenshotCollection,
                     uploadLastAttempt: false,
                     uploadScreenshots: true,
                     xrayStatus: {},
@@ -732,6 +785,21 @@ describe(relative(cwd(), __filename), async () => {
                 data: "Z29vZGJ5ZQ==",
                 filename: "goodbye.txt",
             });
+            const screenshotCollection = new SimpleScreenshotCollection();
+            screenshotCollection.addScreenshot({
+                blackout: [],
+                dimensions: { height: 8, width: 8, x: 0, y: 0 },
+                duration: 123,
+                multipart: false,
+                name: "null",
+                path: "./test/resources/small CYP-237.png",
+                pixelRatio: 1,
+                scaled: true,
+                size: 12345,
+                specName: "cypress.spec.cy.ts",
+                takenAt: "2023-09-09T10:59:31.366Z",
+                testFailure: true,
+            });
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: evidenceCollection,
@@ -739,7 +807,7 @@ describe(relative(cwd(), __filename), async () => {
                     iterationParameterCollection: new SimpleIterationParameterCollection(),
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
-                    screenshotCollection: new SimpleScreenshotCollection(),
+                    screenshotCollection: screenshotCollection,
                     uploadLastAttempt: false,
                     uploadScreenshots: options.xray.uploadScreenshots,
                     xrayStatus: options.xray.status,
@@ -911,13 +979,6 @@ describe(relative(cwd(), __filename), async () => {
                     testKey: "CYP-452",
                 },
                 {
-                    evidence: [
-                        {
-                            contentType: "image/png",
-                            data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
-                            filename: "small CYP-237.png",
-                        },
-                    ],
                     finish: "2023-09-09T10:59:29Z",
                     iterations: [
                         {
@@ -1375,6 +1436,7 @@ describe(relative(cwd(), __filename), async () => {
                 iterationParameterCollection: new SimpleIterationParameterCollection(),
                 normalizeScreenshotNames: true,
                 projectKey: "CYP",
+                screenshotCollection: new SimpleScreenshotCollection(),
                 uploadLastAttempt: false,
                 uploadScreenshots: false,
                 xrayStatus: {

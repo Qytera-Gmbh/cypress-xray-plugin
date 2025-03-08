@@ -12,6 +12,7 @@ import { ServerClient } from "../../client/xray/xray-client-server";
 import globalContext, {
     SimpleEvidenceCollection,
     SimpleIterationParameterCollection,
+    SimpleScreenshotCollection,
 } from "../../context";
 import type { CypressRunResult } from "../../types/cypress";
 import type { ClientCombination } from "../../types/plugin";
@@ -122,6 +123,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -250,6 +252,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -320,6 +323,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -357,6 +361,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -392,6 +397,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -420,6 +426,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -467,6 +474,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -507,6 +515,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -561,6 +570,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -710,6 +720,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -751,6 +762,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -780,6 +792,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -821,6 +834,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -851,6 +865,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -893,6 +908,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -934,6 +950,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -1003,6 +1020,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     );
@@ -1199,6 +1217,7 @@ describe(relative(cwd(), __filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
+                        new SimpleScreenshotCollection(),
                         graph,
                         LOG
                     ),
@@ -1220,6 +1239,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -1280,6 +1300,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
@@ -1344,6 +1365,7 @@ describe(relative(cwd(), __filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
+                    new SimpleScreenshotCollection(),
                     graph,
                     LOG
                 );
