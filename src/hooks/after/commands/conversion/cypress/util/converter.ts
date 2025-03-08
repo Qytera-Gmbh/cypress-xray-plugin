@@ -1,5 +1,5 @@
 import { basename, extname } from "node:path";
-import type { RunResult } from "../../../../../../types/cypress";
+import type { RunResult, ScreenshotDetails } from "../../../../../../types/cypress";
 import { CypressStatus } from "../../../../../../types/cypress/status";
 import { getTestIssueKeys } from "../../../../util";
 import { toCypressStatus } from "./status-conversion";
@@ -182,17 +182,24 @@ export class RunConverterV12 implements RunConverter {
  */
 export class RunConverterLatest implements RunConverter {
     private readonly projectKey: string;
-    private readonly runResults: RunResult<"13" | "14">[];
+    private readonly runResults: readonly RunResult<"13" | "14">[];
+    private readonly screenshotDetails: readonly ScreenshotDetails<"13" | "14">[];
 
     /**
      * Constructs a new converter for the specified run results.
      *
      * @param projectKey - the project key
      * @param runResults - the run results
+     * @param screenshotDetails - all screenshots taken during the run
      */
-    constructor(projectKey: string, runResults: RunResult<"13" | "14">[]) {
+    constructor(
+        projectKey: string,
+        runResults: RunResult<"13" | "14">[],
+        screenshotDetails: ScreenshotDetails<"13" | "14">[]
+    ) {
         this.projectKey = projectKey;
         this.runResults = runResults;
+        this.screenshotDetails = screenshotDetails;
     }
 
     public getConversions(options: {
@@ -249,9 +256,7 @@ export class RunConverterLatest implements RunConverter {
     }
 
     public getNonAttributableScreenshots(options: { onlyLastAttempt: boolean }): string[] {
-        let screenshots = this.runResults
-            .flatMap((run) => run.screenshots)
-            .map((screenshot) => screenshot);
+        let screenshots = this.screenshotDetails;
         if (options.onlyLastAttempt) {
             screenshots = this.filterLastAttemptScreenshots(screenshots);
         }
@@ -267,13 +272,11 @@ export class RunConverterLatest implements RunConverter {
 
     public getScreenshots(issueKey: string, options: { onlyLastAttempt: boolean }): string[] {
         let screenshots = [];
-        for (const run of this.runResults) {
-            for (const screenshot of run.screenshots) {
-                if (!screenshot.path.includes(issueKey)) {
-                    continue;
-                }
-                screenshots.push(screenshot);
+        for (const screenshot of this.screenshotDetails) {
+            if (!screenshot.path.includes(issueKey)) {
+                continue;
             }
+            screenshots.push(screenshot);
         }
         if (options.onlyLastAttempt) {
             screenshots = this.filterLastAttemptScreenshots(screenshots);
@@ -281,7 +284,7 @@ export class RunConverterLatest implements RunConverter {
         return [...new Set([...screenshots.map((screenshot) => screenshot.path)])];
     }
 
-    private filterLastAttemptScreenshots(screenshots: CypressCommandLine.ScreenshotInformation[]) {
+    private filterLastAttemptScreenshots(screenshots: readonly ScreenshotDetails<"13" | "14">[]) {
         // See: https://docs.cypress.io/app/guides/test-retries#Screenshots
         // Manual screenshots:
         //     Initial run: CYP-123 my screenshot.png

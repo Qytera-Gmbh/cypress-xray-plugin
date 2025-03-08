@@ -1,6 +1,10 @@
 import { basename, extname, parse } from "node:path";
 import { lt } from "semver";
-import type { EvidenceCollection, IterationParameterCollection } from "../../../../../context";
+import type {
+    EvidenceCollection,
+    IterationParameterCollection,
+    ScreenshotCollection,
+} from "../../../../../context";
 import type { CypressRunResult, RunResult } from "../../../../../types/cypress";
 import { CypressStatus } from "../../../../../types/cypress/status";
 import type { InternalXrayOptions } from "../../../../../types/plugin";
@@ -27,6 +31,7 @@ interface Parameters {
     iterationParameterCollection: IterationParameterCollection;
     normalizeScreenshotNames: boolean;
     projectKey: string;
+    screenshotCollection: ScreenshotCollection;
     uploadLastAttempt: boolean;
     uploadScreenshots: boolean;
     useCloudStatusFallback?: boolean;
@@ -97,7 +102,8 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 ? new RunConverterV12(this.parameters.projectKey, cypressRuns as RunResult<"<13">[])
                 : new RunConverterLatest(
                       this.parameters.projectKey,
-                      cypressRuns as RunResult<"13" | "14">[]
+                      cypressRuns as RunResult<"13" | "14">[],
+                      this.parameters.screenshotCollection.getScreenshots()
                   );
         const conversions = converter.getConversions({
             onlyLastAttempt: this.parameters.uploadLastAttempt,

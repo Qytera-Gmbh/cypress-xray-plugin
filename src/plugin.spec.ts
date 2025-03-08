@@ -13,6 +13,7 @@ import globalContext, {
     PluginContext,
     SimpleEvidenceCollection,
     SimpleIterationParameterCollection,
+    SimpleScreenshotCollection,
 } from "./context";
 import afterRun from "./hooks/after/after-run";
 import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
@@ -70,6 +71,7 @@ describe(relative(cwd(), __filename), async () => {
             config,
             new SimpleEvidenceCollection(),
             new SimpleIterationParameterCollection(),
+            new SimpleScreenshotCollection(),
             new ExecutableGraph(),
             new CapturingLogger()
         );
@@ -426,6 +428,7 @@ describe(relative(cwd(), __filename), async () => {
                 pluginContext.getCypressOptions(),
                 new SimpleEvidenceCollection(),
                 new SimpleIterationParameterCollection(),
+                new SimpleScreenshotCollection(),
                 new ExecutableGraph(),
                 new CapturingLogger()
             );

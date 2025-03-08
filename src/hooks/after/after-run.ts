@@ -1,7 +1,11 @@
 import fs from "fs";
 import path from "path";
 import type { XrayClient } from "../../client/xray/xray-client";
-import type { EvidenceCollection, IterationParameterCollection } from "../../context";
+import type {
+    EvidenceCollection,
+    IterationParameterCollection,
+    ScreenshotCollection,
+} from "../../context";
 import type { CypressRunResult } from "../../types/cypress";
 import type { IssueTransition } from "../../types/jira/responses/issue-transition";
 import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
@@ -54,6 +58,7 @@ async function addUploadCommands(
     clients: ClientCombination,
     evidenceCollection: EvidenceCollection,
     iterationParameterCollection: IterationParameterCollection,
+    screenshotCollection: ScreenshotCollection,
     graph: ExecutableGraph<Command>,
     logger: Logger
 ) {
@@ -88,10 +93,11 @@ async function addUploadCommands(
         evidenceCollection: evidenceCollection,
         graph: graph,
         issueData: issueData,
-        iterationParameterCollection: iterationParameterCollection,
+        iterationParameterCollection,
         logger: logger,
         options: options,
         results: results,
+        screenshotCollection,
     });
     let importCypressExecutionCommand;
     let importCucumberExecutionCommand;
@@ -315,6 +321,7 @@ class AfterRunBuilder {
     private readonly issueData: PluginIssueUpdate | undefined;
     private readonly evidenceCollection: EvidenceCollection;
     private readonly iterationParameterCollection: IterationParameterCollection;
+    private readonly screenshotCollection: ScreenshotCollection;
     private readonly clients: ClientCombination;
     private readonly logger: Logger;
     private readonly constants: {
@@ -335,6 +342,7 @@ class AfterRunBuilder {
         logger: Logger;
         options: InternalCypressXrayPluginOptions;
         results: CypressRunResult;
+        screenshotCollection: ScreenshotCollection;
     }) {
         this.graph = args.graph;
         this.results = args.results;
@@ -342,6 +350,7 @@ class AfterRunBuilder {
         this.issueData = args.issueData;
         this.evidenceCollection = args.evidenceCollection;
         this.iterationParameterCollection = args.iterationParameterCollection;
+        this.screenshotCollection = args.screenshotCollection;
         this.clients = args.clients;
         this.logger = args.logger;
         this.constants = {};
@@ -370,6 +379,7 @@ class AfterRunBuilder {
                     iterationParameterCollection: this.iterationParameterCollection,
                     normalizeScreenshotNames: this.options.plugin.normalizeScreenshotNames,
                     projectKey: this.options.jira.projectKey,
+                    screenshotCollection: this.screenshotCollection,
                     uploadLastAttempt: this.options.plugin.uploadLastAttempt,
                     uploadScreenshots: this.options.xray.uploadScreenshots,
                     useCloudStatusFallback: this.clients.kind === "cloud",

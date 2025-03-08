@@ -160,6 +160,7 @@ export async function configureXrayPlugin(
                     context.getClients(),
                     context,
                     context,
+                    context,
                     context.getGraph(),
                     logger
                 );
