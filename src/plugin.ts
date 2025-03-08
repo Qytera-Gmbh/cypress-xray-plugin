@@ -3,6 +3,7 @@ import globalContext, {
     PluginContext,
     SimpleEvidenceCollection,
     SimpleIterationParameterCollection,
+    SimpleScreenshotCollection,
 } from "./context";
 import type { PluginTaskParameterType } from "./cypress/tasks";
 import { PluginTaskListener } from "./cypress/tasks";
@@ -35,9 +36,13 @@ export function resetPlugin(): void {
  * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
  * `options`. Environment variables always override values specified in `options`.
  *
- * *Note: This method will register upload hooks under the Cypress `before:run`, `after:run` and
- * `task` events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if
- * you have these hooks registered to prevent the plugin from replacing them.*
+ * Note: This method will register upload hooks under the following Cypress events:
+ *   - `after:run`
+ *   - `on:screenshot`
+ *   - `task`
+ *
+ * Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if you have these
+ * hooks registered to prevent the plugin from replacing them.
  *
  * @param on - the Cypress event registration functon
  * @param config - the Cypress configuration
@@ -98,6 +103,7 @@ export async function configureXrayPlugin(
         config,
         new SimpleEvidenceCollection(),
         new SimpleIterationParameterCollection(),
+        new SimpleScreenshotCollection(),
         new ExecutableGraph(),
         logger
     );
@@ -130,6 +136,9 @@ export async function configureXrayPlugin(
             }
             return args.response;
         },
+    });
+    on("after:screenshot", (screenshot) => {
+        context.addScreenshot(screenshot);
     });
     on("after:run", async (results: CypressFailedRunResult | CypressRunResult) => {
         if (context.getOptions().xray.uploadResults) {

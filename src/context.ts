@@ -13,7 +13,7 @@ import type { XrayClientServer } from "./client/xray/xray-client-server";
 import { ServerClient } from "./client/xray/xray-client-server";
 import { ENV_NAMES } from "./env";
 import type { Command } from "./hooks/command";
-import type { ObjectLike, PluginConfigOptions } from "./types/cypress";
+import type { ObjectLike, PluginConfigOptions, ScreenshotDetails } from "./types/cypress";
 import type {
     ClientCombination,
     CypressXrayPluginOptions,
@@ -36,12 +36,15 @@ import type { Logger } from "./util/logging";
 import { LOG } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
 
-export class PluginContext implements EvidenceCollection, IterationParameterCollection {
+export class PluginContext
+    implements EvidenceCollection, IterationParameterCollection, ScreenshotCollection
+{
     private readonly clients: ClientCombination;
     private readonly internalOptions: InternalCypressXrayPluginOptions;
     private readonly cypressOptions: PluginConfigOptions;
     private readonly evidenceCollection: EvidenceCollection;
     private readonly iterationParameterCollection: IterationParameterCollection;
+    private readonly screenshotCollection: ScreenshotCollection;
     private readonly graph: ExecutableGraph<Command>;
     private readonly logger: Logger;
 
@@ -51,6 +54,7 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
         cypressOptions: PluginConfigOptions,
         evidenceCollection: EvidenceCollection,
         iterationParameterCollection: IterationParameterCollection,
+        screenshotCollection: ScreenshotCollection,
         graph: ExecutableGraph<Command>,
         logger: Logger
     ) {
@@ -59,6 +63,7 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
         this.cypressOptions = cypressOptions;
         this.evidenceCollection = evidenceCollection;
         this.iterationParameterCollection = iterationParameterCollection;
+        this.screenshotCollection = screenshotCollection;
         this.graph = graph;
         this.logger = logger;
     }
@@ -81,6 +86,14 @@ export class PluginContext implements EvidenceCollection, IterationParameterColl
 
     public getLogger(): Logger {
         return this.logger;
+    }
+
+    public addScreenshot(screenshot: ScreenshotDetails) {
+        this.screenshotCollection.addScreenshot(screenshot);
+    }
+
+    public getScreenshots(): ScreenshotDetails[] {
+        return this.screenshotCollection.getScreenshots();
     }
 
     public addEvidence(issueKey: string, evidence: Required<XrayEvidenceItem>): void {
@@ -150,6 +163,21 @@ export class SimpleIterationParameterCollection implements IterationParameterCol
     }
     public getIterationParameters(issueKey: string, testId: string): Record<string, string> {
         return this.collectedParameters.get(issueKey)?.get(testId) ?? {};
+    }
+}
+
+export interface ScreenshotCollection {
+    addScreenshot(screenshot: ScreenshotDetails): void;
+    getScreenshots(): ScreenshotDetails[];
+}
+
+export class SimpleScreenshotCollection implements ScreenshotCollection {
+    private readonly screenshots: ScreenshotDetails[] = [];
+    public addScreenshot(screenshot: ScreenshotDetails): void {
+        this.screenshots.push(screenshot);
+    }
+    public getScreenshots(): ScreenshotDetails[] {
+        return this.screenshots;
     }
 }
 
