@@ -83,10 +83,11 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     },
                 });
                 assert.strictEqual(testResultsRetried.results[0].evidence?.length, 1);
-                assert.deepStrictEqual(testResultsRetried.results[0].evidence[0]?.filename, [
-                    "CYP-2432 my screenshot (attempt 6).png",
-                ]);
-                assert.deepStrictEqual(testResultsRetried.results[0].iterations, undefined);
+                assert.strictEqual(
+                    testResultsRetried.results[0].evidence[0]?.filename,
+                    "CYP-2432 my screenshot (attempt 6).png"
+                );
+                assert.strictEqual(testResultsRetried.results[0].iterations, undefined);
                 const testResultsRetriedScreenshot = await XRAY_CLIENT_CLOUD.graphql.getTestRuns(
                     {
                         limit: 1,
@@ -114,31 +115,45 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                         key: testCase.linkedTests[0],
                     },
                 });
-                assert.strictEqual(testResultsRetriedScreenshot.results[0].evidence?.length, 1);
-                assert.deepStrictEqual(
+                assert.strictEqual(testResultsRetriedScreenshot.results[0].evidence?.length, 2);
+                assert.strictEqual(
                     testResultsRetriedScreenshot.results[0].evidence[0]?.filename,
-                    "CYP-2434 my screenshot (attempt 3).png"
+                    "CYP-2434 my other screenshot (attempt 3).png"
                 );
-                assert.deepStrictEqual(
-                    testResultsRetriedScreenshot.results[0].evidence[0].filename,
+                assert.strictEqual(
+                    testResultsRetriedScreenshot.results[0].evidence[1]?.filename,
                     "template spec -- CYP-2434 manual screenshot (failed) (attempt 3).png"
                 );
-                assert.deepStrictEqual(
-                    testResultsRetriedScreenshot.results[0].iterations,
-                    undefined
-                );
+                assert.strictEqual(testResultsRetriedScreenshot.results[0].iterations, undefined);
             }
 
             if (testCase.service === "server") {
                 // Jira server does not like searches immediately after issue creation (socket hang up).
                 await setTimeout(10000);
-                const testRun = await XRAY_CLIENT_SERVER.testRuns.getTestRun({
+                const testRunRetried = await XRAY_CLIENT_SERVER.testRuns.getTestRun({
                     testExecIssueKey: testExecutionIssueKey,
                     testIssueKey: testCase.linkedTests[0],
                 });
-                assert.strictEqual(testRun.evidences[0].fileName, "CYPLUG-1572 screenshot #1.png");
-                assert.strictEqual(testRun.evidences[1].fileName, "CYPLUG-1572 screenshot #2.png");
-                assert.strictEqual(testRun.evidences[2].fileName, "CYPLUG-1572 screenshot #3.png");
+                assert.strictEqual(testRunRetried.evidences.length, 1);
+                assert.strictEqual(
+                    testRunRetried.evidences[0].fileName,
+                    "CYPLUG-1692 my screenshot (attempt 6).png"
+                );
+                assert.strictEqual(testRunRetried.iterations, undefined);
+                const testResultsRetriedScreenshot = await XRAY_CLIENT_SERVER.testRuns.getTestRun({
+                    testExecIssueKey: testExecutionIssueKey,
+                    testIssueKey: testCase.linkedTests[1],
+                });
+                assert.strictEqual(testResultsRetriedScreenshot.evidences.length, 2);
+                assert.strictEqual(
+                    testResultsRetriedScreenshot.evidences[0].fileName,
+                    "CYPLUG-1694 my other screenshot (attempt 3).png"
+                );
+                assert.strictEqual(
+                    testResultsRetriedScreenshot.evidences[1].fileName,
+                    "template spec -- CYPLUG-1694 manual screenshot (failed) (attempt 3).png"
+                );
+                assert.strictEqual(testResultsRetriedScreenshot.iterations, undefined);
             }
         });
     }

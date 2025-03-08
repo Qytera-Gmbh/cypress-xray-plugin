@@ -14,7 +14,7 @@ import { getCreatedTestExecutionIssueKey } from "../util.mjs";
 describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const testCase of [
         {
-            linkedTest: "CYP-2151",
+            linkedTest: "CYP-2414",
             projectDirectory: join(import.meta.dirname, "cloud"),
             projectKey: "CYP",
             service: "cloud",
@@ -72,17 +72,18 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                         key: testCase.linkedTest,
                     },
                 });
+                assert.strictEqual(testResults.results[0].evidence?.length, 3);
                 assert.deepStrictEqual(
-                    testResults.results[0].evidence?.[0]?.filename,
-                    "CYP-2414 screenshot #1.png"
+                    testResults.results[0].evidence[0]?.filename,
+                    `${testCase.linkedTest} screenshot #1.png`
                 );
                 assert.deepStrictEqual(
                     testResults.results[0].evidence[1]?.filename,
-                    "CYP-2414 screenshot #2.png"
+                    `${testCase.linkedTest} screenshot #2.png`
                 );
                 assert.deepStrictEqual(
                     testResults.results[0].evidence[2]?.filename,
-                    "CYP-2414 screenshot #3.png"
+                    `${testCase.linkedTest} screenshot #3.png`
                 );
             }
 
@@ -93,9 +94,19 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     testExecIssueKey: testExecutionIssueKey,
                     testIssueKey: testCase.linkedTest,
                 });
-                assert.strictEqual(testRun.evidences[0].fileName, "CYPLUG-1672 screenshot #1.png");
-                assert.strictEqual(testRun.evidences[1].fileName, "CYPLUG-1672 screenshot #2.png");
-                assert.strictEqual(testRun.evidences[2].fileName, "CYPLUG-1672 screenshot #3.png");
+                assert.strictEqual(testRun.evidences.length, 3);
+                assert.strictEqual(
+                    testRun.evidences[0].fileName,
+                    `${testCase.linkedTest} screenshot #1.png`
+                );
+                assert.strictEqual(
+                    testRun.evidences[1].fileName,
+                    `${testCase.linkedTest} screenshot #2.png`
+                );
+                assert.strictEqual(
+                    testRun.evidences[2].fileName,
+                    `${testCase.linkedTest} screenshot #3.png`
+                );
             }
         });
     }
