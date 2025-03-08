@@ -181,6 +181,12 @@ export class RunConverterV12 implements RunConverter {
  * Converts Cypress test results for Cypress versions &ge;13.
  */
 export class RunConverterLatest implements RunConverter {
+    private static readonly STATUS_UNION: string = [
+        CypressStatus.FAILED,
+        CypressStatus.PASSED,
+        CypressStatus.PENDING,
+        CypressStatus.SKIPPED,
+    ].join("|");
     private readonly projectKey: string;
     private readonly runResults: readonly RunResult<"13" | "14">[];
     private readonly screenshotDetails: readonly ScreenshotDetails<"13" | "14">[];
@@ -301,10 +307,11 @@ export class RunConverterLatest implements RunConverter {
         const lastScreenshots = [];
         // Sort screenshots such that the highest attempt always comes first.
         for (const initialScreenshot of initialScreenshots) {
-            const name = basename(initialScreenshot.path, extname(initialScreenshot.path));
-            const similarScreenshots = screenshots.filter((screenshot) =>
-                screenshot.path.includes(name)
-            );
+            const similarScreenshots = [
+                initialScreenshot,
+                ...this.getSimilar("retry", initialScreenshot, screenshots),
+                ...this.getSimilar("retry-name-conflicts", initialScreenshot, screenshots),
+            ];
             similarScreenshots.sort((a, b) => {
                 const matchA = attemptRegex.exec(a.path);
                 const matchB = attemptRegex.exec(b.path);
@@ -324,26 +331,170 @@ export class RunConverterLatest implements RunConverter {
         // Remove all screenshots of failed attempts that have been superseded by a passed one
         // without screenshot.
         const tests = this.runResults.flatMap((result) => result.tests);
-        const testScreenshotPatterns = tests.map(
-            (test) =>
-                new RegExp(
-                    `${test.title[test.title.length - 1]} \\(${[CypressStatus.FAILED, CypressStatus.PASSED, CypressStatus.PENDING, CypressStatus.SKIPPED].join("|")}\\)`
-                )
-        );
         return lastScreenshots.filter((screenshot) => {
-            if (!testScreenshotPatterns.some((pattern) => pattern.exec(screenshot.path))) {
+            if (!screenshot.testFailure) {
                 return true;
             }
+            const sanitizedScreenshotName = this.sanitizeName(screenshot.path);
             for (const test of tests) {
-                const testName = test.title[test.title.length - 1];
-                if (test.attempts.length > 1) {
-                    const finalAttemptName = `${testName} (${test.state}) (attempt ${test.attempts.length.toString()})${extname(screenshot.path)}`;
-                    if (screenshot.path.endsWith(finalAttemptName)) {
-                        return true;
+                const sanitizedTestTitle = this.sanitizeName(test.title[test.title.length - 1]);
+                const testEndScreenshotPattern = new RegExp(
+                    `${this.escapeRegExp(sanitizedTestTitle)} \\((${RunConverterLatest.STATUS_UNION})\\)`
+                );
+                if (testEndScreenshotPattern.exec(sanitizedScreenshotName) !== null) {
+                    if (test.attempts.length > 1) {
+                        const finalAttemptName = `${sanitizedTestTitle} (${test.state}) (attempt ${test.attempts.length.toString()})${extname(screenshot.path)}`;
+                        return sanitizedScreenshotName.endsWith(finalAttemptName);
                     }
+                    return true;
                 }
             }
-            return false;
+            return true;
         });
+    }
+
+    /* eslint-disable @typescript-eslint/unified-signatures */
+
+    /**
+     * Finds all screenshots that are similar, assuming a retry execution.
+     *
+     * ```ts
+     * for (const i of [1, 2, 3]) {
+     *   it(`CYP-123 passes eventually: ${i}`, { retries: 2 }, () => {
+     *       cy.screenshot(`CYP-123 my screenshot ${i}`);
+     *       cy.then(() => expect(Cypress.currentRetry).to.eq(2));
+     *   });
+     * }
+     * ```
+     *
+     * - iteration 1:
+     *     - initial run:
+     *         - test failure: `CYP-123 test passes eventually 1 (failed).png`
+     *         - manual: `CYP-123 my screenshot 1.png`
+     *     - retry:
+     *         - test failure: `CYP-123 test passes eventually 1 (failed) (attempt 2).png`
+     *         - manual: `CYP-123 my screenshot 1 (attempt 2).png`
+     * - iteration 2:
+     *     - initial run:
+     *         - test failure: `CYP-123 test passes eventually 2 (failed).png`
+     *         - manual: `CYP-123 my screenshot 2.png`
+     *     - retry:
+     *         - test failure: `CYP-123 test passes eventually 2 (failed) (attempt 2).png`
+     *         - manual: `CYP-123 my screenshot 2 (attempt 2).png`
+     * - iteration 3:
+     *     - initial run:
+     *         - test failure: `CYP-123 test passes eventually 3 (failed).png`
+     *         - manual: `CYP-123 my screenshot 3.png`
+     *     - retry:
+     *         - test failure: `CYP-123 test passes eventually 3 (failed) (attempt 2).png`
+     *         - manual: `CYP-123 my screenshot 3 (attempt 2).png`
+     *
+     * @param kind - the search variant
+     * @param screenshot - the initial screenshot
+     * @param screenshots - all other screenshots
+     * @returns all similar screenshots
+     */
+    private getSimilar(
+        kind: "retry",
+        screenshot: ScreenshotDetails<"13" | "14">,
+        screenshots: readonly ScreenshotDetails<"13" | "14">[]
+    ): ScreenshotDetails<"13" | "14">[];
+
+    /**
+     * Finds all screenshots that are similar, assuming a retry execution with name conflicts.
+     *
+     * ```ts
+     * for (const i of [1, 2, 3]) {
+     *   it("CYP-123 passes eventually", { retries: 2 }, () => {
+     *       cy.screenshot("CYP-123 my screenshot");
+     *       cy.then(() => expect(Cypress.currentRetry).to.eq(2));
+     *   });
+     * }
+     * ```
+     *
+     * - iteration 1:
+     *     - initial run:
+     *         - test failure: `CYP-123 test passes eventually (failed).png`
+     *         - manual: `CYP-123 my screenshot.png`
+     *     - retry:
+     *         - test failure: `CYP-123 test passes eventually (failed) (attempt 2).png`
+     *         - manual: `CYP-123 my screenshot (attempt 2).png`
+     * - iteration 2:
+     *     - initial run:
+     *         - test failure: `CYP-123 test passes eventually (failed) (1).png`
+     *         - manual: `CYP-123 my screenshot (1).png`
+     *     - retry:
+     *         - test failure: `CYP-123 test passes eventually (failed) (attempt 2) (1).png`
+     *         - manual: `CYP-123 my screenshot (attempt 2) (1).png`
+     * - iteration 3:
+     *     - initial run:
+     *         - test failure: `CYP-123 test passes eventually (failed) (2).png`
+     *         - manual: `CYP-123 my screenshot (2).png`
+     *     - retry:
+     *         - test failure: `CYP-123 test passes eventually (failed) (attempt 2) (2).png`
+     *         - manual: `CYP-123 my screenshot (attempt 2) (2).png`
+     *
+     * @param kind - the search variant
+     * @param screenshot - the initial screenshot
+     * @param screenshots - all other screenshots
+     * @returns all similar screenshots
+     */
+    private getSimilar(
+        kind: "retry-name-conflicts",
+        screenshot: ScreenshotDetails<"13" | "14">,
+        screenshots: readonly ScreenshotDetails<"13" | "14">[]
+    ): ScreenshotDetails<"13" | "14">[];
+
+    // Implementation
+    private getSimilar(
+        kind: "retry-name-conflicts" | "retry",
+        initialScreenshot: ScreenshotDetails<"13" | "14">,
+        screenshots: readonly ScreenshotDetails<"13" | "14">[]
+    ): ScreenshotDetails<"13" | "14">[] {
+        const name = basename(initialScreenshot.path, extname(initialScreenshot.path));
+        switch (kind) {
+            case "retry-name-conflicts": {
+                const conflictPattern = new RegExp(`(.+)\\s\\((\\d+)\\)$`);
+                const match = conflictPattern.exec(name);
+                if (match !== null) {
+                    const testname = match[1];
+                    const conflictNumber = match[2];
+                    const attemptPattern = new RegExp(
+                        `${this.escapeRegExp(testname)} \\(attempt \\d+\\) \\(${conflictNumber}\\)$`
+                    );
+                    return screenshots.filter((screenshot) => {
+                        const otherName = basename(screenshot.path, extname(screenshot.path));
+                        return attemptPattern.exec(otherName) !== null;
+                    });
+                }
+                break;
+            }
+            case "retry": {
+                const attemptPattern = new RegExp(`${this.escapeRegExp(name)} \\(attempt \\d+\\)$`);
+                return screenshots.filter((screenshot) => {
+                    const otherName = basename(screenshot.path, extname(screenshot.path));
+                    return attemptPattern.exec(otherName) !== null;
+                });
+            }
+        }
+        return [];
+    }
+
+    /* eslint-enable @typescript-eslint/unified-signatures */
+
+    /**
+     * Escapes special regex characters in a string.
+     *
+     * @param s - the string
+     * @returns the escaped string
+     *
+     * @see https://stackoverflow.com/a/23637821
+     */
+    private escapeRegExp(s: string) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    private sanitizeName(s: string) {
+        return s.replaceAll(/[^\w\d\s.\-_()]/g, "");
     }
 }
