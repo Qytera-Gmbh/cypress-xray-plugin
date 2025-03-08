@@ -2,13 +2,13 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
+import type { RunResult } from "../../../../../../types/cypress";
 import { CypressStatus } from "../../../../../../types/cypress/status";
-import { RunConverterV12, RunConverterV13 } from "./converter";
+import { RunConverterLatest, RunConverterV12 } from "./converter";
 
 describe(relative(cwd(), __filename), async () => {
     await describe(RunConverterV12.name, async () => {
-        const passedResult: RunResult_V12 = {
+        const passedResult: RunResult<"<13"> = {
             error: null,
             hooks: [],
             reporter: "repoter",
@@ -52,7 +52,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: "~/repositories/xray/cypress/videos/example.cy.ts.mp4",
         };
-        const failedResult: RunResult_V12 = {
+        const failedResult: RunResult<"<13"> = {
             error: null,
             hooks: [],
             reporter: "reporter",
@@ -117,7 +117,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: "~/repositories/xray/cypress/videos/example.cy.ts.mp4",
         };
-        const invalidResult: RunResult_V12 = {
+        const invalidResult: RunResult<"<13"> = {
             error: null,
             hooks: [],
             reporter: "reporter",
@@ -175,7 +175,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: "~/repositories/xray/cypress/videos/example.cy.ts.mp4",
         };
-        const retriedResult: RunResult_V12 = {
+        const retriedResult: RunResult<"<13"> = {
             error: null,
             hooks: [],
             reporter: "spec",
@@ -421,7 +421,7 @@ describe(relative(cwd(), __filename), async () => {
             ],
             video: "/home/csvtuda/repositories/cypress/451/cypress/videos/spec.cy.js.mp4",
         };
-        const unkeyedResult: RunResult_V12 = {
+        const unkeyedResult: RunResult<"<13"> = {
             error: null,
             hooks: [],
             reporter: "repoter",
@@ -575,7 +575,7 @@ describe(relative(cwd(), __filename), async () => {
         });
     });
 
-    await describe(RunConverterV13.name, async () => {
+    await describe(RunConverterLatest.name, async () => {
         const passedResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
@@ -1552,7 +1552,7 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", () => {
-            const converter = new RunConverterV13("CYP", [passedResult]);
+            const converter = new RunConverterLatest("CYP", [passedResult]);
             const conversions = converter.getConversions({ onlyLastAttempt: false });
             assert.deepStrictEqual(conversions, [
                 {
@@ -1581,7 +1581,7 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("omits retries", () => {
-            const converter = new RunConverterV13("CYP", [retriedResult]);
+            const converter = new RunConverterLatest("CYP", [retriedResult]);
             const conversions = converter.getConversions({ onlyLastAttempt: true });
             assert.deepStrictEqual(conversions, [
                 {
@@ -1610,7 +1610,7 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("includes relevant screenshots in runs", () => {
-            const converter = new RunConverterV13("CYP", [failedResult]);
+            const converter = new RunConverterLatest("CYP", [failedResult]);
             const screenshots = converter.getScreenshots("CYP-237", { onlyLastAttempt: false });
             assert.deepStrictEqual(screenshots, [
                 "./test/resources/small CYP-237.png",
@@ -1619,7 +1619,7 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("omits screenshots of retries", () => {
-            const converter = new RunConverterV13("CYP", [retriedResult]);
+            const converter = new RunConverterLatest("CYP", [retriedResult]);
             assert.deepStrictEqual(converter.getScreenshots("CYP-123", { onlyLastAttempt: true }), [
                 "/home/csvtuda/repositories/cypress/screenshots/spec.cy.js/CYP-123 my screenshot (attempt 6).png",
             ]);
@@ -1630,7 +1630,7 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("omits screenshots of iterated retries", () => {
-            const converter = new RunConverterV13("CYP", [retriedIteratedResult]);
+            const converter = new RunConverterLatest("CYP", [retriedIteratedResult]);
             assert.deepStrictEqual(converter.getScreenshots("CYP-123", { onlyLastAttempt: true }), [
                 "/home/csvtuda/repositories/cypress/screenshots/spec.cy.js/CYP-123 my screenshot.png",
                 "/home/csvtuda/repositories/cypress/screenshots/spec.cy.js/CYP-123 my screenshot (1).png",
@@ -1640,7 +1640,7 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("returns all non-attributable screenshots", () => {
-            const converter = new RunConverterV13("CYP", [unkeyedResult]);
+            const converter = new RunConverterLatest("CYP", [unkeyedResult]);
             const screenshots = converter.getNonAttributableScreenshots({ onlyLastAttempt: false });
             assert.deepStrictEqual(screenshots, [
                 "/home/csvtuda/repositories/cypress/screenshots/spec.cy.js/my screenshot.png",
@@ -1664,7 +1664,7 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("returns non-attributable screenshots of last attempts only", () => {
-            const converter = new RunConverterV13("CYP", [unkeyedResult]);
+            const converter = new RunConverterLatest("CYP", [unkeyedResult]);
             const screenshots = converter.getNonAttributableScreenshots({ onlyLastAttempt: true });
             assert.deepStrictEqual(screenshots, [
                 "/home/csvtuda/repositories/cypress/screenshots/spec.cy.js/my screenshot (attempt 6).png",
@@ -1674,7 +1674,7 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("rejects invalid runs", () => {
-            const converter = new RunConverterV13("CYP", [invalidResult]);
+            const converter = new RunConverterLatest("CYP", [invalidResult]);
             const conversions = converter.getConversions({ onlyLastAttempt: false });
             assert.strictEqual(conversions[0].kind, "error");
             const reason = conversions[0].error as Error;

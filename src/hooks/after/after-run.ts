@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import type { XrayClient } from "../../client/xray/xray-client";
 import type { EvidenceCollection, IterationParameterCollection } from "../../context";
-import type { CypressRunResultType } from "../../types/cypress/cypress";
+import type { CypressRunResult } from "../../types/cypress";
 import type { IssueTransition } from "../../types/jira/responses/issue-transition";
 import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import type {
@@ -48,7 +48,7 @@ import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-com
 import { containsCucumberTest, containsCypressTest } from "./util";
 
 async function addUploadCommands(
-    results: CypressRunResultType,
+    results: CypressRunResult,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
@@ -310,7 +310,7 @@ function addConvertMultipartInfoCommand(
 
 class AfterRunBuilder {
     private readonly graph: ExecutableGraph<Command>;
-    private readonly results: CypressRunResultType;
+    private readonly results: CypressRunResult;
     private readonly options: InternalCypressXrayPluginOptions;
     private readonly issueData: PluginIssueUpdate | undefined;
     private readonly evidenceCollection: EvidenceCollection;
@@ -323,7 +323,7 @@ class AfterRunBuilder {
             issueUpdate?: Command<PluginIssueUpdate | undefined>;
             summary?: Command<string>;
         };
-        results?: ConstantCommand<CypressRunResultType>;
+        results?: ConstantCommand<CypressRunResult>;
     };
 
     constructor(args: {
@@ -334,7 +334,7 @@ class AfterRunBuilder {
         iterationParameterCollection: IterationParameterCollection;
         logger: Logger;
         options: InternalCypressXrayPluginOptions;
-        results: CypressRunResultType;
+        results: CypressRunResult;
     }) {
         this.graph = args.graph;
         this.results = args.results;

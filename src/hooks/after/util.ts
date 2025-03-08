@@ -1,8 +1,8 @@
-import type { CypressRunResultType } from "../../types/cypress/cypress";
+import type { CypressRunResult } from "../../types/cypress";
 import { missingTestKeyInTestTitleError } from "../../util/errors";
 
 export function containsCypressTest(
-    runResult: CypressRunResultType,
+    runResult: CypressRunResult,
     featureFileExtension?: string
 ): boolean {
     return runResult.runs.some((run) => {
@@ -11,7 +11,7 @@ export function containsCypressTest(
 }
 
 export function containsCucumberTest(
-    runResult: CypressRunResultType,
+    runResult: CypressRunResult,
     featureFileExtension?: string
 ): boolean {
     return runResult.runs.some((run) => {

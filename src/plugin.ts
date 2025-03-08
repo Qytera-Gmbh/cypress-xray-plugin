@@ -8,7 +8,7 @@ import type { PluginTaskParameterType } from "./cypress/tasks";
 import { PluginTaskListener } from "./cypress/tasks";
 import afterRun from "./hooks/after/after-run";
 import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
-import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
+import type { CypressFailedRunResult, CypressRunResult } from "./types/cypress";
 import type {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,
@@ -131,7 +131,7 @@ export async function configureXrayPlugin(
             return args.response;
         },
     });
-    on("after:run", async (results: CypressFailedRunResultType | CypressRunResultType) => {
+    on("after:run", async (results: CypressFailedRunResult | CypressRunResult) => {
         if (context.getOptions().xray.uploadResults) {
             if ("status" in results && results.status === "failed") {
                 const failedResult = results;

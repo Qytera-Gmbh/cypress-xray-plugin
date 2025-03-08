@@ -1,5 +1,5 @@
 import { basename, extname } from "node:path";
-import type { RunResult } from "../../../../../../types/cypress/12.0.0/api";
+import type { RunResult } from "../../../../../../types/cypress";
 import { CypressStatus } from "../../../../../../types/cypress/status";
 import { getTestIssueKeys } from "../../../../util";
 import { toCypressStatus } from "./status-conversion";
@@ -96,7 +96,7 @@ export interface FailedConversion {
  */
 export class RunConverterV12 implements RunConverter {
     private readonly projectKey: string;
-    private readonly runResults: RunResult[];
+    private readonly runResults: RunResult<"<13">[];
 
     /**
      * Constructs a new converter for the specified run results.
@@ -104,7 +104,7 @@ export class RunConverterV12 implements RunConverter {
      * @param projectKey - the project key
      * @param runResults - the run results
      */
-    constructor(projectKey: string, runResults: RunResult[]) {
+    constructor(projectKey: string, runResults: RunResult<"<13">[]) {
         this.projectKey = projectKey;
         this.runResults = runResults;
     }
@@ -180,9 +180,9 @@ export class RunConverterV12 implements RunConverter {
 /**
  * Converts Cypress test results for Cypress versions &ge;13.
  */
-export class RunConverterV13 implements RunConverter {
+export class RunConverterLatest implements RunConverter {
     private readonly projectKey: string;
-    private readonly runResults: CypressCommandLine.RunResult[];
+    private readonly runResults: RunResult<"13" | "14">[];
 
     /**
      * Constructs a new converter for the specified run results.
@@ -190,7 +190,7 @@ export class RunConverterV13 implements RunConverter {
      * @param projectKey - the project key
      * @param runResults - the run results
      */
-    constructor(projectKey: string, runResults: CypressCommandLine.RunResult[]) {
+    constructor(projectKey: string, runResults: RunResult<"13" | "14">[]) {
         this.projectKey = projectKey;
         this.runResults = runResults;
     }

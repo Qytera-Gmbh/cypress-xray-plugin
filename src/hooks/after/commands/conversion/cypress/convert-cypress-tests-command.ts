@@ -1,8 +1,7 @@
 import { basename, extname, parse } from "node:path";
 import { lt } from "semver";
 import type { EvidenceCollection, IterationParameterCollection } from "../../../../../context";
-import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
-import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import type { CypressRunResult, RunResult } from "../../../../../types/cypress";
 import { CypressStatus } from "../../../../../types/cypress/status";
 import type { InternalXrayOptions } from "../../../../../types/plugin";
 import type {
@@ -19,7 +18,7 @@ import { earliestDate, latestDate, truncateIsoTime } from "../../../../../util/t
 import type { Computable } from "../../../../command";
 import { Command } from "../../../../command";
 import type { RunConverter } from "./util/converter";
-import { RunConverterV12, RunConverterV13, type SuccessfulConversion } from "./util/converter";
+import { RunConverterLatest, RunConverterV12, type SuccessfulConversion } from "./util/converter";
 import { getXrayStatus } from "./util/status-conversion";
 
 interface Parameters {
@@ -35,8 +34,8 @@ interface Parameters {
 }
 
 export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]], Parameters> {
-    private readonly results: Computable<CypressRunResultType>;
-    constructor(parameters: Parameters, logger: Logger, results: Computable<CypressRunResultType>) {
+    private readonly results: Computable<CypressRunResult>;
+    constructor(parameters: Parameters, logger: Logger, results: Computable<CypressRunResult>) {
         super(parameters, logger);
         this.results = results;
     }
@@ -82,7 +81,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     }
 
     private convertTestRuns(
-        runResults: CypressRunResultType,
+        runResults: CypressRunResult,
         version: "<13" | ">=13"
     ): SuccessfulConversion[] {
         const cypressRuns = runResults.runs.filter(
@@ -95,10 +94,10 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         }
         const converter: RunConverter =
             version === "<13"
-                ? new RunConverterV12(this.parameters.projectKey, cypressRuns as RunResult_V12[])
-                : new RunConverterV13(
+                ? new RunConverterV12(this.parameters.projectKey, cypressRuns as RunResult<"<13">[])
+                : new RunConverterLatest(
                       this.parameters.projectKey,
-                      cypressRuns as CypressCommandLine.RunResult[]
+                      cypressRuns as RunResult<"13" | "14">[]
                   );
         const conversions = converter.getConversions({
             onlyLastAttempt: this.parameters.uploadLastAttempt,
