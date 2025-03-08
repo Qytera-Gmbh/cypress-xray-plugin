@@ -1,5 +1,17 @@
 # Changelog
 
+# `8.2.2`
+
+## Notable changes
+
+- Fixed missing content type in screenshot evidence
+
+- Fixed screenshot filtering when using `plugin.uploadLastAttempt`
+
+## Dependency updates
+
+- Bumped axios from 1.7.9 to 1.8.2
+
 # `8.2.1`
 
 ## Notable changes
@@ -12,7 +24,7 @@
 
 ## Dependency updates
 
-- Bump @badeball/cypress-cucumber-preprocessor from 22.0.0 to 22.0.1
+- Bumped @badeball/cypress-cucumber-preprocessor from 22.0.0 to 22.0.1
 
 - Bumped @cucumber/messages from 27.0.2 to 27.2.0
 
