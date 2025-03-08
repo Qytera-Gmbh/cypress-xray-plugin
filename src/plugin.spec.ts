@@ -412,7 +412,7 @@ describe(relative(cwd(), __filename), async () => {
             const mockedOn = context.mock.fn();
             await configureXrayPlugin(mockedOn, config, pluginContext.getOptions());
             await (
-                mockedOn.mock.calls[1].arguments[1] as (
+                mockedOn.mock.calls[2].arguments[1] as (
                     results: CypressFailedRunResult | CypressRunResult
                 ) => Promise<void>
             )(afterRunResult);
@@ -450,12 +450,13 @@ describe(relative(cwd(), __filename), async () => {
             );
             assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[4], expectedContext);
             assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[5], expectedContext);
+            assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[6], expectedContext);
             assert.deepStrictEqual(
-                addUploadCommands.mock.calls[0].arguments[6],
+                addUploadCommands.mock.calls[0].arguments[7],
                 pluginContext.getGraph()
             );
             assert.strictEqual(
-                addUploadCommands.mock.calls[0].arguments[7] instanceof CapturingLogger,
+                addUploadCommands.mock.calls[0].arguments[8] instanceof CapturingLogger,
                 true
             );
         });
@@ -724,7 +725,7 @@ describe(relative(cwd(), __filename), async () => {
         syncFeatureFile({
             filePath: "./test/resources/features/invalid.feature",
         } as FileObject);
-        const [eventName, callback] = spy.mock.calls[1].arguments as [
+        const [eventName, callback] = spy.mock.calls[2].arguments as [
             string,
             (results: CypressFailedRunResult | CypressRunResult) => Promise<void> | void,
         ];
