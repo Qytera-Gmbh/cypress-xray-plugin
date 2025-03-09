@@ -643,7 +643,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     height: 8,
                     name: "",
-                    path: "./test/resources/small CYP-237.png",
+                    path: "./test/resources/something -- CYP-237 happens (failed).png",
                     takenAt: "2023-09-09T10:59:31.366Z",
                     width: 8,
                 },
@@ -2905,7 +2905,7 @@ describe(relative(cwd(), __filename), async () => {
                         duration: 359,
                         multipart: true,
                         name: "null",
-                        path: "./test/resources/CYP-237 happens.png",
+                        path: "./test/resources/something -- CYP-237 happens (failed).png",
                         pixelRatio: 1,
                         scaled: false,
                         size: 6348,
@@ -2931,7 +2931,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             const screenshots = converter.getScreenshots("CYP-237", { onlyLastAttempt: true });
             assert.deepStrictEqual(screenshots, [
-                "./test/resources/CYP-237 happens.png",
+                "./test/resources/something -- CYP-237 happens (failed).png",
                 "./test/resources/manual CYP-237 screenshot.png",
             ]);
         });

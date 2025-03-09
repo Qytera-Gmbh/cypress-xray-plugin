@@ -336,7 +336,7 @@ export class RunConverterLatest implements RunConverter {
                 return true;
             }
             const sanitizedScreenshotName = this.sanitizeName(screenshot.path);
-            for (const test of tests) {
+            return tests.some((test) => {
                 const sanitizedTestTitle = this.sanitizeName(test.title[test.title.length - 1]);
                 const testEndScreenshotPattern = new RegExp(
                     `${this.escapeRegExp(sanitizedTestTitle)} \\((${RunConverterLatest.STATUS_UNION})\\)`
@@ -348,8 +348,8 @@ export class RunConverterLatest implements RunConverter {
                     }
                     return true;
                 }
-            }
-            return true;
+                return false;
+            });
         });
     }
 
