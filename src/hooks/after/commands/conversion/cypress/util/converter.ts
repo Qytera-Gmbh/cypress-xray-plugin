@@ -1,6 +1,6 @@
 import { basename, extname } from "node:path";
 import type { RunResult, ScreenshotDetails } from "../../../../../../types/cypress";
-import { CypressStatus } from "../../../../../../types/cypress/status";
+import type { CypressStatus } from "../../../../../../types/cypress/status";
 import { getTestIssueKeys } from "../../../../util";
 import { toCypressStatus } from "./status-conversion";
 
@@ -181,12 +181,6 @@ export class RunConverterV12 implements RunConverter {
  * Converts Cypress test results for Cypress versions &ge;13.
  */
 export class RunConverterLatest implements RunConverter {
-    private static readonly STATUS_UNION: string = [
-        CypressStatus.FAILED,
-        CypressStatus.PASSED,
-        CypressStatus.PENDING,
-        CypressStatus.SKIPPED,
-    ].join("|");
     private readonly projectKey: string;
     private readonly runResults: readonly RunResult<"13" | "14">[];
     private readonly screenshotDetails: readonly ScreenshotDetails<"13" | "14">[];
@@ -490,7 +484,19 @@ export class RunConverterLatest implements RunConverter {
         return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
 
+    /**
+     * Removes illegal filename characters from a string (based on Windows).
+     *
+     * Note: this mirrors what Cypress is doing internally when computing file paths.
+     *
+     * @param s - the input string
+     * @returns the sanitized string
+     *
+     * @see https://stackoverflow.com/a/42210346
+     * @see https://github.com/cypress-io/cypress/blob/667e3196381c7e7b4b09a00c1b3f42d70a3f944b/packages/server/lib/screenshots.ts#L417-L421
+     */
     private sanitizeName(s: string) {
-        return s.replaceAll(/[^\w\d\s.\-_()]/g, "");
+        // eslint-disable-next-line no-control-regex
+        return s.replaceAll(/[/\\?%*:|"<>\u0000-\u001F]/g, "");
     }
 }
