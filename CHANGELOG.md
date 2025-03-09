@@ -1,5 +1,11 @@
 # Changelog
 
+# `8.2.3`
+
+## Notable changes
+
+- Adjusted screenshot filtering to better handle Unicode characters
+
 # `8.2.2`
 
 ## Notable changes
