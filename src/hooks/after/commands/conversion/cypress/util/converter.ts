@@ -338,17 +338,13 @@ export class RunConverterLatest implements RunConverter {
             const sanitizedScreenshotName = this.sanitizeName(screenshot.path);
             return tests.some((test) => {
                 const sanitizedTestTitle = this.sanitizeName(test.title[test.title.length - 1]);
-                const testEndScreenshotPattern = new RegExp(
-                    `${this.escapeRegExp(sanitizedTestTitle)} \\((${RunConverterLatest.STATUS_UNION})\\)`
-                );
-                if (testEndScreenshotPattern.exec(sanitizedScreenshotName) !== null) {
-                    if (test.attempts.length > 1) {
-                        const finalAttemptName = `${sanitizedTestTitle} (${test.state}) (attempt ${test.attempts.length.toString()})${extname(screenshot.path)}`;
-                        return sanitizedScreenshotName.endsWith(finalAttemptName);
-                    }
-                    return true;
+                let finalAttemptName;
+                if (test.attempts.length > 1) {
+                    finalAttemptName = `${sanitizedTestTitle} (${test.state}) (attempt ${test.attempts.length.toString()})${extname(screenshot.path)}`;
+                } else {
+                    finalAttemptName = `${sanitizedTestTitle} (${test.state})${extname(screenshot.path)}`;
                 }
-                return false;
+                return sanitizedScreenshotName.endsWith(finalAttemptName);
             });
         });
     }
