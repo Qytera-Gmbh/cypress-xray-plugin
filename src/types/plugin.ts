@@ -774,14 +774,18 @@ export interface PluginOptions {
      */
     normalizeScreenshotNames?: boolean;
     /**
-     * Enables split upload mode for evidence files. When set to `true`, evidence such as
-     * screenshots and videos are uploaded in multiple smaller requests rather than in a single
-     * large request. This approach helps to avoid server-side request size limitations and can also
-     * be useful for avoiding `JSON.stringify` token length errors.
+     * Enables split upload mode for evidence files such as screenshots and videos, which are then
+     * uploaded in multiple smaller requests rather than in a single large request. This approach
+     * helps to avoid server-side request size limitations, and can also be useful for avoiding
+     * `JSON.stringify` token length errors.
+     *
+     * If set to `true`, evidence uploads will be sent concurrently for each test issue. This may
+     * cause them to appear out of order in Xray. If the order is important, but split uploads are
+     * still desired, the `sequential` setting can be used.
      *
      * @defaultValue false
      */
-    splitUpload?: boolean;
+    splitUpload?: "sequential" | boolean;
     /**
      * If set to `true`, test retries and their associated screenshots will be omitted from the
      * upload to Xray, i.e. only the last attempt of each test will be included.

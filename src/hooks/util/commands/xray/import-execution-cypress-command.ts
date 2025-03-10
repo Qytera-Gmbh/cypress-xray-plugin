@@ -9,7 +9,7 @@ import type { Computable } from "../../../command";
 import { Command } from "../../../command";
 
 interface CommandParameters {
-    splitUpload: boolean;
+    splitUpload: "sequential" | boolean;
     xrayClient: XrayClient;
 }
 
@@ -42,63 +42,125 @@ export class ImportExecutionCypressCommand extends Command<string, CommandParame
             results,
             info
         );
-        for (const [issueKey, evidences] of evidencyByTestIssue.entries()) {
-            if (this.parameters.xrayClient instanceof ServerClient) {
-                const serverClient: ServerClient = this.parameters.xrayClient;
-                const testRun = await serverClient.getTestRun({
-                    testExecIssueKey: testExecIssueKey,
-                    testIssueKey: issueKey,
-                });
-                const evidenceUploads = evidences.map((evidence) =>
-                    serverClient.addEvidence(testRun.id, evidence)
-                );
-                for (const promiseResult of await Promise.allSettled(evidenceUploads)) {
-                    if (promiseResult.status === "rejected") {
-                        LOG.message(
-                            "warning",
-                            dedent(`
-                                Failed to attach evidence of test ${issueKey} to test execution ${testExecIssueKey}:
+        const uploadCallbacks = evidencyByTestIssue.entries().map(async ([issueKey, evidences]) => {
+            try {
+                await this.uploadTestEvidences(issueKey, testExecIssueKey, evidences);
+            } catch (error: unknown) {
+                LOG.message(
+                    "warning",
+                    dedent(`
+                        Failed to attach evidences of test ${issueKey} to test execution ${testExecIssueKey}:
 
-                                  ${unknownToString(promiseResult.reason)}
-                            `)
-                        );
-                    }
-                }
-            } else if (this.parameters.xrayClient instanceof XrayClientCloud) {
-                const cloudClient: XrayClientCloud = this.parameters.xrayClient;
-                const testRuns = await cloudClient.getTestRunResults({
-                    testExecIssueIds: [testExecIssueKey],
-                    testIssueIds: [issueKey],
-                });
-                if (testRuns.length !== 1) {
-                    throw new Error(
-                        `Failed to get test run for test execution ${testExecIssueKey} and test ${issueKey}`
-                    );
-                }
-                if (!testRuns[0].id) {
-                    throw new Error("Test run does not have an ID");
-                }
-                const id = testRuns[0].id;
-                const evidenceUploads = evidences.map((evidence) =>
-                    cloudClient.addEvidenceToTestRun({
-                        evidence: [evidence],
-                        id: id,
-                    })
+                          ${unknownToString(error)}
+                    `)
                 );
-                for (const promiseResult of await Promise.allSettled(evidenceUploads)) {
-                    if (promiseResult.status === "rejected") {
-                        LOG.message(
-                            "warning",
-                            dedent(`
-                                Failed to attach evidence of test ${issueKey} to test execution ${testExecIssueKey}:
-
-                                  ${unknownToString(promiseResult.reason)}
-                            `)
-                        );
-                    }
-                }
             }
-        }
+        });
+        await Promise.all(uploadCallbacks);
         return testExecIssueKey;
+    }
+
+    private async uploadTestEvidences(
+        issueKey: string,
+        testExecIssueKey: string,
+        evidences: XrayEvidenceItem[]
+    ) {
+        let uploadCallbacks: (() => Promise<void>)[] = [];
+        if (this.parameters.xrayClient instanceof ServerClient) {
+            const serverClient: ServerClient = this.parameters.xrayClient;
+            const testRun = await serverClient.getTestRun({
+                testExecIssueKey: testExecIssueKey,
+                testIssueKey: issueKey,
+            });
+            uploadCallbacks = evidences.map(
+                (evidence) => () =>
+                    this.uploadEvidenceServer(serverClient, {
+                        evidence,
+                        issueKey,
+                        testExecIssueKey,
+                        testRunId: testRun.id,
+                    })
+            );
+        } else if (this.parameters.xrayClient instanceof XrayClientCloud) {
+            const cloudClient: XrayClientCloud = this.parameters.xrayClient;
+            const testRuns = await cloudClient.getTestRunResults({
+                testExecIssueIds: [testExecIssueKey],
+                testIssueIds: [issueKey],
+            });
+            if (testRuns.length !== 1) {
+                throw new Error(
+                    `Failed to get test run for test execution ${testExecIssueKey} and test ${issueKey}`
+                );
+            }
+            if (!testRuns[0].id) {
+                throw new Error("Test run does not have an ID");
+            }
+            const id = testRuns[0].id;
+            uploadCallbacks = evidences.map(
+                (evidence) => () =>
+                    this.uploadEvidenceCloud(cloudClient, {
+                        evidence,
+                        issueKey,
+                        testExecIssueKey,
+                        testRunId: id,
+                    })
+            );
+        }
+        if (this.parameters.splitUpload === "sequential") {
+            for (const uploadCallback of uploadCallbacks) {
+                await uploadCallback();
+            }
+        } else {
+            await Promise.all(uploadCallbacks.map((callback) => callback()));
+        }
+    }
+
+    private async uploadEvidenceServer(
+        serverClient: ServerClient,
+        testRunConfig: {
+            evidence: XrayEvidenceItem;
+            issueKey: string;
+            testExecIssueKey: string;
+            testRunId: number;
+        }
+    ) {
+        try {
+            await serverClient.addEvidence(testRunConfig.testRunId, testRunConfig.evidence);
+        } catch (error: unknown) {
+            LOG.message(
+                "warning",
+                dedent(`
+                    Failed to attach evidence of test ${testRunConfig.issueKey} to test execution ${testRunConfig.testExecIssueKey}:
+
+                      ${unknownToString(error)}
+                `)
+            );
+        }
+    }
+
+    private async uploadEvidenceCloud(
+        cloudClient: XrayClientCloud,
+        testRunConfig: {
+            evidence: XrayEvidenceItem;
+            issueKey: string;
+            testExecIssueKey: string;
+            testRunId: string;
+        }
+    ) {
+        try {
+            await cloudClient.addEvidenceToTestRun({
+                evidence: [testRunConfig.evidence],
+                id: testRunConfig.testRunId,
+            });
+        } catch (error: unknown) {
+            LOG.message(
+                "warning",
+                dedent(`
+                    Failed to attach evidence of test ${testRunConfig.issueKey} to test execution ${testRunConfig.testExecIssueKey}:
+
+                      ${unknownToString(error)}
+                `)
+            );
+        }
     }
 }
