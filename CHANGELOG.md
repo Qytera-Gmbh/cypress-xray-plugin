@@ -1,5 +1,11 @@
 # Changelog
 
+# `8.3.0`
+
+## Notable changes
+
+- Added sequential mode for `plugin.splitUpload`
+
 # `8.2.3`
 
 ## Notable changes
