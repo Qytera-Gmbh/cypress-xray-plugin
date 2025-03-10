@@ -191,7 +191,7 @@ function getImportExecutionCypressCommand(
     builder: AfterRunBuilder,
     options: {
         reusesExecutionIssue: boolean;
-        splitUpload: boolean;
+        splitUpload: "sequential" | boolean;
         testEnvironments?: string[];
         testPlanIssueKey?: string;
     }
