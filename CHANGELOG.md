@@ -1,5 +1,11 @@
 # Changelog
 
+# `8.3.1`
+
+## Notable changes
+
+- Replaced map iteration to ensure compatibility with Node 18
+
 # `8.3.0`
 
 ## Notable changes
