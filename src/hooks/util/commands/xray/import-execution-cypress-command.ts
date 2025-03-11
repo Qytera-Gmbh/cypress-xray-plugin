@@ -42,7 +42,8 @@ export class ImportExecutionCypressCommand extends Command<string, CommandParame
             results,
             info
         );
-        const uploadCallbacks = evidencyByTestIssue.entries().map(async ([issueKey, evidences]) => {
+        const entries = [...evidencyByTestIssue.entries()];
+        const uploadCallbacks = entries.map(async ([issueKey, evidences]) => {
             try {
                 await this.uploadTestEvidences(issueKey, testExecIssueKey, evidences);
             } catch (error: unknown) {
