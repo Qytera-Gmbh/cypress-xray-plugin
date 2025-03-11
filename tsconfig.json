@@ -4,8 +4,10 @@
     "compilerOptions": {
         "declaration": true,
         "esModuleInterop": true,
-        "lib": ["ESNext", "DOM"],
-        "module": "NodeNext",
+        // Importang: use the library that corresponds to the engine specified in the package.json.
+        // https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping
+        "lib": ["ES2022", "DOM"],
+        "module": "Node16",
         "moduleResolution": "NodeNext",
         "outDir": "dist",
         "skipLibCheck": true,
