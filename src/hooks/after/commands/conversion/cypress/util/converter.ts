@@ -293,25 +293,34 @@ export class RunConverterLatest implements RunConverter {
     private filterLastAttemptScreenshots(screenshots: readonly ScreenshotDetails<"13" | "14">[]) {
         // Group screenshots by their "basename", i.e. without the (attempt xxx) suffixes.
         const groups = this.groupScreenshots(screenshots);
-        console.log(groups.map((g) => g.map((s) => s.path)));
         const lastScreenshots = [];
-        // Sort screenshots such that the highest attempt always comes first.
         for (const similarScreenshots of groups) {
-            similarScreenshots.sort((a, b) => {
-                const matchA = RunConverterLatest.ATTEMPT_REGEX.exec(a.path);
-                const matchB = RunConverterLatest.ATTEMPT_REGEX.exec(b.path);
-                if (matchA && matchB) {
-                    return Number.parseInt(matchB[1]) - Number.parseInt(matchA[1]);
+            const screenshotsByAttemptIndex = new Map<number, ScreenshotDetails<"13" | "14">[]>();
+            for (const screenshot of similarScreenshots) {
+                const match = RunConverterLatest.ATTEMPT_REGEX.exec(screenshot.path);
+                if (match !== null) {
+                    const attemptIndex = Number.parseInt(match[1]);
+                    const attemptScreenshots = screenshotsByAttemptIndex.get(attemptIndex);
+                    if (attemptScreenshots) {
+                        attemptScreenshots.push(screenshot);
+                    } else {
+                        screenshotsByAttemptIndex.set(attemptIndex, [screenshot]);
+                    }
                 }
-                if (matchA) {
-                    return -1;
-                }
-                if (matchB) {
-                    return 1;
-                }
-                return 0;
-            });
-            lastScreenshots.push(similarScreenshots[0]);
+            }
+            // Only keep the latest attempts if present.
+            if (screenshotsByAttemptIndex.size > 0) {
+                const latestAttempts = [...screenshotsByAttemptIndex.entries()].reduce(
+                    ([previousIndex, previousScreenshots], [currentIndex, currentScreenshots]) =>
+                        currentIndex > previousIndex
+                            ? [currentIndex, currentScreenshots]
+                            : [previousIndex, previousScreenshots],
+                    [Number.NEGATIVE_INFINITY, []]
+                );
+                lastScreenshots.push(...latestAttempts[1]);
+            } else {
+                lastScreenshots.push(...similarScreenshots);
+            }
         }
         // Remove all screenshots of failed attempts that have been superseded by a passed one
         // without screenshot.
@@ -351,7 +360,7 @@ export class RunConverterLatest implements RunConverter {
     }
 
     /**
-     * Groupos screenshots by their basenames, i.e. without the `attempt xxx`  or conflict suffixes.
+     * Groups screenshots by their basenames, i.e. without the `(attempt xxx)` or conflict suffixes.
      *
      * @param screenshots - the screenshots
      * @returns the grouped screenshots
@@ -360,12 +369,13 @@ export class RunConverterLatest implements RunConverter {
         screenshots: readonly ScreenshotDetails<"13" | "14">[]
     ): ScreenshotDetails<"13" | "14">[][] {
         const screenshotGroups: ScreenshotDetails<"13" | "14">[][] = [];
+        // Reverse order because we're popping (order is important for upload order later on).
         let remainingScreenshots = [...screenshots].reverse();
         while (remainingScreenshots.length > 0) {
             // Cast valid: it cannot ever be undefined here.
             const screenshot = remainingScreenshots.pop() as ScreenshotDetails<"13" | "14">;
             const group: ScreenshotDetails<"13" | "14">[] = [screenshot];
-            let name = basename(screenshot.path, extname(screenshot.path));
+            const name = basename(screenshot.path, extname(screenshot.path));
             // Try to find screenshots with possibly conflicting names.
             // If none exist, the screenshot was manually named like this and must remain as is.
             // See: https://github.com/cypress-io/cypress/blob/667e3196381c7e7b4b09a00c1b3f42d70a3f944b/packages/server/lib/screenshots.ts#L365
@@ -373,37 +383,35 @@ export class RunConverterLatest implements RunConverter {
             // E.g.: `CYP-123 my screenshot (2).png`
             const conflictRegex = / (\d+)$/;
             if (conflictRegex.exec(name) !== null) {
-                let isConflictingScreenshot = false;
                 const nameWithoutConflictSuffix = name.replace(conflictRegex, "");
-                for (const otherScreenshot of remainingScreenshots) {
+                for (let i = remainingScreenshots.length - 1; i >= 0; i--) {
+                    const otherScreenshot = remainingScreenshots[i];
                     const otherName = basename(otherScreenshot.path, extname(otherScreenshot.path));
                     if (conflictRegex.exec(otherName) !== null) {
                         if (nameWithoutConflictSuffix === otherName.replace(conflictRegex, "")) {
-                            isConflictingScreenshot = true;
                             group.push(otherScreenshot);
                         }
                     }
-                }
-                if (isConflictingScreenshot) {
-                    name = nameWithoutConflictSuffix;
                 }
                 remainingScreenshots = remainingScreenshots.filter((s1) =>
                     group.every((s2) => s1.path !== s2.path)
                 );
             }
-            // Try to find screenshots of previous attempts.
+            // Try to find screenshots of similar attempts.
             if (RunConverterLatest.ATTEMPT_REGEX.exec(name) !== null) {
-                const nameWithoutAttemptSuffix = name.replace(RunConverterLatest.ATTEMPT_REGEX, "");
-                for (const otherScreenshot of remainingScreenshots) {
+                const nameWithoutSuffix = name.replace(RunConverterLatest.ATTEMPT_REGEX, "");
+                for (let i = remainingScreenshots.length - 1; i >= 0; i--) {
+                    const otherScreenshot = remainingScreenshots[i];
                     const otherName = basename(otherScreenshot.path, extname(otherScreenshot.path));
-                    if (otherName.startsWith(nameWithoutAttemptSuffix)) {
+                    if (otherName === nameWithoutSuffix) {
                         group.push(otherScreenshot);
                     }
                 }
             } else {
-                for (const otherScreenshot of remainingScreenshots) {
+                for (let i = remainingScreenshots.length - 1; i >= 0; i--) {
+                    const otherScreenshot = remainingScreenshots[i];
                     const otherName = basename(otherScreenshot.path, extname(otherScreenshot.path));
-                    if (otherName.startsWith(name)) {
+                    if (otherName.replace(RunConverterLatest.ATTEMPT_REGEX, "") === name) {
                         group.push(otherScreenshot);
                     }
                 }
