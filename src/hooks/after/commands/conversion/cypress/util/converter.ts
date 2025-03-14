@@ -183,10 +183,19 @@ export class RunConverterV12 implements RunConverter {
 export class RunConverterLatest implements RunConverter {
     /**
      * - Initial run: `CYP-123 my screenshot.png`
-     *     - Retry #1: `CYP-123 my screenshot (attempt 2).png`
-     *     - Retry #2: `CYP-123 my screenshot (attempt 3).png`
+     *    - Retry #1: `CYP-123 my screenshot (attempt 2).png`
+     *    - Retry #2: `CYP-123 my screenshot (attempt 3).png`
+     *
+     * @see https://docs.cypress.io/app/guides/test-retries#Screenshots
      */
-    private static readonly ATTEMPT_REGEX = / \(attempt (\d+)\)/;
+    private static readonly REGEX_ATTEMPT = /\s+\(attempt (\d+)\)/;
+    /**
+     * - `CYP-123 my screenshot (1).png`
+     * - `CYP-123 my screenshot (2).png`
+     *
+     * @see https://github.com/cypress-io/cypress/blob/667e3196381c7e7b4b09a00c1b3f42d70a3f944b/packages/server/lib/screenshots.ts#L365
+     */
+    private static readonly REGEX_CONFLICT = /\s+(\d+)$/;
     private readonly projectKey: string;
     private readonly runResults: readonly RunResult<"13" | "14">[];
     private readonly screenshotDetails: readonly ScreenshotDetails<"13" | "14">[];
@@ -297,7 +306,7 @@ export class RunConverterLatest implements RunConverter {
         for (const similarScreenshots of groups) {
             const screenshotsByAttemptIndex = new Map<number, ScreenshotDetails<"13" | "14">[]>();
             for (const screenshot of similarScreenshots) {
-                const match = RunConverterLatest.ATTEMPT_REGEX.exec(screenshot.path);
+                const match = RunConverterLatest.REGEX_ATTEMPT.exec(screenshot.path);
                 if (match !== null) {
                     const attemptIndex = Number.parseInt(match[1]);
                     const attemptScreenshots = screenshotsByAttemptIndex.get(attemptIndex);
@@ -377,20 +386,14 @@ export class RunConverterLatest implements RunConverter {
             const group: ScreenshotDetails<"13" | "14">[] = [screenshot];
             const name = basename(screenshot.path, extname(screenshot.path));
             // Try to find screenshots with possibly conflicting names.
-            // If none exist, the screenshot was manually named like this and must remain as is.
-            // See: https://github.com/cypress-io/cypress/blob/667e3196381c7e7b4b09a00c1b3f42d70a3f944b/packages/server/lib/screenshots.ts#L365
-            // E.g.: `CYP-123 my screenshot (1).png`
-            // E.g.: `CYP-123 my screenshot (2).png`
-            const conflictRegex = / (\d+)$/;
-            if (conflictRegex.exec(name) !== null) {
-                const nameWithoutConflictSuffix = name.replace(conflictRegex, "");
+            if (RunConverterLatest.REGEX_CONFLICT.exec(name) !== null) {
+                const nameWithoutSuffix = name.replace(RunConverterLatest.REGEX_CONFLICT, "");
                 for (let i = remainingScreenshots.length - 1; i >= 0; i--) {
                     const otherScreenshot = remainingScreenshots[i];
-                    const otherName = basename(otherScreenshot.path, extname(otherScreenshot.path));
-                    if (conflictRegex.exec(otherName) !== null) {
-                        if (nameWithoutConflictSuffix === otherName.replace(conflictRegex, "")) {
-                            group.push(otherScreenshot);
-                        }
+                    let otherName = basename(otherScreenshot.path, extname(otherScreenshot.path));
+                    otherName = otherName.replace(RunConverterLatest.REGEX_CONFLICT, "");
+                    if (otherName === nameWithoutSuffix) {
+                        group.push(otherScreenshot);
                     }
                 }
                 remainingScreenshots = remainingScreenshots.filter((s1) =>
@@ -398,8 +401,8 @@ export class RunConverterLatest implements RunConverter {
                 );
             }
             // Try to find screenshots of similar attempts.
-            if (RunConverterLatest.ATTEMPT_REGEX.exec(name) !== null) {
-                const nameWithoutSuffix = name.replace(RunConverterLatest.ATTEMPT_REGEX, "");
+            if (RunConverterLatest.REGEX_ATTEMPT.exec(name) !== null) {
+                const nameWithoutSuffix = name.replace(RunConverterLatest.REGEX_ATTEMPT, "");
                 for (let i = remainingScreenshots.length - 1; i >= 0; i--) {
                     const otherScreenshot = remainingScreenshots[i];
                     const otherName = basename(otherScreenshot.path, extname(otherScreenshot.path));
@@ -410,8 +413,9 @@ export class RunConverterLatest implements RunConverter {
             } else {
                 for (let i = remainingScreenshots.length - 1; i >= 0; i--) {
                     const otherScreenshot = remainingScreenshots[i];
-                    const otherName = basename(otherScreenshot.path, extname(otherScreenshot.path));
-                    if (otherName.replace(RunConverterLatest.ATTEMPT_REGEX, "") === name) {
+                    let otherName = basename(otherScreenshot.path, extname(otherScreenshot.path));
+                    otherName = otherName.replace(RunConverterLatest.REGEX_ATTEMPT, "");
+                    if (otherName === name) {
                         group.push(otherScreenshot);
                     }
                 }
