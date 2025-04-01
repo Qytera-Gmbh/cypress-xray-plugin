@@ -5,6 +5,12 @@ import type { JiraClient } from "../client/jira/jira-client";
 import type { XrayClient } from "../client/xray/xray-client";
 import type { Level } from "../util/logging";
 import type { IssueUpdate } from "./jira/responses/issue-update";
+import type { XrayTestExecutionResults } from "./xray/import-test-execution-results";
+import type { CucumberMultipart } from "./xray/requests/import-execution-cucumber-multipart";
+import type {
+    MultipartInfo,
+    MultipartInfoCloud,
+} from "./xray/requests/import-execution-multipart-info";
 
 /**
  * Models all options for configuring the behaviour of the plugin.
@@ -704,9 +710,66 @@ export type HttpOptions = AxiosRequestConfig &
 export type InternalHttpOptions = HttpOptions;
 
 /**
+ * Plugin events dispatched by the plugin.
+ */
+export interface PluginEvents {
+    /**
+     * A callback that is invoked after the Cypress results have been uploaded.
+     *
+     * @param event - the event
+     * @param data - the event data
+     */
+    on?(
+        event: "upload:cypress",
+        data: {
+            /**
+             * The Jira test execution issue information
+             *
+             * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+             * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+             */
+            info: MultipartInfo | MultipartInfoCloud;
+            /**
+             * The test results as provided by Cypress, converted to Xray JSON format.
+             *
+             * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+             * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+             */
+            results: XrayTestExecutionResults;
+            /**
+             * The key of the Jira issue to which the results were uploaded.
+             */
+            testExecutionIssueKey: string;
+        }
+    ): Promise<void> | void;
+    /**
+     * A callback that is invoked after the Cucumber results have been uploaded.
+     *
+     * @param event - the event
+     * @param data - the event data
+     */
+    on?(
+        event: "upload:cucumber",
+        data: {
+            /**
+             * The Cucumber test results.
+             *
+             * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+             * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+             */
+            results: CucumberMultipart;
+            /**
+             * The key of the Jira issue to which the results were uploaded.
+             */
+            testExecutionIssueKey: string;
+        }
+    ): Promise<void> | void;
+}
+
+/**
  * Options for configuring the general behaviour of the plugin.
  */
-export interface PluginOptions {
+export interface PluginOptions extends PluginEvents {
     /**
      * Enables or disables extensive debugging output.
      *

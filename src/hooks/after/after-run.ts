@@ -432,6 +432,8 @@ class AfterRunBuilder {
         const command = this.graph.place(
             new ImportExecutionCypressCommand(
                 {
+                    // eslint-disable-next-line @typescript-eslint/unbound-method
+                    on: this.options.plugin.on,
                     splitUpload: this.options.plugin.splitUpload,
                     xrayClient: this.clients.xrayClient,
                 },
@@ -655,7 +657,11 @@ class AfterRunBuilder {
     }) {
         const command = this.graph.place(
             new ImportExecutionCucumberCommand(
-                { xrayClient: this.clients.xrayClient },
+                {
+                    // eslint-disable-next-line @typescript-eslint/unbound-method
+                    on: this.options.plugin.on,
+                    xrayClient: this.clients.xrayClient,
+                },
                 this.logger,
                 parameters.cucumberMultipart
             )
