@@ -6,7 +6,7 @@ import type { Computable } from "../../../command";
 import { Command } from "../../../command";
 
 interface Parameters {
-    on: PluginEvents["on"];
+    emit: PluginEvents["on"];
     xrayClient: XrayClient;
 }
 
@@ -28,8 +28,8 @@ export class ImportExecutionCucumberCommand extends Command<string, Parameters> 
                 results.features,
                 results.info
             );
-        if (this.parameters.on) {
-            await this.parameters.on("upload:cucumber", { results, testExecutionIssueKey });
+        if (this.parameters.emit) {
+            await this.parameters.emit("upload:cucumber", { results, testExecutionIssueKey });
         }
         return testExecutionIssueKey;
     }

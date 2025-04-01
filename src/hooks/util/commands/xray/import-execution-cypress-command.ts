@@ -10,7 +10,7 @@ import type { Computable } from "../../../command";
 import { Command } from "../../../command";
 
 interface CommandParameters {
-    on: PluginEvents["on"];
+    emit: PluginEvents["on"];
     splitUpload: "sequential" | boolean;
     xrayClient: XrayClient;
 }
@@ -29,12 +29,7 @@ export class ImportExecutionCypressCommand extends Command<string, CommandParame
     protected async computeResult(): Promise<string> {
         const [results, info] = await this.execution.compute();
         let testExecutionIssueKey: string;
-        if (!this.parameters.splitUpload) {
-            testExecutionIssueKey = await this.parameters.xrayClient.importExecutionMultipart(
-                results,
-                info
-            );
-        } else {
+        if (this.parameters.splitUpload) {
             const evidencyByTestIssue = new Map<string, XrayEvidenceItem[]>();
             if (results.tests) {
                 for (const test of results.tests) {
@@ -56,17 +51,22 @@ export class ImportExecutionCypressCommand extends Command<string, CommandParame
                     LOG.message(
                         "warning",
                         dedent(`
-                        Failed to attach evidences of test ${issueKey} to test execution ${testExecutionIssueKey}:
+                            Failed to attach evidences of test ${issueKey} to test execution ${testExecutionIssueKey}:
 
-                          ${unknownToString(error)}
-                    `)
+                              ${unknownToString(error)}
+                        `)
                     );
                 }
             });
             await Promise.all(uploadCallbacks);
+        } else {
+            testExecutionIssueKey = await this.parameters.xrayClient.importExecutionMultipart(
+                results,
+                info
+            );
         }
-        if (this.parameters.on) {
-            await this.parameters.on("upload:cypress", { info, results, testExecutionIssueKey });
+        if (this.parameters.emit) {
+            await this.parameters.emit("upload:cypress", { info, results, testExecutionIssueKey });
         }
         return testExecutionIssueKey;
     }
