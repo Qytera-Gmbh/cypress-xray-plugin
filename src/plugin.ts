@@ -161,6 +161,7 @@ export async function configureXrayPlugin(
                     context,
                     context,
                     context,
+                    context.getEventEmitter(),
                     context.getGraph(),
                     logger
                 );

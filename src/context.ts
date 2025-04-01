@@ -24,6 +24,7 @@ import type {
     InternalJiraOptions,
     InternalPluginOptions,
     InternalXrayOptions,
+    PluginEvent,
 } from "./types/plugin";
 import type { XrayEvidenceItem } from "./types/xray/import-test-execution-results";
 import { dedent } from "./util/dedent";
@@ -45,6 +46,7 @@ export class PluginContext
     private readonly evidenceCollection: EvidenceCollection;
     private readonly iterationParameterCollection: IterationParameterCollection;
     private readonly screenshotCollection: ScreenshotCollection;
+    private readonly eventEmitter: PluginEventEmitter;
     private readonly graph: ExecutableGraph<Command>;
     private readonly logger: Logger;
 
@@ -64,6 +66,7 @@ export class PluginContext
         this.evidenceCollection = evidenceCollection;
         this.iterationParameterCollection = iterationParameterCollection;
         this.screenshotCollection = screenshotCollection;
+        this.eventEmitter = new PluginEventEmitter();
         this.graph = graph;
         this.logger = logger;
     }
@@ -115,6 +118,10 @@ export class PluginContext
 
     public getIterationParameters(issueKey: string, testId: string): Record<string, string> {
         return this.iterationParameterCollection.getIterationParameters(issueKey, testId);
+    }
+
+    public getEventEmitter(): PluginEventEmitter {
+        return this.eventEmitter;
     }
 }
 
@@ -178,6 +185,79 @@ export class SimpleScreenshotCollection implements ScreenshotCollection {
     }
     public getScreenshots(): ScreenshotDetails[] {
         return this.screenshots;
+    }
+}
+
+type PluginEventListener<E extends keyof PluginEvent> = (
+    data: PluginEvent[E]
+) => Promise<void> | void;
+
+type PluginEventListeners = { [E in keyof PluginEvent]: PluginEventListener<E>[] };
+
+/**
+ * A minimal event emitter tailored for plugin events. Supports registering multiple listeners per
+ * event and emitting events with typed data.
+ */
+export class PluginEventEmitter {
+    private readonly listeners: PluginEventListeners = {
+        ["upload:cucumber"]: [],
+        ["upload:cypress"]: [],
+    };
+
+    /**
+     * Registers a listener for a given plugin event.
+     *
+     * @param name - the name of the event to listen to
+     * @param listener - a callback to handle the event data
+     */
+    public on<E extends keyof PluginEvent>(name: E, listener: PluginEventListener<E>) {
+        this.listeners[name].push(listener);
+    }
+
+    /**
+     * Register a listener for a given plugin event that will be fired only once and then removed.
+     *
+     * @param name - the name of the event to listen to
+     * @param listener - a callback to handle the event data
+     */
+    public once<E extends keyof PluginEvent>(name: E, listener: PluginEventListener<E>) {
+        const wrapper = async (data: PluginEvent[E]) => {
+            await listener(data);
+            this.off(name, wrapper);
+        };
+        this.on(name, wrapper);
+    }
+
+    /**
+     * Deregisters a listener for a given plugin event.
+     *
+     * @param name - the name of the event
+     * @param listener - the callback to remove
+     */
+    public off<E extends keyof PluginEvent>(name: E, listener: PluginEventListener<E>) {
+        const keep: PluginEventListeners[E] = [];
+        for (const eventListener of this.listeners[name]) {
+            if (eventListener !== listener) {
+                keep.push(eventListener);
+            }
+        }
+        this.listeners[name] = keep;
+    }
+
+    /**
+     * Emits an event and invokes all registered listeners for that event. Waits for all async
+     * listeners to complete before resolving.
+     *
+     * @param name - the name of the event to emit
+     * @param data - the data associated with the event
+     */
+    public async emit<E extends keyof PluginEvent>(name: E, data: PluginEvent[E]): Promise<void> {
+        const eventListeners = this.listeners[name];
+        await Promise.all(
+            eventListeners.map(async (listener) => {
+                await listener(data);
+            })
+        );
     }
 }
 

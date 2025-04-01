@@ -4,6 +4,7 @@ import type { XrayClient } from "../../client/xray/xray-client";
 import type {
     EvidenceCollection,
     IterationParameterCollection,
+    PluginEventEmitter,
     ScreenshotCollection,
 } from "../../context";
 import type { CypressRunResult } from "../../types/cypress";
@@ -59,6 +60,7 @@ async function addUploadCommands(
     evidenceCollection: EvidenceCollection,
     iterationParameterCollection: IterationParameterCollection,
     screenshotCollection: ScreenshotCollection,
+    eventEmitter: PluginEventEmitter,
     graph: ExecutableGraph<Command>,
     logger: Logger
 ) {
@@ -90,6 +92,7 @@ async function addUploadCommands(
     });
     const builder = new AfterRunBuilder({
         clients: clients,
+        eventEmitter,
         evidenceCollection: evidenceCollection,
         graph: graph,
         issueData: issueData,
@@ -322,6 +325,7 @@ class AfterRunBuilder {
     private readonly evidenceCollection: EvidenceCollection;
     private readonly iterationParameterCollection: IterationParameterCollection;
     private readonly screenshotCollection: ScreenshotCollection;
+    private readonly eventEmitter: PluginEventEmitter;
     private readonly clients: ClientCombination;
     private readonly logger: Logger;
     private readonly constants: {
@@ -335,6 +339,7 @@ class AfterRunBuilder {
 
     constructor(args: {
         clients: ClientCombination;
+        eventEmitter: PluginEventEmitter;
         evidenceCollection: EvidenceCollection;
         graph: ExecutableGraph<Command>;
         issueData?: PluginIssueUpdate;
@@ -351,6 +356,7 @@ class AfterRunBuilder {
         this.evidenceCollection = args.evidenceCollection;
         this.iterationParameterCollection = args.iterationParameterCollection;
         this.screenshotCollection = args.screenshotCollection;
+        this.eventEmitter = args.eventEmitter;
         this.clients = args.clients;
         this.logger = args.logger;
         this.constants = {};
@@ -432,8 +438,7 @@ class AfterRunBuilder {
         const command = this.graph.place(
             new ImportExecutionCypressCommand(
                 {
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
-                    emit: this.options.plugin.on,
+                    emitter: this.eventEmitter,
                     splitUpload: this.options.plugin.splitUpload,
                     xrayClient: this.clients.xrayClient,
                 },
@@ -658,8 +663,7 @@ class AfterRunBuilder {
         const command = this.graph.place(
             new ImportExecutionCucumberCommand(
                 {
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
-                    emit: this.options.plugin.on,
+                    emitter: this.eventEmitter,
                     xrayClient: this.clients.xrayClient,
                 },
                 this.logger,

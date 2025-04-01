@@ -1,12 +1,12 @@
 import type { XrayClient } from "../../../../client/xray/xray-client";
-import type { PluginEvents } from "../../../../types/plugin";
+import type { PluginEventEmitter } from "../../../../context";
 import type { CucumberMultipart } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
 import type { Logger } from "../../../../util/logging";
 import type { Computable } from "../../../command";
 import { Command } from "../../../command";
 
 interface Parameters {
-    emit: PluginEvents["on"];
+    emitter: PluginEventEmitter;
     xrayClient: XrayClient;
 }
 
@@ -28,9 +28,7 @@ export class ImportExecutionCucumberCommand extends Command<string, Parameters> 
                 results.features,
                 results.info
             );
-        if (this.parameters.emit) {
-            await this.parameters.emit("upload:cucumber", { results, testExecutionIssueKey });
-        }
+        await this.parameters.emitter.emit("upload:cucumber", { results, testExecutionIssueKey });
         return testExecutionIssueKey;
     }
 }

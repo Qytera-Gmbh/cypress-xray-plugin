@@ -1,7 +1,7 @@
 import type { XrayClient } from "../../../../client/xray/xray-client";
 import { XrayClientCloud } from "../../../../client/xray/xray-client-cloud";
 import { ServerClient } from "../../../../client/xray/xray-client-server";
-import type { PluginEvents } from "../../../../types/plugin";
+import type { PluginEventEmitter } from "../../../../context";
 import type { XrayEvidenceItem } from "../../../../types/xray/import-test-execution-results";
 import { dedent } from "../../../../util/dedent";
 import { LOG, type Logger } from "../../../../util/logging";
@@ -10,7 +10,7 @@ import type { Computable } from "../../../command";
 import { Command } from "../../../command";
 
 interface CommandParameters {
-    emit: PluginEvents["on"];
+    emitter: PluginEventEmitter;
     splitUpload: "sequential" | boolean;
     xrayClient: XrayClient;
 }
@@ -65,9 +65,11 @@ export class ImportExecutionCypressCommand extends Command<string, CommandParame
                 info
             );
         }
-        if (this.parameters.emit) {
-            await this.parameters.emit("upload:cypress", { info, results, testExecutionIssueKey });
-        }
+        await this.parameters.emitter.emit("upload:cypress", {
+            info,
+            results,
+            testExecutionIssueKey,
+        });
         return testExecutionIssueKey;
     }
 
