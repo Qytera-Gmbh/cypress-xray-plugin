@@ -723,7 +723,7 @@ export interface PluginEvents {
         event: "upload:cypress",
         data: {
             /**
-             * The Jira test execution issue information
+             * The Jira test execution issue information.
              *
              * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
              * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
