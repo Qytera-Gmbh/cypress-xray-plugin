@@ -8,6 +8,7 @@ import { AxiosRestClient } from "../../../../client/https/requests";
 import type { XrayClient } from "../../../../client/xray/xray-client";
 import { XrayClientCloud } from "../../../../client/xray/xray-client-cloud";
 import { ServerClient } from "../../../../client/xray/xray-client-server";
+import { PluginEventEmitter } from "../../../../context";
 import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
 import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import type { GetTestRunResponseServer } from "../../../../types/xray/responses/graphql/get-test-runs";
@@ -60,6 +61,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             const command = new ImportExecutionCypressCommand(
                 {
+                    emitter: new PluginEventEmitter(),
                     splitUpload: false,
                     xrayClient: xrayClient,
                 },
@@ -154,6 +156,7 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 const command = new ImportExecutionCypressCommand(
                     {
+                        emitter: new PluginEventEmitter(),
                         splitUpload: true,
                         xrayClient: xrayClient,
                     },
@@ -288,6 +291,7 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 const command = new ImportExecutionCypressCommand(
                     {
+                        emitter: new PluginEventEmitter(),
                         splitUpload: true,
                         xrayClient: xrayClient,
                     },
@@ -353,6 +357,63 @@ describe(relative(cwd(), __filename), async () => {
                         },
                     ],
                 ]);
+            });
+        });
+
+        it("emits the upload event", async (context) => {
+            const results: XrayTestExecutionResults = {
+                info: { description: "Hello", summary: "Test Execution Summary" },
+                testExecutionKey: "CYP-123",
+                tests: [{ status: "PASSED", testKey: "CYP-456" }],
+            };
+            const info: MultipartInfo = {
+                fields: {
+                    issuetype: { id: "10008" },
+                    project: { key: "CYP" },
+                    summary: "Brand new Test execution",
+                },
+            };
+            const xrayClient = new ServerClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                xrayClient,
+                "importExecutionMultipart",
+                context.mock.fn<ServerClient["importExecutionMultipart"]>(() => {
+                    return Promise.resolve("CYP-123");
+                })
+            );
+            const emitter = new PluginEventEmitter();
+            let payload = {};
+            emitter.on("upload:cypress", (data) => {
+                payload = data;
+            });
+            const command = new ImportExecutionCypressCommand(
+                {
+                    emitter: emitter,
+                    splitUpload: false,
+                    xrayClient: xrayClient,
+                },
+                LOG,
+                new ConstantCommand(LOG, [results, info])
+            );
+            await command.compute();
+            assert.deepStrictEqual(payload, {
+                info: {
+                    fields: {
+                        issuetype: { id: "10008" },
+                        project: { key: "CYP" },
+                        summary: "Brand new Test execution",
+                    },
+                },
+                results: {
+                    info: { description: "Hello", summary: "Test Execution Summary" },
+                    testExecutionKey: "CYP-123",
+                    tests: [{ status: "PASSED", testKey: "CYP-456" }],
+                },
+                testExecutionIssueKey: "CYP-123",
             });
         });
 
@@ -440,6 +501,7 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 const command = new ImportExecutionCypressCommand(
                     {
+                        emitter: new PluginEventEmitter(),
                         splitUpload: "sequential",
                         xrayClient: xrayClient,
                     },
@@ -574,6 +636,7 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 const command = new ImportExecutionCypressCommand(
                     {
+                        emitter: new PluginEventEmitter(),
                         splitUpload: "sequential",
                         xrayClient: xrayClient,
                     },

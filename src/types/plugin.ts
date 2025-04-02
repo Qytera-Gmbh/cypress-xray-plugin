@@ -5,6 +5,12 @@ import type { JiraClient } from "../client/jira/jira-client";
 import type { XrayClient } from "../client/xray/xray-client";
 import type { Level } from "../util/logging";
 import type { IssueUpdate } from "./jira/responses/issue-update";
+import type { XrayTestExecutionResults } from "./xray/import-test-execution-results";
+import type { CucumberMultipart } from "./xray/requests/import-execution-cucumber-multipart";
+import type {
+    MultipartInfo,
+    MultipartInfoCloud,
+} from "./xray/requests/import-execution-multipart-info";
 
 /**
  * Models all options for configuring the behaviour of the plugin.
@@ -704,6 +710,51 @@ export type HttpOptions = AxiosRequestConfig &
 export type InternalHttpOptions = HttpOptions;
 
 /**
+ * All events which the plugin can emit.
+ */
+export interface PluginEvent {
+    /**
+     * An event that is emitted after the Cucumber results have been uploaded.
+     */
+    ["upload:cucumber"]: {
+        /**
+         * The Cucumber test results.
+         *
+         * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+         * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+         */
+        results: CucumberMultipart;
+        /**
+         * The key of the Jira issue to which the results were uploaded.
+         */
+        testExecutionIssueKey: string;
+    };
+    /**
+     * An event that is emitted after the Cypress results have been uploaded.
+     */
+    ["upload:cypress"]: {
+        /**
+         * The Jira test execution issue information.
+         *
+         * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+         * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+         */
+        info: MultipartInfo | MultipartInfoCloud;
+        /**
+         * The test results as provided by Cypress, converted to Xray JSON format.
+         *
+         * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+         * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+         */
+        results: XrayTestExecutionResults;
+        /**
+         * The key of the Jira issue to which the results were uploaded.
+         */
+        testExecutionIssueKey: string;
+    };
+}
+
+/**
  * Options for configuring the general behaviour of the plugin.
  */
 export interface PluginOptions {
@@ -720,6 +771,57 @@ export interface PluginOptions {
      * @defaultValue true
      */
     enabled?: boolean;
+    /**
+     * A listener function for handling plugin events.
+     *
+     * @param pluginEvents - the event callbacks registration function
+     */
+    listener?: (pluginEvents: {
+        /**
+         * A callback that is invoked after the Cypress results have been uploaded.
+         *
+         * @example
+         *
+         * ```ts
+         * {
+         *   listener: (on) => {
+         *     on("upload:cypress", (data) => {
+         *       console.log(data.testExecutionIssueKey);
+         *     })
+         *   }
+         * }
+         * ```
+         *
+         * @param event - the event
+         * @param handler - the event handler
+         */
+        on(
+            event: "upload:cypress",
+            handler: (data: PluginEvent["upload:cypress"]) => Promise<void> | void
+        ): void;
+        /**
+         * A callback that is invoked after the Cucumber results have been uploaded.
+         *
+         * @example
+         *
+         * ```ts
+         * {
+         *   listener: (on) => {
+         *     on("upload:cucumber", (data) => {
+         *       console.log(data.testExecutionIssueKey);
+         *     })
+         *   }
+         * }
+         * ```
+         *
+         * @param event - the event
+         * @param handler - the event handler
+         */
+        on(
+            event: "upload:cucumber",
+            handler: (data: PluginEvent["upload:cucumber"]) => Promise<void> | void
+        ): void;
+    }) => Promise<void> | void;
     /**
      * The directory which all error and debug log files will be written to.
      *

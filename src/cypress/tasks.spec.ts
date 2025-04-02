@@ -108,7 +108,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
     });
 
-    describe(tasks.PluginTaskListener.name, () => {
+    describe(tasks.CypressTaskListener.name, () => {
         it("handles single outgoing requests for tests with issue key", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const evidenceCollection = new SimpleEvidenceCollection();
@@ -117,7 +117,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -146,7 +146,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single outgoing requests for tests with multiple issue keys", (context) => {
             const evidenceCollection = new SimpleEvidenceCollection();
             context.mock.method(LOG, "message", context.mock.fn());
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -190,7 +190,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -249,7 +249,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -294,7 +294,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -349,7 +349,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -396,7 +396,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single incoming responses for tests with multiple issue keys", (context) => {
             const evidenceCollection = new SimpleEvidenceCollection();
             context.mock.method(LOG, "message", context.mock.fn());
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -449,7 +449,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -538,7 +538,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -592,7 +592,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "addEvidence",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 evidenceCollection,
                 new SimpleIterationParameterCollection(),
@@ -662,7 +662,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "setIterationParameters",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 new SimpleEvidenceCollection(),
                 iterationParameterCollection,
@@ -683,7 +683,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single iteration definitions for tests with multiple issue keys", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const iterationParameterCollection = new SimpleIterationParameterCollection();
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 new SimpleEvidenceCollection(),
                 iterationParameterCollection,
@@ -719,7 +719,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles multiple iteration definitions for tests with the same issue key", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const iterationParameterCollection = new SimpleIterationParameterCollection();
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 new SimpleEvidenceCollection(),
                 iterationParameterCollection,
@@ -757,7 +757,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "setIterationParameters",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 new SimpleEvidenceCollection(),
                 iterationParameterCollection,
@@ -799,7 +799,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "setIterationParameters",
                 context.mock.fn()
             );
-            const listener = new tasks.PluginTaskListener(
+            const listener = new tasks.CypressTaskListener(
                 "CYP",
                 new SimpleEvidenceCollection(),
                 iterationParameterCollection,

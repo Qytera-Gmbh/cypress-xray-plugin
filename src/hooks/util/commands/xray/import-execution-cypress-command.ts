@@ -1,6 +1,7 @@
 import type { XrayClient } from "../../../../client/xray/xray-client";
 import { XrayClientCloud } from "../../../../client/xray/xray-client-cloud";
 import { ServerClient } from "../../../../client/xray/xray-client-server";
+import type { PluginEventEmitter } from "../../../../context";
 import type { XrayEvidenceItem } from "../../../../types/xray/import-test-execution-results";
 import { dedent } from "../../../../util/dedent";
 import { LOG, type Logger } from "../../../../util/logging";
@@ -9,6 +10,7 @@ import type { Computable } from "../../../command";
 import { Command } from "../../../command";
 
 interface CommandParameters {
+    emitter: PluginEventEmitter;
     splitUpload: "sequential" | boolean;
     xrayClient: XrayClient;
 }
@@ -26,39 +28,49 @@ export class ImportExecutionCypressCommand extends Command<string, CommandParame
 
     protected async computeResult(): Promise<string> {
         const [results, info] = await this.execution.compute();
-        if (!this.parameters.splitUpload) {
-            return await this.parameters.xrayClient.importExecutionMultipart(results, info);
-        }
-        const evidencyByTestIssue = new Map<string, XrayEvidenceItem[]>();
-        if (results.tests) {
-            for (const test of results.tests) {
-                if (test.testKey && test.evidence) {
-                    evidencyByTestIssue.set(test.testKey, test.evidence);
-                    delete test.evidence;
+        let testExecutionIssueKey: string;
+        if (this.parameters.splitUpload) {
+            const evidencyByTestIssue = new Map<string, XrayEvidenceItem[]>();
+            if (results.tests) {
+                for (const test of results.tests) {
+                    if (test.testKey && test.evidence) {
+                        evidencyByTestIssue.set(test.testKey, test.evidence);
+                        delete test.evidence;
+                    }
                 }
             }
-        }
-        const testExecIssueKey = await this.parameters.xrayClient.importExecutionMultipart(
-            results,
-            info
-        );
-        const entries = [...evidencyByTestIssue.entries()];
-        const uploadCallbacks = entries.map(async ([issueKey, evidences]) => {
-            try {
-                await this.uploadTestEvidences(issueKey, testExecIssueKey, evidences);
-            } catch (error: unknown) {
-                LOG.message(
-                    "warning",
-                    dedent(`
-                        Failed to attach evidences of test ${issueKey} to test execution ${testExecIssueKey}:
+            testExecutionIssueKey = await this.parameters.xrayClient.importExecutionMultipart(
+                results,
+                info
+            );
+            const entries = [...evidencyByTestIssue.entries()];
+            const uploadCallbacks = entries.map(async ([issueKey, evidences]) => {
+                try {
+                    await this.uploadTestEvidences(issueKey, testExecutionIssueKey, evidences);
+                } catch (error: unknown) {
+                    LOG.message(
+                        "warning",
+                        dedent(`
+                            Failed to attach evidences of test ${issueKey} to test execution ${testExecutionIssueKey}:
 
-                          ${unknownToString(error)}
-                    `)
-                );
-            }
+                              ${unknownToString(error)}
+                        `)
+                    );
+                }
+            });
+            await Promise.all(uploadCallbacks);
+        } else {
+            testExecutionIssueKey = await this.parameters.xrayClient.importExecutionMultipart(
+                results,
+                info
+            );
+        }
+        await this.parameters.emitter.emit("upload:cypress", {
+            info,
+            results,
+            testExecutionIssueKey,
         });
-        await Promise.all(uploadCallbacks);
-        return testExecIssueKey;
+        return testExecutionIssueKey;
     }
 
     private async uploadTestEvidences(

@@ -180,7 +180,7 @@ type TaskListener = {
     [K in Task]: (args: PluginTaskParameterType[K]) => PluginTaskReturnType[K];
 };
 
-export class PluginTaskListener implements TaskListener {
+export class CypressTaskListener implements TaskListener {
     private readonly projectKey: string;
     private readonly evidenceCollection: EvidenceCollection;
     private readonly iterationParameterCollection: IterationParameterCollection;
