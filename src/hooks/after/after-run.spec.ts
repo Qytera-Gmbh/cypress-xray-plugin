@@ -10,6 +10,7 @@ import { AxiosRestClient } from "../../client/https/requests";
 import { BaseJiraClient } from "../../client/jira/jira-client";
 import { ServerClient } from "../../client/xray/xray-client-server";
 import globalContext, {
+    PluginEventEmitter,
     SimpleEvidenceCollection,
     SimpleIterationParameterCollection,
     SimpleScreenshotCollection,
@@ -115,6 +116,7 @@ describe(relative(cwd(), __filename), async () => {
             });
 
             await it("adds commands necessary for cypress results upload", async () => {
+                const emitter = new PluginEventEmitter();
                 const graph = new ExecutableGraph<Command>();
                 await afterRun.addUploadCommands(
                     result,
@@ -124,6 +126,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    emitter,
                     graph,
                     LOG
                 );
@@ -194,6 +197,7 @@ describe(relative(cwd(), __filename), async () => {
                     testExecutionIssueKey: undefined,
                 });
                 assert.deepStrictEqual(importExecutionCypressCommand.getParameters(), {
+                    emitter: emitter,
                     splitUpload: false,
                     xrayClient: clients.xrayClient,
                 });
@@ -254,6 +258,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -325,6 +330,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -363,6 +369,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -399,6 +406,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -428,6 +436,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -476,6 +485,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -517,6 +527,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -563,6 +574,7 @@ describe(relative(cwd(), __filename), async () => {
                 await it("adds commands necessary for cucumber results upload", async (context) => {
                     context.mock.timers.enable({ apis: ["Date"] });
                     context.mock.timers.tick(12345);
+                    const emitter = new PluginEventEmitter();
                     const graph = new ExecutableGraph<Command>();
                     await afterRun.addUploadCommands(
                         cypressResult,
@@ -572,6 +584,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        emitter,
                         graph,
                         LOG
                     );
@@ -659,6 +672,7 @@ describe(relative(cwd(), __filename), async () => {
                         },
                     });
                     assert.deepStrictEqual(importCucumberExecutionCommand.getParameters(), {
+                        emitter: emitter,
                         xrayClient: clients.xrayClient,
                     });
                     assert.deepStrictEqual(fallbackCucumberUploadCommand.getParameters(), {
@@ -722,6 +736,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        new PluginEventEmitter(),
                         graph,
                         LOG
                     );
@@ -764,6 +779,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        new PluginEventEmitter(),
                         graph,
                         LOG
                     );
@@ -794,6 +810,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        new PluginEventEmitter(),
                         graph,
                         LOG
                     );
@@ -836,6 +853,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        new PluginEventEmitter(),
                         graph,
                         LOG
                     );
@@ -867,6 +885,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        new PluginEventEmitter(),
                         graph,
                         LOG
                     );
@@ -910,6 +929,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        new PluginEventEmitter(),
                         graph,
                         LOG
                     );
@@ -952,6 +972,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        new PluginEventEmitter(),
                         graph,
                         LOG
                     );
@@ -1005,6 +1026,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
 
                 await it("uses configured test execution issue data", async () => {
+                    const emitter = new PluginEventEmitter();
                     const graph = new ExecutableGraph<Command>();
                     options.jira.testExecutionIssue = {
                         fields: {
@@ -1022,6 +1044,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        emitter,
                         graph,
                         LOG
                     );
@@ -1134,6 +1157,7 @@ describe(relative(cwd(), __filename), async () => {
                         },
                     });
                     assert.deepStrictEqual(importCucumberExecutionCommand.getParameters(), {
+                        emitter: emitter,
                         xrayClient: clients.xrayClient,
                     });
                     assert.deepStrictEqual(verifyExecutionIssueKeyCommand.getParameters(), {
@@ -1219,6 +1243,7 @@ describe(relative(cwd(), __filename), async () => {
                         new SimpleEvidenceCollection(),
                         new SimpleIterationParameterCollection(),
                         new SimpleScreenshotCollection(),
+                        new PluginEventEmitter(),
                         graph,
                         LOG
                     ),
@@ -1241,6 +1266,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -1302,6 +1328,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    new PluginEventEmitter(),
                     graph,
                     LOG
                 );
@@ -1359,6 +1386,7 @@ describe(relative(cwd(), __filename), async () => {
                 context.mock.timers.enable({ apis: ["Date"] });
                 context.mock.timers.tick(12345);
                 const graph = new ExecutableGraph<Command>();
+                const emitter = new PluginEventEmitter();
                 await afterRun.addUploadCommands(
                     cypressResult,
                     ".",
@@ -1367,6 +1395,7 @@ describe(relative(cwd(), __filename), async () => {
                     new SimpleEvidenceCollection(),
                     new SimpleIterationParameterCollection(),
                     new SimpleScreenshotCollection(),
+                    emitter,
                     graph,
                     LOG
                 );
@@ -1457,6 +1486,7 @@ describe(relative(cwd(), __filename), async () => {
                     testExecutionIssueKey: undefined,
                 });
                 assert.deepStrictEqual(importExecutionCypressCommand.getParameters(), {
+                    emitter: emitter,
                     splitUpload: false,
                     xrayClient: clients.xrayClient,
                 });
@@ -1495,6 +1525,7 @@ describe(relative(cwd(), __filename), async () => {
                     },
                 });
                 assert.deepStrictEqual(importCucumberExecutionCommand.getParameters(), {
+                    emitter: emitter,
                     xrayClient: clients.xrayClient,
                 });
                 assert.deepStrictEqual(fallbackCucumberUploadCommand.getParameters(), {

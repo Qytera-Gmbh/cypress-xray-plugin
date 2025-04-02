@@ -115,7 +115,9 @@ export async function configureXrayPlugin(
         logger
     );
     if (options.plugin?.listener) {
-        await options.plugin.listener(context.getEventEmitter());
+        await options.plugin.listener({
+            on: context.getEventEmitter().on.bind(context.getEventEmitter()),
+        });
     }
     on("task", {
         ["cypress-xray-plugin:task:iteration:definition"]: (

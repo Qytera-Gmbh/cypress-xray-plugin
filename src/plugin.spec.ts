@@ -207,6 +207,7 @@ describe(relative(cwd(), __filename), async () => {
                 setGlobalContext.mock.calls[0].arguments[0].getOptions().plugin,
                 {
                     ...options.plugin,
+                    listener: undefined,
                     logDirectory: resolve(config.projectRoot, "xyz"),
                     logger: undefined,
                 }
@@ -453,10 +454,14 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[6], expectedContext);
             assert.deepStrictEqual(
                 addUploadCommands.mock.calls[0].arguments[7],
+                pluginContext.getEventEmitter()
+            );
+            assert.deepStrictEqual(
+                addUploadCommands.mock.calls[0].arguments[8],
                 pluginContext.getGraph()
             );
             assert.strictEqual(
-                addUploadCommands.mock.calls[0].arguments[8] instanceof CapturingLogger,
+                addUploadCommands.mock.calls[0].arguments[9] instanceof CapturingLogger,
                 true
             );
         });
