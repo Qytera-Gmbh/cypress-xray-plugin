@@ -1,5 +1,11 @@
 # Changelog
 
+# `8.4.0`
+
+- Added `plugin.listener` option to listen to plugin events
+- Added `upload:cypress` event
+- Added `upload:cucumber` event
+
 # `8.3.2`
 
 - Fixed screenshot mapping to better handle custom names
@@ -23,7 +29,6 @@
 # `8.2.2`
 
 - Fixed missing content type in screenshot evidence
-
 - Fixed screenshot filtering when using `plugin.uploadLastAttempt`
 
 ## Dependency updates
@@ -33,23 +38,18 @@
 # `8.2.1`
 
 - Fixed plugin trying to attribute screenshots without issue keys
-
 - Fixed evidence attachment problems for Xray server and cloud
-
 - Moved @badeball/cypress-cucumber-preprocessor to optional peer dependencies
 
 ## Dependency updates
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 22.0.0 to 22.0.1
-
 - Bumped @cucumber/messages from 27.0.2 to 27.2.0
 
 # `8.2.0`
 
 - Added `plugin.uploadLastAttempt` option ([#451](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/451))
-
 - Added `plugin.splitUpload` option ([#450](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/450))
-
 - Added task for defining Xray iteration parameters ([#454](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/454))
 
 # `8.1.0`
@@ -67,15 +67,12 @@
 ## Dependency updates
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 21.0.2 to 22.0.0
-
 - Bumped axios from 1.7.7 to 1.7.9
-
 - Bumped @cucumber/messages from 24.1.0 to 27.0.2
 
 # `7.5.0`
 
 - Added Xray iteration support for data-driven/retried tests ([#423](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/423))
-
 - Added `xray.status.aggregate` option ([#424](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/424))
 
 # `7.4.2`
@@ -85,9 +82,7 @@
 ## Dependency updates
 
 - Replaced chalk with ansi-colors
-
 - Bumped @cucumber/gherkin from 28.0.0 to 30.0.0
-
 - Bumped @badeball/cypress-cucumber-preprocessor from 21.0.0 to 21.0.2
 
 # `7.4.1`
@@ -97,45 +92,33 @@
 # `7.4.0`
 
 - Removed unused `jira.fields.testType`
-
 - Projects other than the configured project key can now be used for the test execution issue key
-
 - Added explicit issue transition call for server environments ([#389](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/389))
-
 - Added Cypress test results parameter to test execution issue callback
-
 - Added Cypress test results parameter to test plan key callback
 
 ## Dependency updates
 
 - Bumped axios from 1.7.5 to 1.7.7
-
 - Bumped @badeball/cypress-cucumber-preprocessor from 20.1.1 to 21.0.0
 
 # `7.3.0`
 
 - Added dynamic test execution data configuration ([#374](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/374))
-
 - Fixed rate limiting issue ([#375](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/375))
 
 # `7.2.0`
 
 - Added `jira.testExecutionIssue` option ([#372](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/372))
-
 - Deprecated `jira.testExecutionIssueDescription` option
-
 - Deprecated `jira.testExecutionIssueKey` option
-
 - Deprecated `jira.testExecutionIssueSummary` option
-
 - Deprecated `jira.testExecutionIssueType` option
-
 - Added `http.rateLimiting` options ([#373](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/373))
 
 ## Dependency updates
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 20.1.0 to 20.1.1
-
 - Bumped semver from 7.6.2 to 7.6.3
 
 # `7.1.0`
@@ -155,13 +138,11 @@
 # `7.0.1`
 
 - Made plugin take Cypress project root into account ([#338](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/338), fixes [#337](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/337))
-
 - Changed plugin to only run in CLI mode ([#334](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/334))
 
 ## Dependency updates
 
 - Bumped axios from 1.6.8 to 1.7.2
-
 - Bumped semver from 7.6.0 to 7.6.2
 
 # `7.0.0`
@@ -169,7 +150,6 @@
 ## Breaking changes
 
 - Removed `addResultsUpload` function
-
 - Changed `configureXrayPlugin` function which now expects Cypress' `on` as first parameter:
 
 <table>
@@ -337,19 +317,14 @@ import "cypress-xray-plugin/commands";
 > It can simply be omitted if no request data needs to be uploaded.
 
 - Added `xray.uploadRequests` option ([#324](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/324))
-
 - Added `http` options ([#322](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/322))
 
 ## Dependency updates
 
 - Bumped @cucumber/gherkin from 27.0.0 to 28.0.0
-
 - Bumped @cucumber/messages from 24.0.0 to 24.1.0
-
 - Bumped axios from 1.6.2 to 1.6.8
-
 - Bumped semver from 7.5.4 to 7.6.0
-
 - Bumped @badeball/cypress-cucumber-preprocessor from 19.2.0 to 20.0.3
 
 # `6.0.0`
@@ -442,21 +417,17 @@ async setupNodeEvents(on, config) {
 </table>
 
 - Added `cucumber.prefixes` options
-
 - Removed `decompress` dependency
 
 # `5.2.2`
 
 - Hid initialization error messages if the plugin is disabled (fixes [#271](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/271))
-
 - Added first step to Cucumber error messages ([#257](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/257))
 
 ## Dependency updates
 
 - Bumped @cucumber/messages from 23.0.0 to 24.0.0
-
 - Bumped @badeball/cypress-cucumber-preprocessor from 19.0.1 to 19.2.0
-
 - Bumped axios from 1.6.0 to 1.6.2
 
 # `5.2.1`
@@ -464,9 +435,7 @@ async setupNodeEvents(on, config) {
 ## Dependency updates
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 18.0.6 to 19.0.1
-
 - Bumped @cucumber/messages from 22.0.0 to 23.0.0
-
 - Bumped axios from 1.5.1 to 1.6.0
 
 # `5.2.0`
@@ -476,9 +445,7 @@ async setupNodeEvents(on, config) {
 # `5.1.1`
 
 - Added Jira and Xray pings during plugin initialization for configuration verification ([#199](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/199))
-
 - Prevent results upload from modifying test issues unnecessarily (fixes [#209](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/209), [#210](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/210))
-
 - Prevent Cucumber results upload of untagged scenarios ([#214](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/214))
 
 ## Dependency updates
@@ -488,13 +455,11 @@ async setupNodeEvents(on, config) {
 # `5.1.0`
 
 - Move `cypress` to the plugin's peer dependencies to impose supported Cypress version ranges
-
 - Prevent existing test execution issue data (summaries, descriptions) from being overwritten unnecessarily (fixes [#191](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/191))
 
 ## Dependency updates
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 18.0.5 to 18.0.6
-
 - Bumped @cucumber/gherkin from 26.2.0 to 27.0.0
 
 # `5.0.0`
@@ -512,11 +477,8 @@ The changes included a removal of the test function code, which previously was u
 ## Breaking changes
 
 - The plugin will now _never_ alter existing Xray test steps of tests with test type _Manual_
-
-    - Removed `xray.steps.update` option
-
-    - Removed `xray.steps.maxLengthAction` option
-
+- Removed `xray.steps.update` option
+- Removed `xray.steps.maxLengthAction` option
 - The `xray.status` options have been refactored a little bit for maintainability reasons:
 
 <table>
@@ -586,7 +548,6 @@ xray: {
 # `4.0.2`
 
 - Reset issue labels after feature file import (fixes [#100](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/100))
-
 - Use dynamic `@badeball/cypress-cucumber-preprocessor` import (fixes [#152](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/152))
 
 ## Dependency updates
@@ -600,7 +561,6 @@ xray: {
 ## Dependency updates
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 18.0.1 to 18.0.2
-
 - Bumped dedent from 1.2.0 to 1.5.0
 
 # `4.0.0`
@@ -616,22 +576,16 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 - The plugin will now _never_ create new Jira issues. The only exception to this rule are test execution issues.
 
     - It now only uploads results of Cypress tests which include [a corresponding Jira key](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/) and skips all other tests
-
     - It now only uploads results of Cucumber tests which include both:
-
         - Issue tags for background elements (see [here](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/))
-
         - Issue tags for _all_ scenarios and scenario backgrounds (see [here](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/))
-
     - It now also skips feature file upload/synchronization of feature files for which the above does not apply
 
 > [!NOTE]
 > If the plugin still creates test or precondition issues somehow, [please file a bug](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues), since it's simply not supposed to anymore.
 
 - Jira client instantiation is now _mandatory_, meaning both Xray _and_ Jira credentials must _always_ be provided
-
 - Option `jira.url` is now mandatory
-
 - The plugin's functions must now be imported without adding `/plugin` at the end:
 
 <table>
@@ -699,21 +653,13 @@ import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "cypre
     ```
 
 - Removed `plugin.overwriteIssueSummary` option
-
 - Removed `xray.testType` option
-
 - Removed `jira.createTestIssues` option
-
 - Restricted exported plugin members to those defined in `index.ts`
-
 - Added `plugin.logDirectory` option
-
 - Added `jira.testExecutionIssueType` option
-
 - Added `jira.testPlanIssueType` option
-
 - Feature file upload/synchronization now automatically resets the summary should the import change it
-
 - Logging output has been beautified
 
 ## Dependency updates
