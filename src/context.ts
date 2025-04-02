@@ -346,6 +346,7 @@ function initPluginOptions(
     return {
         debug: parse(env, ENV_NAMES.plugin.debug, asBoolean) ?? options?.debug ?? false,
         enabled: parse(env, ENV_NAMES.plugin.enabled, asBoolean) ?? options?.enabled ?? true,
+        listener: options?.listener,
         logDirectory:
             parse(env, ENV_NAMES.plugin.logDirectory, asString) ?? options?.logDirectory ?? "logs",
         logger: options?.logger,

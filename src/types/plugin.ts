@@ -774,26 +774,50 @@ export interface PluginOptions {
     /**
      * A listener function for handling plugin events.
      *
-     * @param on - the event callbacks registration function
+     * @param pluginEvents - the event callbacks registration function
      */
-    listener?: (on: {
+    listener?: (pluginEvents: {
         /**
          * A callback that is invoked after the Cypress results have been uploaded.
+         *
+         * @example
+         *
+         * ```ts
+         * {
+         *   listener: (on) => {
+         *     on("upload:cypress", (data) => {
+         *       console.log(data.testExecutionIssueKey);
+         *     })
+         *   }
+         * }
+         * ```
          *
          * @param event - the event
          * @param handler - the event handler
          */
-        (
+        on(
             event: "upload:cypress",
             handler: (data: PluginEvent["upload:cypress"]) => Promise<void> | void
         ): void;
         /**
          * A callback that is invoked after the Cucumber results have been uploaded.
          *
+         * @example
+         *
+         * ```ts
+         * {
+         *   listener: (on) => {
+         *     on("upload:cucumber", (data) => {
+         *       console.log(data.testExecutionIssueKey);
+         *     })
+         *   }
+         * }
+         * ```
+         *
          * @param event - the event
          * @param handler - the event handler
          */
-        (
+        on(
             event: "upload:cucumber",
             handler: (data: PluginEvent["upload:cucumber"]) => Promise<void> | void
         ): void;
