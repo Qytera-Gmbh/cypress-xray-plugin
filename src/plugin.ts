@@ -6,7 +6,7 @@ import globalContext, {
     SimpleScreenshotCollection,
 } from "./context";
 import type { PluginTaskParameterType } from "./cypress/tasks";
-import { PluginTaskListener } from "./cypress/tasks";
+import { CypressTaskListener } from "./cypress/tasks";
 import afterRun from "./hooks/after/after-run";
 import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
 import type { CypressFailedRunResult, CypressRunResult } from "./types/cypress";
@@ -108,7 +108,7 @@ export async function configureXrayPlugin(
         logger
     );
     globalContext.setGlobalContext(context);
-    const listener = new PluginTaskListener(
+    const cypressTaskListener = new CypressTaskListener(
         internalOptions.jira.projectKey,
         context,
         context,
@@ -121,13 +121,13 @@ export async function configureXrayPlugin(
         ["cypress-xray-plugin:task:iteration:definition"]: (
             args: PluginTaskParameterType["cypress-xray-plugin:task:iteration:definition"]
         ) => {
-            return listener["cypress-xray-plugin:task:iteration:definition"](args);
+            return cypressTaskListener["cypress-xray-plugin:task:iteration:definition"](args);
         },
         ["cypress-xray-plugin:task:request"]: (
             args: PluginTaskParameterType["cypress-xray-plugin:task:request"]
         ) => {
             if (internalOptions.xray.uploadRequests) {
-                return listener["cypress-xray-plugin:task:request"](args);
+                return cypressTaskListener["cypress-xray-plugin:task:request"](args);
             }
             return args.request;
         },
@@ -135,7 +135,7 @@ export async function configureXrayPlugin(
             args: PluginTaskParameterType["cypress-xray-plugin:task:response"]
         ) => {
             if (internalOptions.xray.uploadRequests) {
-                return listener["cypress-xray-plugin:task:response"](args);
+                return cypressTaskListener["cypress-xray-plugin:task:response"](args);
             }
             return args.response;
         },
