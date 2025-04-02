@@ -1,10 +1,18 @@
 # Changelog
 
+# `8.4.1`
+
+- Fixed unbound function reference issue in plugin event listener definition
+
 # `8.4.0`
 
 - Added `plugin.listener` option to listen to plugin events
 - Added `upload:cypress` event
 - Added `upload:cucumber` event
+
+## Dependency updates
+
+- Bumped form-data from 4.0.0 to 4.0.2
 
 # `8.3.2`
 
