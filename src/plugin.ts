@@ -98,7 +98,12 @@ export async function configureXrayPlugin(
     const httpClients = globalContext.initHttpClients(internalOptions.plugin, internalOptions.http);
     const logger = new CapturingLogger();
     const context = new PluginContext(
-        await globalContext.initClients(internalOptions.jira, config.env, httpClients),
+        await globalContext.initClients(
+            internalOptions.jira,
+            internalOptions.xray,
+            config.env,
+            httpClients
+        ),
         internalOptions,
         config,
         new SimpleEvidenceCollection(),

@@ -66,5 +66,6 @@ export const ENV_NAMES = {
         uploadRequests: "XRAY_UPLOAD_REQUESTS",
         uploadResults: "XRAY_UPLOAD_RESULTS",
         uploadScreenshots: "XRAY_UPLOAD_SCREENSHOTS",
+        url: "XRAY_URL",
     },
 } as const;

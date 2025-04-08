@@ -46,21 +46,20 @@ export class XrayClientCloud
     implements HasTestRunResults
 {
     /**
-     * The URLs of Xray's Cloud API.
-     * Note: API v1 would also work, but let's stick to the more recent one.
+     * The version of Xray's Cloud API. API v1 would also work, but let's stick to the recent one.
      */
-    public static readonly URL = "https://xray.cloud.getxray.app/api/v2";
-    private static readonly URL_GRAPHQL = `${XrayClientCloud.URL}/graphql`;
+    public static readonly VERSION = "v2";
     private static readonly GRAPHQL_LIMIT = 100;
 
     /**
      * Construct a new Xray cloud client using the provided credentials.
      *
+     * @param url - the base URL
      * @param credentials - the credentials to use during authentication
      * @param httpClient - the HTTP client to use for dispatching requests
      */
-    constructor(credentials: JwtCredentials, httpClient: AxiosRestClient) {
-        super(XrayClientCloud.URL, credentials, httpClient);
+    constructor(url: string, credentials: JwtCredentials, httpClient: AxiosRestClient) {
+        super(`${url}/api/${XrayClientCloud.VERSION}`, credentials, httpClient);
     }
 
     /**
@@ -103,7 +102,7 @@ export class XrayClientCloud
         const response: AxiosResponse<{
             data: { addEvidenceToTestRun: { addedEvidence: string[]; warnings: string[] } };
         }> = await this.httpClient.post(
-            XrayClientCloud.URL_GRAPHQL,
+            `${this.apiBaseUrl}/graphql`,
             {
                 query: mutation,
                 variables: {
@@ -181,7 +180,7 @@ export class XrayClientCloud
                 },
             };
             const response: AxiosResponse<GetTestRunsResponseCloud<{ key: string }>> =
-                await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                await this.httpClient.post(`${this.apiBaseUrl}/graphql`, paginatedRequest, {
                     headers: {
                         ...authorizationHeader,
                     },

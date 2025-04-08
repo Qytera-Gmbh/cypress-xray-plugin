@@ -565,6 +565,16 @@ describe(relative(cwd(), __filename), async () => {
                         );
                         assert.strictEqual(xrayOptions.uploadScreenshots, false);
                     });
+
+                    await it("url", () => {
+                        const xrayOptions = globalContext.initXrayOptions(
+                            {},
+                            {
+                                url: "https://example.org",
+                            }
+                        );
+                        assert.strictEqual(xrayOptions.url, "https://example.org");
+                    });
                 });
 
                 await describe("cucumber", async () => {
@@ -998,6 +1008,16 @@ describe(relative(cwd(), __filename), async () => {
                             uploadScreenshots: true,
                         });
                         assert.strictEqual(xrayOptions.uploadScreenshots, false);
+                    });
+
+                    await it("XRAY_URL", () => {
+                        const env = {
+                            ["XRAY_URL"]: "https://example.org",
+                        };
+                        const xrayOptions = globalContext.initXrayOptions(env, {
+                            url: "http://localhost",
+                        });
+                        assert.strictEqual(xrayOptions.url, "https://example.org");
                     });
                 });
                 await describe("cucumber", async () => {
@@ -1556,6 +1576,7 @@ describe(relative(cwd(), __filename), async () => {
 
         await describe("the clients instantiation", async () => {
             let jiraOptions: InternalJiraOptions;
+            let xrayOptions: InternalXrayOptions;
             beforeEach(() => {
                 jiraOptions = globalContext.initJiraOptions(
                     {},
@@ -1564,6 +1585,7 @@ describe(relative(cwd(), __filename), async () => {
                         url: "http://localhost:1234",
                     }
                 );
+                xrayOptions = globalContext.initXrayOptions({}, {});
             });
 
             await it("detects cloud credentials", async (context) => {
@@ -1598,6 +1620,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 const { jiraClient, xrayClient } = await globalContext.initClients(
                     jiraOptions,
+                    xrayOptions,
                     env,
                     httpClients
                 );
@@ -1623,6 +1646,44 @@ describe(relative(cwd(), __filename), async () => {
                 ]);
             });
 
+            await it("passes the xray url to cloud instances", async (context) => {
+                const env = {
+                    ["JIRA_API_TOKEN"]: "1337",
+                    ["JIRA_USERNAME"]: "user@somewhere.xyz",
+                    ["XRAY_CLIENT_ID"]: "abc",
+                    ["XRAY_CLIENT_SECRET"]: "xyz",
+                };
+                context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: { active: true, displayName: "Jeff" } as User,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
+                });
+                const post = context.mock.method(httpClients.xray, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
+                });
+                xrayOptions.url = "https://eu.xray.cloud.getxray.app/";
+                await globalContext.initClients(jiraOptions, xrayOptions, env, httpClients);
+                assert.deepStrictEqual(post.mock.calls[0].arguments, [
+                    "https://eu.xray.cloud.getxray.app/api/v2/authenticate",
+                    { ["client_id"]: "abc", ["client_secret"]: "xyz" },
+                ]);
+            });
+
             await it("should throw for missing xray cloud credentials", async (context) => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
@@ -1642,13 +1703,16 @@ describe(relative(cwd(), __filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
                     };
                 });
-                await assert.rejects(globalContext.initClients(jiraOptions, env, httpClients), {
-                    message: dedent(`
+                await assert.rejects(
+                    globalContext.initClients(jiraOptions, xrayOptions, env, httpClients),
+                    {
+                        message: dedent(`
                         Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials.
 
                           You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
                     `),
-                });
+                    }
+                );
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
                     "info",
                     "Jira username and API token found. Setting up Jira cloud basic auth credentials.",
@@ -1687,6 +1751,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 const { jiraClient, xrayClient } = await globalContext.initClients(
                     jiraOptions,
+                    xrayOptions,
                     env,
                     httpClients
                 );
@@ -1745,6 +1810,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 const { jiraClient, xrayClient } = await globalContext.initClients(
                     jiraOptions,
+                    xrayOptions,
                     env,
                     httpClients
                 );
@@ -1803,6 +1869,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 const { jiraClient, xrayClient } = await globalContext.initClients(
                     jiraOptions,
+                    xrayOptions,
                     env,
                     httpClients
                 );
@@ -1823,13 +1890,16 @@ describe(relative(cwd(), __filename), async () => {
                     jira: new AxiosRestClient(axios),
                     xray: new AxiosRestClient(axios),
                 };
-                await assert.rejects(globalContext.initClients(jiraOptions, {}, httpClients), {
-                    message: dedent(`
-                        Failed to configure Jira client: No viable authentication method was configured.
+                await assert.rejects(
+                    globalContext.initClients(jiraOptions, xrayOptions, {}, httpClients),
+                    {
+                        message: dedent(`
+                            Failed to configure Jira client: No viable authentication method was configured.
 
-                          You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
-                    `),
-                });
+                              You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                        `),
+                    }
+                );
             });
 
             await it("throws if no user details are returned from jira", async (context) => {
@@ -1850,6 +1920,7 @@ describe(relative(cwd(), __filename), async () => {
                 await assert.rejects(
                     globalContext.initClients(
                         jiraOptions,
+                        xrayOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                         },
@@ -1857,16 +1928,16 @@ describe(relative(cwd(), __filename), async () => {
                     ),
                     {
                         message: dedent(`
-                        Failed to establish communication with Jira: http://localhost:1234
+                            Failed to establish communication with Jira: http://localhost:1234
 
-                          Jira did not return a valid response: JSON containing a username was expected, but not received.
+                              Jira did not return a valid response: JSON containing a username was expected, but not received.
 
-                        Make sure you have correctly set up:
-                        - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                        - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+                            Make sure you have correctly set up:
+                            - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                            - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
 
-                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `),
+                            For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                        `),
                     }
                 );
             });
@@ -1891,6 +1962,7 @@ describe(relative(cwd(), __filename), async () => {
                 await assert.rejects(
                     globalContext.initClients(
                         jiraOptions,
+                        xrayOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                         },
@@ -1898,16 +1970,16 @@ describe(relative(cwd(), __filename), async () => {
                     ),
                     {
                         message: dedent(`
-                        Failed to establish communication with Jira: http://localhost:1234
+                            Failed to establish communication with Jira: http://localhost:1234
 
-                          Jira did not return a valid response: JSON containing a username was expected, but not received.
+                              Jira did not return a valid response: JSON containing a username was expected, but not received.
 
-                        Make sure you have correctly set up:
-                        - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                        - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+                            Make sure you have correctly set up:
+                            - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                            - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
 
-                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `),
+                            For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                        `),
                     }
                 );
             });
@@ -1942,6 +2014,7 @@ describe(relative(cwd(), __filename), async () => {
                 await assert.rejects(
                     globalContext.initClients(
                         jiraOptions,
+                        xrayOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                         },
@@ -1949,17 +2022,17 @@ describe(relative(cwd(), __filename), async () => {
                     ),
                     {
                         message: dedent(`
-                        Failed to establish communication with Xray: http://localhost:1234
+                            Failed to establish communication with Xray: http://localhost:1234
 
-                          Xray did not return a valid response: JSON containing basic Xray license information was expected, but not received.
+                              Xray did not return a valid response: JSON containing basic Xray license information was expected, but not received.
 
-                        Make sure you have correctly set up:
-                        - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                        - Xray server authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-server
-                        - Xray itself: https://docs.getxray.app/display/XRAY/Installation
+                            Make sure you have correctly set up:
+                            - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                            - Xray server authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-server
+                            - Xray itself: https://docs.getxray.app/display/XRAY/Installation
 
-                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `),
+                            For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                        `),
                     }
                 );
             });
@@ -1997,6 +2070,7 @@ describe(relative(cwd(), __filename), async () => {
                 await assert.rejects(
                     globalContext.initClients(
                         jiraOptions,
+                        xrayOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                         },
@@ -2004,17 +2078,17 @@ describe(relative(cwd(), __filename), async () => {
                     ),
                     {
                         message: dedent(`
-                        Failed to establish communication with Xray: http://localhost:1234
+                            Failed to establish communication with Xray: http://localhost:1234
 
-                          The Xray license is not active
+                              The Xray license is not active
 
-                        Make sure you have correctly set up:
-                        - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                        - Xray server authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-server
-                        - Xray itself: https://docs.getxray.app/display/XRAY/Installation
+                            Make sure you have correctly set up:
+                            - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                            - Xray server authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-server
+                            - Xray itself: https://docs.getxray.app/display/XRAY/Installation
 
-                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `),
+                            For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                        `),
                     }
                 );
             });
@@ -2058,6 +2132,7 @@ describe(relative(cwd(), __filename), async () => {
                 await assert.rejects(
                     globalContext.initClients(
                         jiraOptions,
+                        xrayOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                             ["JIRA_USERNAME"]: "user",
@@ -2068,16 +2143,16 @@ describe(relative(cwd(), __filename), async () => {
                     ),
                     {
                         message: dedent(`
-                        Failed to establish communication with Xray: https://xray.cloud.getxray.app/api/v2/authenticate
+                            Failed to establish communication with Xray: https://xray.cloud.getxray.app/api/v2/authenticate
 
-                          Failed to authenticate
+                              Failed to authenticate
 
-                        Make sure you have correctly set up:
-                        - Xray cloud authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-cloud
-                        - Xray itself: https://docs.getxray.app/display/XRAYCLOUD/Installation
+                            Make sure you have correctly set up:
+                            - Xray cloud authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-cloud
+                            - Xray itself: https://docs.getxray.app/display/XRAYCLOUD/Installation
 
-                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `),
+                            For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                        `),
                     }
                 );
             });
