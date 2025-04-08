@@ -412,6 +412,7 @@ function initXrayOptions(
             parse(env, ENV_NAMES.xray.uploadScreenshots, asBoolean) ??
             options?.uploadScreenshots ??
             true,
+        url: parse(env, ENV_NAMES.xray.url, asString) ?? options?.url,
     };
 }
 
@@ -562,6 +563,7 @@ function initHttpClients(
 
 async function initClients(
     jiraOptions: InternalJiraOptions,
+    xrayOptions: InternalXrayOptions,
     env: ObjectLike,
     httpClients: HttpClientCombination
 ): Promise<ClientCombination> {
@@ -586,13 +588,17 @@ async function initClients(
                 "info",
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials."
             );
+            const url = (xrayOptions.url ?? "https://xray.cloud.getxray.app").replaceAll(
+                /\/+$/g,
+                ""
+            );
             const xrayCredentials = new JwtCredentials(
                 env[ENV_NAMES.authentication.xray.clientId] as string,
                 env[ENV_NAMES.authentication.xray.clientSecret] as string,
-                `${XrayClientCloud.URL}/authenticate`,
+                `${url}/api/${XrayClientCloud.VERSION}/authenticate`,
                 httpClients.xray
             );
-            const xrayClient = await getXrayCloudClient(xrayCredentials, httpClients.xray);
+            const xrayClient = await getXrayCloudClient(url, xrayCredentials, httpClients.xray);
             return {
                 jiraClient: jiraClient,
                 kind: "cloud",
@@ -614,7 +620,7 @@ async function initClients(
         const jiraClient = await getJiraClient(jiraOptions.url, credentials, httpClients.jira);
         LOG.message("info", "Jira PAT found. Setting up Xray server PAT credentials.");
         const xrayClient = await getXrayServerClient(
-            jiraOptions.url,
+            xrayOptions.url ?? jiraOptions.url,
             credentials,
             httpClients.xray
         );
@@ -641,7 +647,7 @@ async function initClients(
             "Jira username and password found. Setting up Xray server basic auth credentials."
         );
         const xrayClient = await getXrayServerClient(
-            jiraOptions.url,
+            xrayOptions.url ?? jiraOptions.url,
             credentials,
             httpClients.xray
         );
@@ -661,10 +667,11 @@ async function initClients(
 }
 
 async function getXrayCloudClient(
+    url: string,
     credentials: JwtCredentials,
     httpClient: AxiosRestClient
 ): Promise<XrayClientCloud> {
-    const xrayClient = new XrayClientCloud(credentials, httpClient);
+    const xrayClient = new XrayClientCloud(url, credentials, httpClient);
     try {
         await credentials.getAuthorizationHeader();
         LOG.message(

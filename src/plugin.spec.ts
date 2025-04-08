@@ -229,6 +229,7 @@ describe(relative(cwd(), __filename), async () => {
                 uploadRequests: false,
                 uploadResults: false,
                 uploadScreenshots: false,
+                url: undefined,
             });
             assert.strictEqual(
                 setGlobalContext.mock.calls[0].arguments[0].getOptions().cucumber
@@ -287,7 +288,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
             assert.strictEqual(initClients.mock.callCount(), 1);
-            assert.deepStrictEqual(initClients.mock.calls[0].arguments[2], {
+            assert.deepStrictEqual(initClients.mock.calls[0].arguments[3], {
                 jira: new AxiosRestClient(axios, {
                     debug: false,
                     http: {

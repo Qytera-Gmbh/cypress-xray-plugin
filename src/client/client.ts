@@ -26,7 +26,7 @@ export abstract class Client {
      * @param httpClient - the HTTP client to use for dispatching requests
      */
     constructor(apiBaseUrl: string, credentials: HttpCredentials, httpClient: AxiosRestClient) {
-        this.apiBaseUrl = apiBaseUrl;
+        this.apiBaseUrl = apiBaseUrl.replaceAll(/\/+$/g, "");
         this.credentials = credentials;
         this.httpClient = httpClient;
     }

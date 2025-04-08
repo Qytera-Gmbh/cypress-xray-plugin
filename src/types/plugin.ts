@@ -541,6 +541,16 @@ export interface XrayOptions {
      * @defaultValue true
      */
     uploadScreenshots?: boolean;
+    /**
+     * The Xray base URL to use. Defaults to {@link JiraOptions.url | `jira.url`} for Xray server
+     * and `https://xray.cloud.getxray.app` for Xray cloud.
+     *
+     * @example "https://eu.xray.cloud.getxray.app"
+     *
+     * @see https://docs.getxray.app/display/XRAY/REST+API
+     * @see https://docs.getxray.app/display/XRAYCLOUD/REST+API
+     */
+    url?: string;
 }
 
 /**

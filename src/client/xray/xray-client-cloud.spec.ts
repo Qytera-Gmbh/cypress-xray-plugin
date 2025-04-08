@@ -32,7 +32,7 @@ describe(relative(cwd(), __filename), async () => {
             mock.method(credentials, "getAuthorizationHeader", () => {
                 return { ["Authorization"]: "ey12345" };
             });
-            client = new XrayClientCloud(credentials, restClient);
+            client = new XrayClientCloud("https://xray.cloud.getxray.app", credentials, restClient);
         });
 
         await describe("import execution", async () => {

@@ -1,5 +1,9 @@
 # Changelog
 
+# `main`
+
+- Added `xray.url` option
+
 # `8.4.1`
 
 - Fixed unbound function reference issue in plugin event listener definition
