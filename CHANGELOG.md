@@ -1,6 +1,6 @@
 # Changelog
 
-# `main`
+# `8.5.0`
 
 - Added `xray.url` option
 
