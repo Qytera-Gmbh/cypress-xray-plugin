@@ -81,7 +81,7 @@
         "prettier": "^3.4.2",
         "shx": "^0.4.0",
         "tsx": "^4.19.3",
-        "typescript": "^5.8.2",
+        "typescript": "^5.8.3",
         "typescript-eslint": "^8.29.0",
         "undici": "^7.8.0"
     }
