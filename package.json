@@ -64,7 +64,7 @@
     },
     "devDependencies": {
         "@bahmutov/cypress-esbuild-preprocessor": "^2.2.4",
-        "@eslint/js": "^9.17.0",
+        "@eslint/js": "^9.25.1",
         "@qytera/xray-client": "^2.1.0",
         "@types/node": "^22.13.7",
         "@types/semver": "^7.5.8",
