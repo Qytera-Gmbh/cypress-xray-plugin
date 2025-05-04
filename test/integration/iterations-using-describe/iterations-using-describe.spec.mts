@@ -126,7 +126,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 const testRun = await getIntegrationClient(
                     "xray",
                     testCase.service
-                ).testRuns.getTestRun({
+                ).testRun.getTestRun({
                     testExecIssueKey: testExecutionIssueKey,
                     testIssueKey: testCase.linkedTest,
                 });
