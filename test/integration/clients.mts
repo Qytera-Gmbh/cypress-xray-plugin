@@ -7,6 +7,7 @@ export const XRAY_CLIENT_CLOUD = new XrayClientCloud({
     credentials: {
         clientId: getEnv("CYPRESS_XRAY_CLIENT_ID_CLOUD", "XRAY_CLIENT_ID"),
         clientSecret: getEnv("CYPRESS_XRAY_CLIENT_SECRET_CLOUD", "XRAY_CLIENT_SECRET"),
+        path: "/api/v2/authenticate",
     },
     url: "https://xray.cloud.getxray.app",
 });
