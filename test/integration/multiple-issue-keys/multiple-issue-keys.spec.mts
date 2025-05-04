@@ -67,7 +67,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 const testResults = await getIntegrationClient(
                     "xray",
                     testCase.service
-                ).testExecutions.getTests(testExecutionIssueKey);
+                ).testExecution.getTests(testExecutionIssueKey);
                 assert.deepStrictEqual(
                     testResults.map((result) => result.key),
                     [

@@ -84,7 +84,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 const tests = await getIntegrationClient(
                     "xray",
                     testCase.service
-                ).testExecutions.getTests(testExecutionIssueKey);
+                ).testExecution.getTests(testExecutionIssueKey);
                 const includedTest = tests.find((r) => r.key === testCase.testKeys.included);
                 assert.ok(includedTest);
                 assert.strictEqual(includedTest.status, testCase.xrayPassedStatus);

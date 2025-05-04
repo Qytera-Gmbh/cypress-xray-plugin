@@ -132,7 +132,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             if (testCase.service === "server") {
                 // Jira server does not like searches immediately after issue creation (socket hang up).
                 await setTimeout(10000);
-                const testRunRetried = await XRAY_CLIENT_SERVER.testRuns.getTestRun({
+                const testRunRetried = await XRAY_CLIENT_SERVER.testRun.getTestRun({
                     testExecIssueKey: testExecutionIssueKey,
                     testIssueKey: testCase.linkedTests[0],
                 });
@@ -142,7 +142,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     "CYPLUG-1692 my screenshot (attempt 6).png"
                 );
                 assert.strictEqual(testRunRetried.iterations, undefined);
-                const testResultsRetriedScreenshot = await XRAY_CLIENT_SERVER.testRuns.getTestRun({
+                const testResultsRetriedScreenshot = await XRAY_CLIENT_SERVER.testRun.getTestRun({
                     testExecIssueKey: testExecutionIssueKey,
                     testIssueKey: testCase.linkedTests[1],
                 });

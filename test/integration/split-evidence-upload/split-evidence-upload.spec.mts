@@ -92,7 +92,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
             if (testCase.service === "server") {
                 // Jira server does not like searches immediately after issue creation (socket hang up).
                 await setTimeout(10000);
-                const testRun = await XRAY_CLIENT_SERVER.testRuns.getTestRun({
+                const testRun = await XRAY_CLIENT_SERVER.testRun.getTestRun({
                     testExecIssueKey: testExecutionIssueKey,
                     testIssueKey: testCase.linkedTest,
                 });
