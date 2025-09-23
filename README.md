@@ -1,3 +1,6 @@
+> [!CAUTION]
+> This repository is no longer actively maintained. For the latest updates and ongoing development, please visit the new repository at [csvtuda/cypress-xray-plugin](https://github.com/csvtuda/cypress-xray-plugin).
+
 <h1 align="center">
   <a href="https://qytera-gmbh.github.io/projects/cypress-xray-plugin">
   <img width="100%" src="logo.svg" alt="Cypress Xray Plugin">
