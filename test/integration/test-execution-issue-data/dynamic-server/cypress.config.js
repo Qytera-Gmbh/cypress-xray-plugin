@@ -13,7 +13,7 @@ module.exports = defineConfig({
             const fixedOn = fix(on);
             await configureXrayPlugin(fixedOn, config, {
                 jira: {
-                    projectKey: "CYP",
+                    projectKey: "CXP",
                     testExecutionIssue: () => {
                         return {
                             fields: {

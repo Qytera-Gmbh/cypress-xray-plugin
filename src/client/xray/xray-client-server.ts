@@ -1,25 +1,27 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import type { GetTestRunResponseServer } from "../../types/xray/responses/graphql/get-test-runs";
-import type { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution";
+import type { XrayTestExecutionResults } from "../../models/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../models/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../models/xray/requests/import-execution-multipart-info";
+import type { GetTestRunResponseServer } from "../../models/xray/responses/graphql/get-test-runs";
+import type { ImportExecutionResponseServer } from "../../models/xray/responses/import-execution";
 import type {
     ImportFeatureResponse,
     ImportFeatureResponseServer,
     IssueDetails,
-} from "../../types/xray/responses/import-feature";
-import type { XrayLicenseStatus } from "../../types/xray/responses/license";
+} from "../../models/xray/responses/import-feature";
+import type { XrayLicenseStatus } from "../../models/xray/responses/license";
 import { dedent } from "../../util/dedent";
 import { LOG } from "../../util/logging";
 import type { HttpCredentials } from "../authentication/credentials";
 import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
-import type { XrayClient } from "./xray-client";
-import { AbstractXrayClient } from "./xray-client";
+import { BaseXrayClient } from "./base-xray-client";
 
-export interface XrayClientServer extends XrayClient {
+/**
+ * Add evidence endpoint of Xray clients.
+ */
+export interface HasAddEvidenceEndpoint {
     /**
      * Add new evidence to a test run.
      *
@@ -46,6 +48,12 @@ export interface XrayClientServer extends XrayClient {
             filename: string;
         }
     ): Promise<void>;
+}
+
+/**
+ * Get test run endpoint of Xray clients.
+ */
+export interface HasGetTestRunEndpoint {
     /**
      * Returns JSON that represents the test run.
      *
@@ -67,6 +75,12 @@ export interface XrayClientServer extends XrayClient {
               }
             | number
     ): Promise<GetTestRunResponseServer>;
+}
+
+/**
+ * Get Xray license endpoint of Xray clients.
+ */
+export interface HasGetXrayLicenseEndpoint {
     /**
      * Returns information about the Xray license, including its status and type.
      *
@@ -76,9 +90,9 @@ export interface XrayClientServer extends XrayClient {
     getXrayLicense(): Promise<XrayLicenseStatus>;
 }
 
-export class ServerClient
-    extends AbstractXrayClient<ImportFeatureResponseServer, ImportExecutionResponseServer>
-    implements XrayClientServer
+export class XrayClientServer
+    extends BaseXrayClient<ImportFeatureResponseServer, ImportExecutionResponseServer>
+    implements HasAddEvidenceEndpoint, HasGetTestRunEndpoint, HasGetXrayLicenseEndpoint
 {
     /**
      * Construct a new client using the provided credentials.
@@ -93,7 +107,7 @@ export class ServerClient
 
     @loggedRequest({ purpose: "add evidence" })
     public async addEvidence(
-        ...[testRunId, evidence]: Parameters<XrayClientServer["addEvidence"]>
+        ...[testRunId, evidence]: Parameters<HasAddEvidenceEndpoint["addEvidence"]>
     ): Promise<void> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message("debug", "Adding test run evidence...");
@@ -110,7 +124,7 @@ export class ServerClient
 
     @loggedRequest({ purpose: "get test run" })
     public async getTestRun(
-        ...[testRun]: Parameters<XrayClientServer["getTestRun"]>
+        ...[testRun]: Parameters<HasGetTestRunEndpoint["getTestRun"]>
     ): Promise<GetTestRunResponseServer> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message("debug", "Getting test run results...");

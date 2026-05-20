@@ -33,8 +33,8 @@ export const JIRA_CLIENT_CLOUD = new Version3Client({
 export const JIRA_CLIENT_SERVER = new Version2Client({
     authentication: {
         basic: {
-            password: getEnv("CYPRESS_JIRA_PASSWORD_SERVER"),
-            username: getEnv("CYPRESS_JIRA_USERNAME_SERVER"),
+            apiToken: getEnv("CYPRESS_JIRA_PASSWORD_SERVER"),
+            email: getEnv("CYPRESS_JIRA_USERNAME_SERVER"),
         },
     },
     host: getEnv("CYPRESS_JIRA_URL_SERVER"),

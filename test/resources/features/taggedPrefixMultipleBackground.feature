@@ -10,6 +10,7 @@ Feature: A tagged feature
     #@Precondition:CYP-647
 		Then xyz987
 
+  @CYP-123
   Scenario: A scenario
     Given an assumption
     When a when

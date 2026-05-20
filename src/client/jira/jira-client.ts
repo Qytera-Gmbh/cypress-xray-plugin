@@ -1,24 +1,30 @@
-import type { AxiosResponse } from "axios";
-import FormData from "form-data";
-import fs from "fs";
-import type { SearchRequest } from "../../types/jira/requests/search";
-import type { Attachment } from "../../types/jira/responses/attachment";
-import type { FieldDetail } from "../../types/jira/responses/field-detail";
-import type { Issue } from "../../types/jira/responses/issue";
-import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
-import type { IssueUpdate } from "../../types/jira/responses/issue-update";
-import type { SearchResults } from "../../types/jira/responses/search-results";
-import type { User } from "../../types/jira/responses/user";
-import type { StringMap } from "../../types/util";
-import { dedent } from "../../util/dedent";
-import { LOG } from "../../util/logging";
-import { Client } from "../client";
-import { loggedRequest } from "../util";
+import type { SearchRequest } from "../../models/jira/requests/search";
+import type { Attachment } from "../../models/jira/responses/attachment";
+import type { FieldDetail } from "../../models/jira/responses/field-detail";
+import type { Issue } from "../../models/jira/responses/issue";
+import type { IssueTypeDetails } from "../../models/jira/responses/issue-type-details";
+import type { IssueUpdate } from "../../models/jira/responses/issue-update";
+import type { User } from "../../models/jira/responses/user";
 
 /**
- * All methods a Jira client needs to implement.
+ * Search endpoint of Jira clients.
  */
-export interface JiraClient {
+export interface HasSearchEndpoint {
+    /**
+     * Searches for issues using JQL. Automatically performs pagination if necessary.
+     *
+     * @param request - the search request
+     * @returns the search results
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-jql-post
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
+     */
+    search(request: SearchRequest): Promise<Issue[]>;
+}
+
+/**
+ * Add attachment endpoint of Jira clients.
+ */
+export interface HasAddAttachmentEndpoint {
     /**
      * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
      *
@@ -29,6 +35,12 @@ export interface JiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
      */
     addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]>;
+}
+
+/**
+ * Edit issue endpoint of Jira clients.
+ */
+export interface HasEditIssueEndpoint {
     /**
      * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
      * The edits to the issue's fields are defined using `update` and `fields`.
@@ -43,6 +55,12 @@ export interface JiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
      */
     editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string>;
+}
+
+/**
+ * Get fields endpoint of Jira clients.
+ */
+export interface HasGetFieldsEndpoint {
     /**
      * Returns system and custom issue fields according to the following rules:
      * - Fields that cannot be added to the issue navigator are always returned
@@ -58,6 +76,12 @@ export interface JiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
      */
     getFields(): Promise<FieldDetail[]>;
+}
+
+/**
+ * Get issue types endpoint of Jira clients.
+ */
+export interface HasGetIssueTypesEndpoint {
     /**
      * Returns all issue types.
      *
@@ -66,23 +90,12 @@ export interface JiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
      */
     getIssueTypes(): Promise<IssueTypeDetails[]>;
-    /**
-     * Returns details for the current user.
-     *
-     * @returns the user details
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.11.0/#api/2/myself
-     */
-    getMyself(): Promise<User>;
-    /**
-     * Searches for issues using JQL. Automatically performs pagination if necessary.
-     *
-     * @param request - the search request
-     * @returns the search results
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
-     */
-    search(request: SearchRequest): Promise<Issue[]>;
+}
+
+/**
+ * Transition issue endpoint of Jira clients.
+ */
+export interface HasTransitionIssueEndpoint {
     /**
      * Performs an issue transition and, if the transition has a screen, updates the fields from the
      * transition screen.
@@ -101,212 +114,15 @@ export interface JiraClient {
 }
 
 /**
- * A Jira client class for communicating with Jira instances.
+ * Myself endpoint of Jira clients.
  */
-export class BaseJiraClient extends Client implements JiraClient {
-    @loggedRequest({ purpose: "attach files" })
-    public async addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]> {
-        if (files.length === 0) {
-            LOG.message(
-                "warning",
-                `No files provided to attach to issue ${issueIdOrKey}. Skipping attaching.`
-            );
-            return [];
-        }
-        const form = new FormData();
-        let filesIncluded = 0;
-        files.forEach((file: string) => {
-            if (!fs.existsSync(file)) {
-                LOG.message("warning", "File does not exist:", file);
-                return;
-            }
-            filesIncluded++;
-            const fileContent = fs.createReadStream(file);
-            form.append("file", fileContent);
-        });
-
-        if (filesIncluded === 0) {
-            LOG.message("warning", "All files do not exist. Skipping attaching.");
-            return [];
-        }
-
-        const header = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Attaching files:", ...files);
-        const response: AxiosResponse<Attachment[]> = await this.httpClient.post(
-            `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/attachments`,
-            form,
-            {
-                headers: {
-                    ...header,
-                    ...form.getHeaders(),
-                    ["X-Atlassian-Token"]: "no-check",
-                },
-            }
-        );
-        LOG.message(
-            "debug",
-            dedent(`
-                Successfully attached the following files to issue ${issueIdOrKey}:
-
-                  ${response.data.map((attachment) => attachment.filename).join("\n")}
-            `)
-        );
-        return response.data;
-    }
-
-    @loggedRequest({ purpose: "get issue types" })
-    public async getIssueTypes(): Promise<IssueTypeDetails[]> {
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Getting issue types...");
-        const response: AxiosResponse<IssueTypeDetails[]> = await this.httpClient.get(
-            `${this.apiBaseUrl}/rest/api/latest/issuetype`,
-            {
-                headers: {
-                    ...authorizationHeader,
-                },
-            }
-        );
-        LOG.message(
-            "debug",
-            `Successfully retrieved data for ${response.data.length.toString()} issue types.`
-        );
-        LOG.message(
-            "debug",
-            dedent(`
-                Received data for issue types:
-
-                  ${response.data
-                      .map((issueType) => {
-                          if (issueType.name) {
-                              if (issueType.id) {
-                                  return `${issueType.name} (id: ${issueType.id})`;
-                              }
-                              return `${issueType.name} (id: undefined)`;
-                          } else if (issueType.id) {
-                              return `undefined (id: ${issueType.id})`;
-                          }
-                          return "undefined (id: undefined)";
-                      })
-                      .join("\n")}
-            `)
-        );
-        return response.data;
-    }
-
-    @loggedRequest({ purpose: "get fields" })
-    public async getFields(): Promise<FieldDetail[]> {
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Getting fields...");
-        const response: AxiosResponse<FieldDetail[]> = await this.httpClient.get(
-            `${this.apiBaseUrl}/rest/api/latest/field`,
-            {
-                headers: {
-                    ...authorizationHeader,
-                },
-            }
-        );
-        LOG.message(
-            "debug",
-            `Successfully retrieved data for ${response.data.length.toString()} fields.`
-        );
-        LOG.message(
-            "debug",
-            dedent(`
-                Received data for fields:
-
-                  ${response.data.map((field) => `${field.name} (id: ${field.id})`).join("\n")}
-            `)
-        );
-        return response.data;
-    }
-
-    @loggedRequest({ purpose: "get user details" })
-    public async getMyself(): Promise<User> {
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Getting user details...");
-        const response: AxiosResponse<User> = await this.httpClient.get(
-            `${this.apiBaseUrl}/rest/api/latest/myself`,
-            {
-                headers: {
-                    ...authorizationHeader,
-                },
-            }
-        );
-        LOG.message("debug", "Successfully retrieved user details.");
-        return response.data;
-    }
-
-    @loggedRequest({ purpose: "search issues" })
-    public async search(request: SearchRequest): Promise<Issue[]> {
-        const header = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Searching issues...");
-        let total = 0;
-        let startAt = request.startAt ?? 0;
-        const results: StringMap<Issue> = {};
-        do {
-            const paginatedRequest = {
-                ...request,
-                startAt: startAt,
-            };
-            const response: AxiosResponse<SearchResults> = await this.httpClient.post(
-                `${this.apiBaseUrl}/rest/api/latest/search`,
-                paginatedRequest,
-                {
-                    headers: {
-                        ...header,
-                    },
-                }
-            );
-            total = response.data.total ?? total;
-            if (response.data.issues) {
-                for (const issue of response.data.issues) {
-                    if (issue.key) {
-                        results[issue.key] = issue;
-                    }
-                }
-                // Explicit check because it could also be 0.
-                if (typeof response.data.startAt === "number") {
-                    startAt = response.data.startAt + response.data.issues.length;
-                }
-            }
-        } while (startAt && startAt < total);
-        LOG.message("debug", `Found ${total.toString()} issues`);
-        return Object.values(results);
-    }
-
-    @loggedRequest({ purpose: "edit issue" })
-    public async editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string> {
-        const header = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Editing issue...");
-        await this.httpClient.put(
-            `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}`,
-            issueUpdateData,
-            {
-                headers: {
-                    ...header,
-                },
-            }
-        );
-        LOG.message("debug", `Successfully edited issue: ${issueIdOrKey}`);
-        return issueIdOrKey;
-    }
-
-    @loggedRequest({ purpose: "transition issue" })
-    public async transitionIssue(
-        issueIdOrKey: string,
-        issueUpdateData: IssueUpdate
-    ): Promise<void> {
-        const header = await this.credentials.getAuthorizationHeader();
-        LOG.message("debug", "Transitioning issue...");
-        await this.httpClient.post(
-            `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/transitions`,
-            issueUpdateData,
-            {
-                headers: {
-                    ...header,
-                },
-            }
-        );
-        LOG.message("debug", `Successfully transitioned issue: ${issueIdOrKey}`);
-    }
+export interface HasMyselfEndpoint {
+    /**
+     * Returns details for the current user.
+     *
+     * @returns the user details
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.11.0/#api/2/myself
+     */
+    getMyself(): Promise<User>;
 }

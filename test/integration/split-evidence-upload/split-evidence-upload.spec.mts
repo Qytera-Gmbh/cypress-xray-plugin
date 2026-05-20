@@ -5,52 +5,39 @@ import { describe, it } from "node:test";
 import { setTimeout } from "node:timers/promises";
 import { runCypress } from "../../sh.mjs";
 import { JIRA_CLIENT_CLOUD, XRAY_CLIENT_CLOUD, XRAY_CLIENT_SERVER } from "../clients.mjs";
-import { getCreatedTestExecutionIssueKey } from "../util.mjs";
+import { getCreatedTestExecutionIssueKey, shouldRunIntegrationTests } from "../util.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/450
 // ============================================================================================== //
 
-describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
-    for (const testCase of [
-        {
-            expectedScreenshots: [
-                "CYP-2414 screenshot #1.png",
-                "CYP-2414 screenshot #2.png",
-                "CYP-2414 screenshot #3.png",
-            ],
-            linkedTest: "CYP-2414",
-            projectDirectory: join(import.meta.dirname, "cloud"),
-            projectKey: "CYP",
-            service: "cloud",
-            title: "evidence uploads can be split into multiple requests (cloud)",
-        },
-        {
-            expectedScreenshots: [
-                "CYPLUG-1672 screenshot #1.png",
-                "CYPLUG-1672 screenshot #2.png",
-                "CYPLUG-1672 screenshot #3.png",
-            ],
-            linkedTest: "CYPLUG-1672",
-            projectDirectory: join(import.meta.dirname, "server"),
-            projectKey: "CYPLUG",
-            service: "server",
-            title: "evidence uploads can be split into multiple requests (server)",
-        },
-    ] as const) {
-        await it(testCase.title, async () => {
-            const output = runCypress(testCase.projectDirectory, {
-                expectedStatusCode: 0,
-                includeDefaultEnv: testCase.service,
-            });
+void describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, () => {
+    if (shouldRunIntegrationTests("cloud")) {
+        for (const testCase of [
+            {
+                expectedScreenshots: [
+                    "CXP-14 screenshot #1.png",
+                    "CXP-14 screenshot #2.png",
+                    "CXP-14 screenshot #3.png",
+                ],
+                linkedTest: "CXP-14",
+                projectDirectory: join(import.meta.dirname, "cloud"),
+                projectKey: "CXP",
+                title: "evidence uploads can be split into multiple requests (cloud)",
+            },
+        ] as const) {
+            void it(testCase.title, async () => {
+                const output = runCypress(testCase.projectDirectory, {
+                    expectedStatusCode: 0,
+                    includeDefaultEnv: "cloud",
+                });
 
-            const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                testCase.projectKey,
-                output,
-                "cypress"
-            );
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    testCase.projectKey,
+                    output,
+                    "cypress"
+                );
 
-            if (testCase.service === "cloud") {
                 const executionIssue = await JIRA_CLIENT_CLOUD.issues.getIssue({
                     fields: ["id"],
                     issueIdOrKey: testExecutionIssueKey,
@@ -87,9 +74,36 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     new Set(testResults.results[0].evidence.map((e) => e?.filename)),
                     new Set(testCase.expectedScreenshots)
                 );
-            }
+            });
+        }
+    }
 
-            if (testCase.service === "server") {
+    if (shouldRunIntegrationTests("server")) {
+        for (const testCase of [
+            {
+                expectedScreenshots: [
+                    "CYPLUG-1672 screenshot #1.png",
+                    "CYPLUG-1672 screenshot #2.png",
+                    "CYPLUG-1672 screenshot #3.png",
+                ],
+                linkedTest: "CYPLUG-1672",
+                projectDirectory: join(import.meta.dirname, "server"),
+                projectKey: "CYPLUG",
+                title: "evidence uploads can be split into multiple requests (server)",
+            },
+        ] as const) {
+            void it(testCase.title, async () => {
+                const output = runCypress(testCase.projectDirectory, {
+                    expectedStatusCode: 0,
+                    includeDefaultEnv: "server",
+                });
+
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    testCase.projectKey,
+                    output,
+                    "cypress"
+                );
+
                 // Jira server does not like searches immediately after issue creation (socket hang up).
                 await setTimeout(10000);
                 const testRun = await XRAY_CLIENT_SERVER.testRun.getTestRun({
@@ -101,7 +115,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     new Set(testRun.evidences.map((e) => e.fileName)),
                     new Set(testCase.expectedScreenshots)
                 );
-            }
-        });
+            });
+        }
     }
 });

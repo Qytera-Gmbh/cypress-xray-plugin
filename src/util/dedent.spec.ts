@@ -4,12 +4,12 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { dedent } from "./dedent";
 
-describe(relative(cwd(), __filename), async () => {
-    await it("strips leading whitespace", () => {
+void describe(relative(cwd(), __filename), () => {
+    void it("strips leading whitespace", () => {
         assert.strictEqual(dedent(`   Hello\nthere\nyo`), "Hello\nthere\nyo");
     });
 
-    await it("strips leading and trailing multiline whitespace", () => {
+    void it("strips leading and trailing multiline whitespace", () => {
         assert.strictEqual(
             dedent(`
                 Hello
@@ -20,7 +20,7 @@ describe(relative(cwd(), __filename), async () => {
         );
     });
 
-    await it("adds indentation to newlines in between", () => {
+    void it("adds indentation to newlines in between", () => {
         assert.strictEqual(
             dedent(`
                 Hello
@@ -32,7 +32,7 @@ describe(relative(cwd(), __filename), async () => {
         );
     });
 
-    await it("handles unindented strings", () => {
+    void it("handles unindented strings", () => {
         assert.strictEqual(dedent(`Hello`), "Hello");
     });
 });

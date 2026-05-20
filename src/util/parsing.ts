@@ -1,23 +1,23 @@
-import type { ObjectLike } from "../types/cypress";
+import type { ObjectLike } from "../models/cypress";
 import { dedent } from "./dedent";
 import { unknownToString } from "./string";
 
 /**
- * Parses and returns a boolean value from a string.
+ * Parses and returns a boolean value.
  *
- * @param value - a string that can be interpreted as a boolean value
+ * @param value - a value that can be interpreted as a boolean value
  * @returns the corresponding boolean value
  * @see https://www.npmjs.com/package/yn
  */
-export function asBoolean(value: string): boolean {
-    value = String(value).trim();
-    if (/^(?:y|yes|true|1|on)$/i.test(value)) {
+export function asBoolean(value: unknown): boolean {
+    const stringValue = asString(value).trim();
+    if (/^(?:y|yes|true|1|on)$/i.test(stringValue)) {
         return true;
     }
-    if (/^(?:n|no|false|0|off)$/i.test(value)) {
+    if (/^(?:n|no|false|0|off)$/i.test(stringValue)) {
         return false;
     }
-    throw new Error(`Failed to parse boolean value from string: ${value}`);
+    throw new Error(`Failed to parse boolean value from string: ${stringValue}`);
 }
 
 /**
@@ -26,28 +26,28 @@ export function asBoolean(value: string): boolean {
  * @param value - the string
  * @returns the string
  */
-export function asString(value: string): string {
-    return value;
+export function asString(value: unknown): string {
+    return String(value);
 }
 
 /**
- * Parses and returns a float value from a string.
+ * Parses and returns a float value.
  *
- * @param value - a string that can be interpreted as a float value
+ * @param value - a value that can be interpreted as a float
  * @returns the corresponding float value
  */
-export function asFloat(value: string): number {
-    return Number.parseFloat(value);
+export function asFloat(value: unknown): number {
+    return Number.parseFloat(asString(value));
 }
 
 /**
- * Parses and returns an integer value from a string.
+ * Parses and returns an integer value.
  *
- * @param value - a string that can be interpreted as an integer value
+ * @param value - a value that can be interpreted as an integer value
  * @returns the corresponding integer value
  */
-export function asInt(value: string): number {
-    return Number.parseInt(value);
+export function asInt(value: unknown): number {
+    return Number.parseInt(asString(value));
 }
 
 /**
@@ -136,10 +136,10 @@ export function asObject(value: unknown): object {
 export function parse<T>(
     env: ObjectLike,
     variable: string,
-    parser: (parameter: string) => T
+    parser: (parameter: unknown) => T
 ): T | undefined {
     if (variable in env) {
-        return parser(env[variable] as string);
+        return parser(env[variable]);
     }
     return undefined;
 }

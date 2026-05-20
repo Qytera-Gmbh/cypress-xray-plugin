@@ -11,7 +11,6 @@ module.exports = defineConfig({
     chromeWebSecurity: false,
     e2e: {
         supportFile: false,
-        experimentalStudio: true,
         specPattern: "**/*.{feature,cy.js}",
         async setupNodeEvents(on, config) {
             const fixedOn = fix(on);

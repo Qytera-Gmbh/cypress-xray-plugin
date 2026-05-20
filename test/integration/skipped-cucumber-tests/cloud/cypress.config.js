@@ -11,14 +11,13 @@ module.exports = defineConfig({
     chromeWebSecurity: false,
     e2e: {
         supportFile: false,
-        experimentalStudio: true,
         specPattern: "**/*.{feature,cy.js}",
         async setupNodeEvents(on, config) {
             const fixedOn = fix(on);
             await preprocessor.addCucumberPreprocessorPlugin(fixedOn, config);
             await configureXrayPlugin(fixedOn, config, {
                 jira: {
-                    projectKey: "CYP",
+                    projectKey: "CXP",
                     testExecutionIssue: {
                         fields: {
                             summary: "Integration test skipped cucumber tests",

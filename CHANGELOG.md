@@ -1,5 +1,78 @@
 # Changelog
 
+# `9.0.0`
+
+- Resumed mainline maintenance under Qytera-Gmbh after the September 2025 – May 2026 pause
+- Consolidated 93 commits from the `csvtuda/cypress-xray-plugin` parallel maintenance fork (versions 8.5.1 through 8.6.6), including dependency updates, refactoring of `plugin.ts` into a modular `main.ts` setup, and an expanded Jira client (split into `base-jira-client`, `jira-client-cloud`, `jira-client-server`)
+- Restored package identity: name `cypress-xray-plugin` (unscoped), repository and bug tracker on `Qytera-Gmbh/cypress-xray-plugin`, homepage at `qytera-gmbh.github.io/projects/cypress-xray-plugin`
+- Historical changelog entries below retain their original links to `csvtuda/cypress-xray-plugin` issues for attribution
+
+# `8.6.6`
+
+- Enhanced custom Xray status aggregate functions with new parameters
+- Fixed issue where custom Xray status aggregate functions were being ignored ([#82](https://github.com/csvtuda/cypress-xray-plugin/issues/82))
+
+# `8.6.5`
+
+## Dependency updates
+
+- Bumped axios from 1.12.2 to 1.13.5
+- Bumped @cucumber/messages from 31.1.0 to 32.1.0
+
+# `8.6.4`
+
+- Fixed issue where configured test plan issue keys were being ignored ([#61](https://github.com/csvtuda/cypress-xray-plugin/issues/61))
+
+## Dependency updates
+
+- Bumped form-data from 4.0.4 to 4.0.5
+- Bumped @cucumber/messages from 27.2.0 to 31.1.0
+- Bumped @cucumber/gherkin from 35.1.0 to 37.0.1
+
+# `8.6.3`
+
+- Fixed issue where environment variables were being parsed incorrectly ([#50](https://github.com/csvtuda/cypress-xray-plugin/issues/50))
+
+## Dependency updates
+
+- Bumped glob from 11.0.3 to 11.1.0
+
+# `8.6.2`
+
+- Fixed issue where test executions were not being reused ([#41](https://github.com/csvtuda/cypress-xray-plugin/issues/41))
+
+# `8.6.1`
+
+- Deprecated `xray.uploadRequests` option
+- Un-deprecated `xray.uploadResults` option
+
+## Dependency updates
+
+- Bumped semver from 7.7.2 to 7.7.3
+
+# `8.6.0`
+
+- Added `cypress-xray-plugin:task:evidence:attachment` task for uploading arbitrary evidence
+- Deprecated `xray.uploadResults` option
+- Deprecated `cypress-xray-plugin:task:request` task
+- Deprecated `cypress-xray-plugin:task:response` task
+
+# `8.5.2`
+
+- Updated all mentions of package to new @csvtuda scope
+
+# `8.5.1`
+
+- Switched to new Jira cloud search endpoints
+- Added support for Cypress v15
+
+## Dependency updates
+
+- Bumped @cucumber/gherkin from 30.0.0 to 35.1.0
+- Bumped axios from 1.8.2 to 1.12.2
+- Bumped form-data from 4.0.2 to 4.0.4
+- Bumped semver from 7.6.3 to 7.7.1
+
 # `8.5.0`
 
 - Added `xray.url` option
@@ -181,7 +254,7 @@
 
 ```ts
 // cypress.config.js
-import { configureXrayPlugin, addXrayResultUpload } from "cypress-xray-plugin";
+import { configureXrayPlugin, addXrayResultUpload } from "@csvtuda/cypress-xray-plugin";
 
 async setupNodeEvents(on, config) {
   await configureXrayPlugin(
@@ -202,7 +275,7 @@ async setupNodeEvents(on, config) {
 
 ```ts
 // cypress.config.js
-import { configureXrayPlugin } from "cypress-xray-plugin";
+import { configureXrayPlugin } from "@csvtuda/cypress-xray-plugin";
 
 async setupNodeEvents(on, config) {
   await configureXrayPlugin(
@@ -242,7 +315,7 @@ async setupNodeEvents(on, config) {
 
 ```ts
 // cypress.config.js
-import { configureXrayPlugin } from "cypress-xray-plugin";
+import { configureXrayPlugin } from "@csvtuda/cypress-xray-plugin";
 import { constants } from "node:crypto";
 
 async setupNodeEvents(on, config) {
@@ -263,7 +336,7 @@ async setupNodeEvents(on, config) {
 
 ```ts
 // cypress.config.js
-import { configureXrayPlugin } from "cypress-xray-plugin";
+import { configureXrayPlugin } from "@csvtuda/cypress-xray-plugin";
 import { constants } from "node:crypto";
 import { Agent } from "node:https";
 
@@ -307,7 +380,7 @@ async setupNodeEvents(on, config) {
 
 ```ts
 // cypress/support/e2e.js
-import "cypress-xray-plugin/register";
+import "@csvtuda/cypress-xray-plugin/register";
 ```
 
 </td>
@@ -315,7 +388,7 @@ import "cypress-xray-plugin/register";
 
 ```ts
 // cypress/support/e2e.js
-import "cypress-xray-plugin/commands";
+import "@csvtuda/cypress-xray-plugin/commands";
 ```
 
 </td>
@@ -586,11 +659,10 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 ## Breaking changes
 
 - The plugin will now _never_ create new Jira issues. The only exception to this rule are test execution issues.
-
-    - It now only uploads results of Cypress tests which include [a corresponding Jira key](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/) and skips all other tests
+    - It now only uploads results of Cypress tests which include [a corresponding Jira key](https://csvtuda.github.io/docs/cypress-xray-plugin/guides/targetingExistingIssues/) and skips all other tests
     - It now only uploads results of Cucumber tests which include both:
-        - Issue tags for background elements (see [here](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/))
-        - Issue tags for _all_ scenarios and scenario backgrounds (see [here](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/))
+        - Issue tags for background elements (see [here](https://csvtuda.github.io/docs/cypress-xray-plugin/guides/targetingExistingIssues/))
+        - Issue tags for _all_ scenarios and scenario backgrounds (see [here](https://csvtuda.github.io/docs/cypress-xray-plugin/guides/targetingExistingIssues/))
     - It now also skips feature file upload/synchronization of feature files for which the above does not apply
 
 > [!NOTE]
@@ -620,14 +692,18 @@ import {
     addXrayResultUpload,
     configureXrayPlugin,
     syncFeatureFile,
-} from "cypress-xray-plugin/plugin";
+} from "@csvtuda/cypress-xray-plugin/plugin";
 ```
 
 </td>
 <td>
 
 ```ts
-import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "cypress-xray-plugin";
+import {
+    addXrayResultUpload,
+    configureXrayPlugin,
+    syncFeatureFile,
+} from "@csvtuda/cypress-xray-plugin";
 ```
 
 </td>

@@ -5,42 +5,34 @@ import { describe, it } from "node:test";
 import { setTimeout } from "node:timers/promises";
 import { runCypress } from "../../sh.mjs";
 import { JIRA_CLIENT_CLOUD, XRAY_CLIENT_CLOUD, XRAY_CLIENT_SERVER } from "../clients.mjs";
-import { getCreatedTestExecutionIssueKey } from "../util.mjs";
+import { getCreatedTestExecutionIssueKey, shouldRunIntegrationTests } from "../util.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/452
 // ============================================================================================== //
 
-describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
-    for (const testCase of [
-        {
-            linkedTest: "CYP-2151",
-            projectDirectory: join(import.meta.dirname, "cloud"),
-            projectKey: "CYP",
-            service: "cloud",
-            title: "iteration parameters can be provided (cloud)",
-        },
-        {
-            linkedTest: "CYPLUG-1411",
-            projectDirectory: join(import.meta.dirname, "server"),
-            projectKey: "CYPLUG",
-            service: "server",
-            title: "iteration parameters can be provided (server)",
-        },
-    ] as const) {
-        await it(testCase.title, async () => {
-            const output = runCypress(testCase.projectDirectory, {
-                expectedStatusCode: 0,
-                includeDefaultEnv: testCase.service,
-            });
+void describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, () => {
+    if (shouldRunIntegrationTests("cloud")) {
+        for (const testCase of [
+            {
+                linkedTest: "CXP-2",
+                projectDirectory: join(import.meta.dirname, "cloud"),
+                projectKey: "CXP",
+                title: "iteration parameters can be provided (cloud)",
+            },
+        ] as const) {
+            void it(testCase.title, async () => {
+                const output = runCypress(testCase.projectDirectory, {
+                    expectedStatusCode: 0,
+                    includeDefaultEnv: "cloud",
+                });
 
-            const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                testCase.projectKey,
-                output,
-                "cypress"
-            );
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    testCase.projectKey,
+                    output,
+                    "cypress"
+                );
 
-            if (testCase.service === "cloud") {
                 const executionIssue = await JIRA_CLIENT_CLOUD.issues.getIssue({
                     fields: ["id"],
                     issueIdOrKey: testExecutionIssueKey,
@@ -125,9 +117,31 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                         },
                     ],
                 });
-            }
+            });
+        }
+    }
 
-            if (testCase.service === "server") {
+    if (shouldRunIntegrationTests("server")) {
+        for (const testCase of [
+            {
+                linkedTest: "CYPLUG-1411",
+                projectDirectory: join(import.meta.dirname, "server"),
+                projectKey: "CYPLUG",
+                title: "iteration parameters can be provided (server)",
+            },
+        ] as const) {
+            void it(testCase.title, async () => {
+                const output = runCypress(testCase.projectDirectory, {
+                    expectedStatusCode: 0,
+                    includeDefaultEnv: "server",
+                });
+
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    testCase.projectKey,
+                    output,
+                    "cypress"
+                );
+
                 // Jira server does not like searches immediately after issue creation (socket hang up).
                 await setTimeout(10000);
                 const testRun = await XRAY_CLIENT_SERVER.testRun.getTestRun({
@@ -171,7 +185,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     { name: "using", value: "enqueueTask" },
                     { name: "id", value: "" },
                 ]);
-            }
-        });
+            });
+        }
     }
 });

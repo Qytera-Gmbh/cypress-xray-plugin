@@ -1,5 +1,5 @@
 Feature: Testing a single scenario
 
-    @TestName:CYP-756
+    @TestName:CXP-4
     Scenario: Single scenario test
         Given Something

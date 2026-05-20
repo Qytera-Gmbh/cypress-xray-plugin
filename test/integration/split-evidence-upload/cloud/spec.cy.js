@@ -1,8 +1,8 @@
 describe("template spec", () => {
-    it("CYP-2414 split evidence upload", () => {
-        cy.screenshot("CYP-2414 screenshot #1");
-        cy.screenshot("CYP-2414 screenshot #2");
-        cy.screenshot("CYP-2414 screenshot #3");
+    it("CXP-14 split evidence upload", () => {
+        cy.screenshot("CXP-14 screenshot #1");
+        cy.screenshot("CXP-14 screenshot #2");
+        cy.screenshot("CXP-14 screenshot #3");
         expect(true).to.be.true;
     });
 });

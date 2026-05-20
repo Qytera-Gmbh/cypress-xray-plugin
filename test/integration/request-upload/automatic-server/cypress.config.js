@@ -5,7 +5,7 @@ async function setupNodeEvents(on, config) {
     await configureXrayPlugin(on, config, {
         jira: {
             url: "https://example.org",
-            projectKey: "CYP",
+            projectKey: "CXP",
             testExecutionIssue: {
                 fields: {
                     summary: "Integration test automatic request upload",

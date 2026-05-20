@@ -10,14 +10,14 @@ import type { Logger } from "../../util/logging";
 import { LOG } from "../../util/logging";
 import { AxiosRestClient } from "./requests";
 
-describe(relative(cwd(), __filename), async () => {
+void describe(relative(cwd(), __filename), () => {
     beforeEach(() => {
         axios.interceptors.request.clear();
         axios.interceptors.response.clear();
     });
 
-    await describe("get", async () => {
-        await it("returns the response", async (context) => {
+    void describe("get", () => {
+        void it("returns the response", async (context) => {
             const response: AxiosResponse<string> = {
                 config: {
                     headers: new AxiosHeaders(),
@@ -34,7 +34,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(await client.get("http://localhost:1234"), response);
         });
 
-        await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
+        void it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
             context.mock.timers.enable({ apis: ["Date"] });
             context.mock.timers.tick(12345);
             const message = context.mock.method(LOG, "message", context.mock.fn());
@@ -85,7 +85,7 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
-        await it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
+        void it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const logToFile = context.mock.method(
                 LOG,
@@ -98,7 +98,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.strictEqual(logToFile.mock.callCount(), 1);
         });
 
-        await it("logs progress", async (context) => {
+        void it("logs progress", async (context) => {
             context.mock.timers.enable({ apis: ["Date", "setTimeout", "setInterval"] });
 
             const message = context.mock.method(LOG, "message", context.mock.fn());
@@ -139,8 +139,8 @@ describe(relative(cwd(), __filename), async () => {
         });
     });
 
-    await describe("post", async () => {
-        await it("returns the response", async (context) => {
+    void describe("post", () => {
+        void it("returns the response", async (context) => {
             const response: AxiosResponse<string> = {
                 config: {
                     headers: new AxiosHeaders(),
@@ -156,7 +156,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(await client.post("http://localhost:1234"), response);
         });
 
-        await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
+        void it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
             context.mock.timers.enable({ apis: ["Date"] });
             context.mock.timers.tick(12345);
 
@@ -220,7 +220,7 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
-        await it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
+        void it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const logToFile = context.mock.method(
                 LOG,
@@ -233,7 +233,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.strictEqual(logToFile.mock.callCount(), 1);
         });
 
-        await it("logs progress", async (context) => {
+        void it("logs progress", async (context) => {
             context.mock.timers.enable({ apis: ["Date", "setTimeout", "setInterval"] });
 
             const message = context.mock.method(LOG, "message", context.mock.fn());
@@ -273,8 +273,8 @@ describe(relative(cwd(), __filename), async () => {
         });
     });
 
-    await describe("put", async () => {
-        await it("returns the response", async (context) => {
+    void describe("put", () => {
+        void it("returns the response", async (context) => {
             const client = new AxiosRestClient(axios);
             const response: AxiosResponse<string> = {
                 config: {
@@ -290,7 +290,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(await client.put("http://localhost:1234"), response);
         });
 
-        await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
+        void it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
             context.mock.timers.enable({ apis: ["Date"] });
             context.mock.timers.tick(12345);
 
@@ -355,7 +355,7 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
-        await it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
+        void it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             const logToFile = context.mock.method(
                 LOG,
@@ -368,7 +368,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.strictEqual(logToFile.mock.callCount(), 1);
         });
 
-        await it("logs progress", async (context) => {
+        void it("logs progress", async (context) => {
             context.mock.timers.enable({ apis: ["Date", "setTimeout", "setInterval"] });
 
             const message = context.mock.method(LOG, "message", context.mock.fn());
@@ -408,7 +408,7 @@ describe(relative(cwd(), __filename), async () => {
         });
     });
 
-    await it("logs form data", async (context) => {
+    void it("logs form data", async (context) => {
         const logToFile = context.mock.method(
             LOG,
             "logToFile",
@@ -424,7 +424,7 @@ describe(relative(cwd(), __filename), async () => {
         assert.match(logToFile.mock.calls[0].arguments[0], /{\\"hello\\":\\"bonjour\\"}/g);
     });
 
-    await it("logs formdata only up to a certain length", async (context) => {
+    void it("logs formdata only up to a certain length", async (context) => {
         const logToFile = context.mock.method(
             LOG,
             "logToFile",
@@ -442,7 +442,7 @@ describe(relative(cwd(), __filename), async () => {
         assert.match(logToFile.mock.calls[0].arguments[0], /[... omitted due to file size]/g);
     });
 
-    await it("logs requests happening at the same time", async (context) => {
+    void it("logs requests happening at the same time", async (context) => {
         const logToFile = context.mock.method(
             LOG,
             "logToFile",
@@ -468,7 +468,7 @@ describe(relative(cwd(), __filename), async () => {
         );
     });
 
-    await it("does not rate limit requests by default", async () => {
+    void it("does not rate limit requests by default", async () => {
         const restClient = new AxiosRestClient(axios);
         const responses = await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),
@@ -505,7 +505,7 @@ describe(relative(cwd(), __filename), async () => {
         assertApprox(dateHeader9.getTime() - dateHeader8.getTime(), 0, 50);
     });
 
-    await it("rate limits requests", async () => {
+    void it("rate limits requests", async () => {
         const restClient = new AxiosRestClient(axios, { rateLimiting: { requestsPerSecond: 2 } });
         const responses = await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),

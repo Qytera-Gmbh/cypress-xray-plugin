@@ -1,5 +1,5 @@
 describe("request", () => {
-    it("CYP-666 does something", () => {
+    it("CXP-9 does something", () => {
         cy.request("localhost:8080");
     });
 });

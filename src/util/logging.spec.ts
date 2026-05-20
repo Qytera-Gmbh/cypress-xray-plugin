@@ -10,10 +10,10 @@ import { resolveTestDirPath } from "../../test/util";
 import { LoggedError } from "./errors";
 import { CapturingLogger, PluginLogger } from "./logging";
 
-describe(relative(cwd(), __filename), async () => {
-    await describe(PluginLogger.name, async () => {
-        await describe("message", async () => {
-            await it("handles single line messages", (context) => {
+void describe(relative(cwd(), __filename), () => {
+    void describe(PluginLogger.name, () => {
+        void describe("message", () => {
+            void it("handles single line messages", (context) => {
                 const info = context.mock.method(console, "info", context.mock.fn());
                 const logger = new PluginLogger();
                 logger.message("info", "hello");
@@ -23,7 +23,7 @@ describe(relative(cwd(), __filename), async () => {
                     )}`,
                 ]);
             });
-            await it("handles multi line messages", (context) => {
+            void it("handles multi line messages", (context) => {
                 const info = context.mock.method(console, "info", context.mock.fn());
                 const logger = new PluginLogger();
                 logger.message("info", "hello\nbonjour");
@@ -42,7 +42,7 @@ describe(relative(cwd(), __filename), async () => {
                     ansiColors.white("│ Cypress Xray Plugin │ INFO    │"),
                 ]);
             });
-            await it("prefers custom loggers", (context) => {
+            void it("prefers custom loggers", (context) => {
                 const info = context.mock.method(console, "info", context.mock.fn());
                 const logger = new PluginLogger({
                     logDirectory: ".",
@@ -55,8 +55,8 @@ describe(relative(cwd(), __filename), async () => {
             });
         });
 
-        await describe("logToFile", async () => {
-            await it("writes to relative directories", () => {
+        void describe("logToFile", () => {
+            void it("writes to relative directories", () => {
                 const logger = new PluginLogger({
                     logDirectory: relative(".", resolveTestDirPath("logs")),
                 });
@@ -67,7 +67,7 @@ describe(relative(cwd(), __filename), async () => {
                 assert.deepStrictEqual(parsedFile, "[1, 2, 3]");
             });
 
-            await it("writes to absolute directories", () => {
+            void it("writes to absolute directories", () => {
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs"),
                 });
@@ -78,7 +78,7 @@ describe(relative(cwd(), __filename), async () => {
                 assert.deepStrictEqual(parsedFile, "[4, 5, 6]");
             });
 
-            await it("writes to non-existent directories", (context) => {
+            void it("writes to non-existent directories", (context) => {
                 const error = context.mock.method(console, "error", context.mock.fn());
                 const timestamp = Date.now();
                 const logger = new PluginLogger({
@@ -108,8 +108,8 @@ describe(relative(cwd(), __filename), async () => {
             });
         });
 
-        await describe("logErrorToFile", async () => {
-            await it("writes to relative directories", (context) => {
+        void describe("logErrorToFile", () => {
+            void it("writes to relative directories", (context) => {
                 const error = context.mock.method(console, "error", context.mock.fn());
                 const logger = new PluginLogger({
                     logDirectory: relative(".", resolveTestDirPath("logs")),
@@ -133,7 +133,7 @@ describe(relative(cwd(), __filename), async () => {
                 ]);
             });
 
-            await it("writes to absolute directories", (context) => {
+            void it("writes to absolute directories", (context) => {
                 const error = context.mock.method(console, "error", context.mock.fn());
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs"),
@@ -157,7 +157,7 @@ describe(relative(cwd(), __filename), async () => {
                 ]);
             });
 
-            await it("writes to non-existent directories", (context) => {
+            void it("writes to non-existent directories", (context) => {
                 const timestamp = Date.now();
 
                 const error = context.mock.method(console, "error", context.mock.fn());
@@ -187,7 +187,7 @@ describe(relative(cwd(), __filename), async () => {
                 ]);
             });
 
-            await it("writes axios errors", (context) => {
+            void it("writes axios errors", (context) => {
                 const timestamp = Date.now();
 
                 const error = context.mock.method(console, "error", context.mock.fn());
@@ -239,7 +239,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
             });
 
-            await it("writes generic errors", (context) => {
+            void it("writes generic errors", (context) => {
                 const timestamp = Date.now();
 
                 const error = context.mock.method(console, "error", context.mock.fn());
@@ -261,7 +261,7 @@ describe(relative(cwd(), __filename), async () => {
                 ]);
             });
 
-            await it("does not write already logged errors", (context) => {
+            void it("does not write already logged errors", (context) => {
                 const error = context.mock.method(console, "error", context.mock.fn());
                 const timestamp = Date.now();
                 const logger = new PluginLogger({
@@ -279,9 +279,9 @@ describe(relative(cwd(), __filename), async () => {
         });
     });
 
-    await describe(CapturingLogger.name, async () => {
-        await describe("message", async () => {
-            await it("stores calls", () => {
+    void describe(CapturingLogger.name, () => {
+        void describe("message", () => {
+            void it("stores calls", () => {
                 const logger = new CapturingLogger();
                 logger.message("info", "hello");
                 logger.message("error", "alarm");
@@ -292,8 +292,8 @@ describe(relative(cwd(), __filename), async () => {
             });
         });
 
-        await describe("logToFile", async () => {
-            await it("stores calls", () => {
+        void describe("logToFile", () => {
+            void it("stores calls", () => {
                 const logger = new CapturingLogger();
                 assert.deepStrictEqual(
                     [
@@ -309,8 +309,8 @@ describe(relative(cwd(), __filename), async () => {
             });
         });
 
-        await describe("logErrorToFile", async () => {
-            await it("stores calls", () => {
+        void describe("logErrorToFile", () => {
+            void it("stores calls", () => {
                 const logger = new CapturingLogger();
                 logger.logErrorToFile(new Error("I failed"), "logToFile1.json");
                 logger.logErrorToFile(new Error("I failed, too"), "logToFile2.json");
@@ -321,8 +321,8 @@ describe(relative(cwd(), __filename), async () => {
             });
         });
 
-        await describe("configure", async () => {
-            await it("does nothing", () => {
+        void describe("configure", () => {
+            void it("does nothing", () => {
                 const unconfiguredLogger = new CapturingLogger();
                 const configuredLogger = new CapturingLogger();
                 configuredLogger.configure();
