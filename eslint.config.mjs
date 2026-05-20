@@ -69,22 +69,5 @@ export default tseslint.config(
             "tsdoc/syntax": "error",
         },
     },
-    { files: ["**/*.mjs"], ...tseslint.configs.disableTypeChecked },
-    {
-        files: ["**/*.spec.ts", "**/*.spec.mts"],
-        rules: {
-            "@typescript-eslint/no-floating-promises": [
-                "warn",
-                {
-                    allowForKnownSafeCalls: [
-                        {
-                            from: "package",
-                            name: ["it", "describe"],
-                            package: "node:test",
-                        },
-                    ],
-                },
-            ],
-        },
-    }
+    { files: ["**/*.mjs"], ...tseslint.configs.disableTypeChecked }
 );

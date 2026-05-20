@@ -10,3 +10,14 @@ updates:
     schedule:
       interval: "monthly"
     versioning-strategy: increase
+    cooldown:
+      default-days: 5
+      semver-major-days: 14
+      semver-minor-days: 5
+      semver-patch-days: 5
+    groups:
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"

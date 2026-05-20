@@ -1,5 +1,39 @@
-import type { StringMap } from "../types/util";
+import { dedent } from "./dedent";
+import { HELP } from "./help";
 import { unknownToString } from "./string";
+
+/**
+ * Extracts Jira issue keys from a Cypress test title, based on the provided project key.
+ *
+ * @param title - the test title
+ * @param projectKey - the Jira projectk key
+ * @returns the Jira issue keys
+ * @throws if the title contains zero issue keys
+ */
+export function extractIssueKeys(title: string, projectKey: string): [string, ...string[]] {
+    const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
+    const matches = title.match(regex);
+    if (!matches) {
+        throw new Error(
+            dedent(`
+                Test: ${title}
+
+                  No test issue keys found in title.
+
+                  You can target existing test issues by adding a corresponding issue key:
+
+                    it("${projectKey}-123 ${title}", () => {
+                      // ...
+                    });
+
+                  For more information, visit:
+                  - ${HELP.plugin.guides.targetingExistingIssues}
+            `)
+        );
+    }
+    const [key, ...keys] = matches;
+    return [key, ...keys];
+}
 
 /**
  * Extracts a string property from an object.
@@ -35,45 +69,10 @@ export function extractArrayOfStrings(data: unknown, propertyName: string): stri
     return value as string[];
 }
 
-/**
- * Recursively extracts a string property from an object. The array of property names is used to
- * recursively access the nested property values of the provided data object. The last nested
- * object must then contain a string property matching the last provided property name.
- *
- * @example
- * ```ts
- * const data = {
- *   a: {
- *     b: {
- *       c: {
- *         d: "hello"
- *       }
- *     }
- *   }
- * };
- * console.log(extractNestedString(data, ["a", "b", "c", "d"]));
- * // hello
- * ```
- *
- * @param data - the object
- * @param propertyNames - the properties to access
- * @returns the property's string value
- * @throws if `data` is not an object or does not contain a nested string property `propertyName`
- */
-export function extractNestedString(data: unknown, propertyNames: [string, ...string[]]): string {
-    let currentData: unknown = data;
-    for (let i = 0; i < propertyNames.length - 1; i++) {
-        const property = propertyNames[i];
-        verifyIsObjectWithProperty(currentData, property);
-        currentData = currentData[property];
-    }
-    return extractString(currentData, propertyNames[propertyNames.length - 1]);
-}
-
 function verifyIsObjectWithProperty(
     data: unknown,
     propertyName: string
-): asserts data is StringMap<unknown> {
+): asserts data is Record<string, unknown> {
     if (typeof data !== "object" || data === null || !(propertyName in data)) {
         throw new Error(
             `Expected an object containing property '${propertyName}', but got: ${JSON.stringify(

@@ -1,8 +1,3 @@
-[!NOTE]
-**Maintenance resumed (May 2026).** This repository was paused between September 2025 and May 2026. During that period, a parallel maintenance fork was published at [csvtuda/cypress-xray-plugin](https://github.com/csvtuda/cypress-xray-plugin) and we are working on consolidating its contributions back into this repository. The next release is in preparation.
-
-Maintenance was paused between September 2025 and April 2026. We are returning the repository to active maintenance and will consolidate contributions from the parallel csvtuda/cypress-xray-plugin fork.
-
 <h1 align="center">
   <a href="https://qytera-gmbh.github.io/projects/cypress-xray-plugin">
   <img width="100%" src="logo.svg" alt="Cypress Xray Plugin">
@@ -78,9 +73,3 @@ Please [visit the documentation](https://qytera-gmbh.github.io/projects/cypress-
 ## Issues
 
 If you're encountering strange behaviour or feel like a feature is missing, feel free to create a [GitHub issue](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues).
-
-## Further Reading
-
-Here is a small list of related blog posts that may be of interest:
-
-- :de: [Das Cypress Xray Plugin zur nahtlosen Integration Ihrer End-to-End Tests](https://www.qytera.de/blog/cypress-xray-plugin-e2e-tests)

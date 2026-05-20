@@ -65,7 +65,7 @@ export function runCypress(
             mergedEnv,
             (...args) => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                return args[1] ? args[1] : undefined;
+                return args[1] ?? undefined;
             },
             2
         ).replaceAll("CYPRESS_", "")
@@ -153,9 +153,11 @@ export function runCypress(
             `)
         );
     }
-    return result.output
+    const output = result.output
         .filter((buffer): buffer is Buffer => buffer !== null)
         .map((buffer) => buffer.toString("utf8"));
+    fs.writeFileSync(path.join(cwd, "integration-test.log"), output.join("\n"));
+    return output;
 }
 
 function getEnv(names: string[]): Record<string, string | undefined> {

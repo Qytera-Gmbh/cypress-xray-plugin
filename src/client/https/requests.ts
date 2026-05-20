@@ -208,9 +208,10 @@ export class AxiosRestClient {
                         {
                             body: chunks.map((chunk) => chunk.toString("utf-8")).join(""),
                             headers: request.headers,
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             params: request.params,
                             url: url,
-                        } as LoggedRequest,
+                        },
                         null,
                         2
                     ),
@@ -224,9 +225,10 @@ export class AxiosRestClient {
                     {
                         body: request.data,
                         headers: request.headers,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         params: request.params,
                         url: url,
-                    } as LoggedRequest,
+                    },
                     null,
                     2
                 ),

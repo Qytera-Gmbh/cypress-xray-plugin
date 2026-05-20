@@ -19,7 +19,7 @@ export function dedent(string: string): string {
     const dedentedLines: string[] = [];
     let lastTrueIndent = 0;
     lines.forEach((line, i) => {
-        let indentLength = 0;
+        let indentLength: number;
         let indent = "";
         if (i > 0) {
             if (indents[i] < baseIndent) {

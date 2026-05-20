@@ -9,7 +9,7 @@ module.exports = defineConfig({
             const fixedOn = fix(on);
             await configureXrayPlugin(fixedOn, config, {
                 jira: {
-                    projectKey: "CYP",
+                    projectKey: "CXP",
                     testExecutionIssue: {
                         fields: {
                             summary: "Integration test upload last attempt",

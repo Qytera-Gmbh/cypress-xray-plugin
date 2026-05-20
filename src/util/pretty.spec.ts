@@ -4,9 +4,9 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { prettyPadObjects, prettyPadValues } from "./pretty";
 
-describe(relative(cwd(), __filename), async () => {
-    await describe(prettyPadObjects.name, async () => {
-        await it("pretty pad object arrays", () => {
+void describe(relative(cwd(), __filename), () => {
+    void describe(prettyPadObjects.name, () => {
+        void it("pretty pad object arrays", () => {
             const array = [
                 {
                     clauseNames: ["summary"],
@@ -54,7 +54,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
             ]);
         });
-        await it("pretty pad object values", () => {
+        void it("pretty pad object values", () => {
             assert.deepStrictEqual(
                 prettyPadValues({
                     a: [1, 2, false, true, "george"],

@@ -1,0 +1,36 @@
+{
+    "issues": [
+        {
+            "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+            "id": "10025",
+            "self": "https://example.atlassian.net/rest/api/latest/issue/10025",
+            "key": "CXP-15"
+        },
+        {
+            "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+            "id": "10024",
+            "self": "https://example.atlassian.net/rest/api/latest/issue/10024",
+            "key": "CXP-14"
+        },
+        {
+            "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+            "id": "10023",
+            "self": "https://example.atlassian.net/rest/api/latest/issue/10023",
+            "key": "CXP-13"
+        },
+        {
+            "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+            "id": "10022",
+            "self": "https://example.atlassian.net/rest/api/latest/issue/10022",
+            "key": "CXP-12"
+        },
+        {
+            "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+            "id": "10021",
+            "self": "https://example.atlassian.net/rest/api/latest/issue/10021",
+            "key": "CXP-11"
+        }
+    ],
+    "nextPageToken": "EDIYx43FxpczIocAtNzEsQ1hQLTcyLENYUC03MyxDWFAtNzQp",
+    "isLast": false
+}

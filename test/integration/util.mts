@@ -1,4 +1,5 @@
-import assert from "node:assert";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { dedent } = await import("../../src/util/dedent.js");
 
 export function getCreatedTestExecutionIssueKey(
     projectKey: string,
@@ -18,8 +19,23 @@ export function getCreatedTestExecutionIssueKey(
             break;
     }
     const createdIssueLine = output.find((line) => regex.test(line))?.match(regex);
-    assert.ok(createdIssueLine);
-    const testExecutionIssueKey = createdIssueLine[1];
-    assert.ok(createdIssueLine[1]);
-    return testExecutionIssueKey;
+    if (!createdIssueLine || createdIssueLine.length === 0) {
+        throw new Error(
+            dedent(`
+                Failed to find test execution issue key in output using pattern: ${regex.toString()}
+
+                    output:
+
+                        ${output.join("\n")}
+            `)
+        );
+    }
+    return createdIssueLine[1];
+}
+
+export function shouldRunIntegrationTests(environment: "cloud" | "server"): boolean {
+    if (process.env.INTEGRATION_TESTS_ENVIRONMENT) {
+        return process.env.INTEGRATION_TESTS_ENVIRONMENT === environment;
+    }
+    return true;
 }

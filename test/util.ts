@@ -3,7 +3,7 @@ import { existsSync, readdirSync, rmSync } from "node:fs";
 import { before } from "node:test";
 import os from "os";
 import path from "path";
-import type { CypressFailedRunResult, CypressRunResult, RunResult } from "../src/types/cypress";
+import type { CypressFailedRunResult, CypressRunResult, RunResult } from "../src/models/cypress";
 import { unknownToString } from "../src/util/string";
 
 export const TEST_TMP_DIR = path.join(os.tmpdir(), "cypress-xray-plugin");
@@ -21,20 +21,20 @@ before(() => {
 });
 
 /**
- * Recursively returns all files in the given directory that match the provided filename filter.
+ * Recursively returns all files in the given directory that match the provided file path filter.
  *
  * @param dir - the entry directory
- * @param filter - the filename filter
+ * @param filter - the file filter
  * @returns all matching files
  */
-export function findFiles(dir: string, filter: (filename: string) => boolean): string[] {
+export function findFiles(dir: string, filter: (filepath: string) => boolean): string[] {
     const files = readdirSync(dir, { withFileTypes: true });
     let testFiles: string[] = [];
     for (const file of files) {
         const fullPath = path.join(dir, file.name);
         if (file.isDirectory()) {
             testFiles = testFiles.concat(findFiles(fullPath, filter));
-        } else if (file.isFile() && filter(file.name)) {
+        } else if (file.isFile() && filter(fullPath)) {
             testFiles.push(fullPath);
         }
     }

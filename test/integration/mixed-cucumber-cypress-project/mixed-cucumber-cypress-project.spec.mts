@@ -4,51 +4,42 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { runCypress } from "../../sh.mjs";
 import { getIntegrationClient } from "../clients.mjs";
-import { getCreatedTestExecutionIssueKey } from "../util.mjs";
+import { getCreatedTestExecutionIssueKey, shouldRunIntegrationTests } from "../util.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/282
 // ============================================================================================== //
 
-describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
-    for (const testCase of [
-        {
-            projectDirectory: join(import.meta.dirname, "cloud"),
-            projectKey: "CYP",
-            scenarioIssueKey: "CYP-756",
-            service: "cloud",
-            testIssueKey: "CYP-757",
-            title: "results upload works for mixed cypress and cucumber projects (cloud)",
-        },
-        {
-            projectDirectory: join(import.meta.dirname, "server"),
-            projectKey: "CYPLUG",
-            scenarioIssueKey: "CYPLUG-165",
-            service: "server",
-            testIssueKey: "CYPLUG-166",
-            title: "results upload works for mixed cypress and cucumber projects (server)",
-        },
-    ] as const) {
-        await it(testCase.title, async () => {
-            const output = runCypress(testCase.projectDirectory, {
-                includeDefaultEnv: testCase.service,
-            });
+void describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, () => {
+    if (shouldRunIntegrationTests("cloud")) {
+        for (const testCase of [
+            {
+                projectDirectory: join(import.meta.dirname, "cloud"),
+                projectKey: "CXP",
+                scenarioIssueKey: "CXP-4",
+                testIssueKey: "CXP-3",
+                title: "results upload works for mixed cypress and cucumber projects (cloud)",
+            },
+        ] as const) {
+            void it(testCase.title, async () => {
+                const output = runCypress(testCase.projectDirectory, {
+                    includeDefaultEnv: "cloud",
+                });
 
-            const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                testCase.projectKey,
-                output,
-                "both"
-            );
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    testCase.projectKey,
+                    output,
+                    "both"
+                );
 
-            if (testCase.service === "cloud") {
-                const issue = await getIntegrationClient("jira", testCase.service).issues.getIssue({
+                const issue = await getIntegrationClient("jira", "cloud").issues.getIssue({
                     fields: ["id"],
                     issueIdOrKey: testExecutionIssueKey,
                 });
                 assert.ok(issue.id);
                 const execution = await getIntegrationClient(
                     "xray",
-                    testCase.service
+                    "cloud"
                 ).graphql.getTestExecution({ issueId: issue.id }, (testExecution) => [
                     testExecution.tests({ limit: 100 }, (testResults) => [
                         testResults.results((test) => [test.jira({ fields: ["key"] })]),
@@ -56,18 +47,40 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 ]);
                 assert.strictEqual(execution.tests?.results?.[0]?.jira.key, testCase.testIssueKey);
                 assert.strictEqual(execution.tests.results[1]?.jira.key, testCase.scenarioIssueKey);
-            }
+            });
+        }
+    }
 
-            if (testCase.service === "server") {
+    if (shouldRunIntegrationTests("server")) {
+        for (const testCase of [
+            {
+                projectDirectory: join(import.meta.dirname, "server"),
+                projectKey: "CYPLUG",
+                scenarioIssueKey: "CYPLUG-165",
+                testIssueKey: "CYPLUG-166",
+                title: "results upload works for mixed cypress and cucumber projects (server)",
+            },
+        ] as const) {
+            void it(testCase.title, async () => {
+                const output = runCypress(testCase.projectDirectory, {
+                    includeDefaultEnv: "server",
+                });
+
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    testCase.projectKey,
+                    output,
+                    "both"
+                );
+
                 const testResults = await getIntegrationClient(
                     "xray",
-                    testCase.service
+                    "server"
                 ).testExecution.getTests(testExecutionIssueKey);
                 assert.deepStrictEqual(
                     testResults.map((result) => result.key),
                     [testCase.testIssueKey, testCase.scenarioIssueKey]
                 );
-            }
-        });
+            });
+        }
     }
 });

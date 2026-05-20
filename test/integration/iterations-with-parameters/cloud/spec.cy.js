@@ -1,6 +1,6 @@
 const { enqueueTask, PluginTask } = require("cypress-xray-plugin/commands/tasks");
 
-describe("CYP-2151 Test Suite Name", () => {
+describe("CXP-2 Test Suite Name", () => {
     for (const test of ["#1", "#2", "#3"]) {
         it(`Test Method ${test}`, () => {
             cy.visit("localhost:8080");

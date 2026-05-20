@@ -140,6 +140,8 @@ dist
 unit.xml
 integration.xml
 
-test/**/cypress.env.json
-test/**/cucumber-report.json
-test/**/*.png
+test/integration/**/cypress.env.json
+test/integration/**/cucumber-report.json
+test/integration/**/*.png
+
+.seed

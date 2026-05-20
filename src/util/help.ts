@@ -1,37 +1,37 @@
-const BASE_URL = "https://qytera-gmbh.github.io/projects/cypress-xray-plugin";
+const BASE_URL = "https://csvtuda.github.io/docs/cypress-xray-plugin";
 
 export const HELP = {
     plugin: {
         configuration: {
             authentication: {
                 jira: {
-                    root: `${BASE_URL}/section/configuration/authentication/#jira`,
+                    root: `${BASE_URL}/configuration/authentication/#jira`,
                 },
-                root: `${BASE_URL}/section/configuration/authentication/`,
+                root: `${BASE_URL}/configuration/authentication/`,
                 xray: {
-                    cloud: `${BASE_URL}/section/configuration/authentication/#xray-cloud`,
-                    server: `${BASE_URL}/section/configuration/authentication/#xray-server`,
+                    cloud: `${BASE_URL}/configuration/authentication/#xray-cloud`,
+                    server: `${BASE_URL}/configuration/authentication/#xray-server`,
                 },
             },
             cucumber: {
-                prefixes: `${BASE_URL}/section/configuration/cucumber/#prefixes`,
+                prefixes: `${BASE_URL}/configuration/cucumber/#prefixes`,
             },
-            introduction: `${BASE_URL}/section/configuration/introduction/`,
+            introduction: `${BASE_URL}/configuration/introduction/`,
             jira: {
-                projectKey: `${BASE_URL}/section/configuration/jira/#projectkey`,
+                projectKey: `${BASE_URL}/configuration/jira/#projectkey`,
                 testExecutionIssue: {
                     fields: {
-                        issuetype: `${BASE_URL}/section/configuration/jira/#issuetype`,
+                        issuetype: `${BASE_URL}/configuration/jira/#issuetype`,
                     },
                 },
-                url: `${BASE_URL}/section/configuration/jira/#url`,
+                url: `${BASE_URL}/configuration/jira/#url`,
             },
             plugin: {
-                debug: `${BASE_URL}/section/configuration/plugin/#debug`,
+                debug: `${BASE_URL}/configuration/plugin/#debug`,
             },
         },
         guides: {
-            targetingExistingIssues: `${BASE_URL}/section/guides/targetingExistingIssues/`,
+            targetingExistingIssues: `${BASE_URL}/guides/targetingExistingIssues/`,
         },
     },
     xray: {

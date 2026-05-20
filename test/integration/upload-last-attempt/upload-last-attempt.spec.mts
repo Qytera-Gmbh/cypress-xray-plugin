@@ -5,42 +5,34 @@ import { describe, it } from "node:test";
 import { setTimeout } from "node:timers/promises";
 import { runCypress } from "../../sh.mjs";
 import { JIRA_CLIENT_CLOUD, XRAY_CLIENT_CLOUD, XRAY_CLIENT_SERVER } from "../clients.mjs";
-import { getCreatedTestExecutionIssueKey } from "../util.mjs";
+import { getCreatedTestExecutionIssueKey, shouldRunIntegrationTests } from "../util.mjs";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/451
 // ============================================================================================== //
 
-describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
-    for (const testCase of [
-        {
-            linkedTests: ["CYP-2432", "CYP-2434"],
-            projectDirectory: join(import.meta.dirname, "cloud"),
-            projectKey: "CYP",
-            service: "cloud",
-            title: "only last attempts are uploaded (cloud)",
-        },
-        {
-            linkedTests: ["CYPLUG-1692", "CYPLUG-1694"],
-            projectDirectory: join(import.meta.dirname, "server"),
-            projectKey: "CYPLUG",
-            service: "server",
-            title: "only last attempts are uploaded (server)",
-        },
-    ] as const) {
-        await it(testCase.title, async () => {
-            const output = runCypress(testCase.projectDirectory, {
-                expectedStatusCode: 1,
-                includeDefaultEnv: testCase.service,
-            });
+void describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, () => {
+    if (shouldRunIntegrationTests("cloud")) {
+        for (const testCase of [
+            {
+                linkedTests: ["CXP-17", "CXP-18"],
+                projectDirectory: join(import.meta.dirname, "cloud"),
+                projectKey: "CXP",
+                title: "only last attempts are uploaded (cloud)",
+            },
+        ] as const) {
+            void it(testCase.title, async () => {
+                const output = runCypress(testCase.projectDirectory, {
+                    expectedStatusCode: 1,
+                    includeDefaultEnv: "cloud",
+                });
 
-            const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                testCase.projectKey,
-                output,
-                "cypress"
-            );
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    testCase.projectKey,
+                    output,
+                    "cypress"
+                );
 
-            if (testCase.service === "cloud") {
                 const executionIssue = await JIRA_CLIENT_CLOUD.issues.getIssue({
                     fields: ["id"],
                     issueIdOrKey: testExecutionIssueKey,
@@ -85,7 +77,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 assert.strictEqual(testResultsRetried.results[0].evidence?.length, 1);
                 assert.strictEqual(
                     testResultsRetried.results[0].evidence[0]?.filename,
-                    "CYP-2432 my screenshot (attempt 6).png"
+                    "CXP-17 my screenshot (attempt 6).png"
                 );
                 assert.deepStrictEqual(testResultsRetried.results[0].iterations, { results: [] });
                 const testResultsRetriedScreenshot = await XRAY_CLIENT_CLOUD.graphql.getTestRuns(
@@ -118,18 +110,40 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                 assert.strictEqual(testResultsRetriedScreenshot.results[0].evidence?.length, 2);
                 assert.strictEqual(
                     testResultsRetriedScreenshot.results[0].evidence[0]?.filename,
-                    "CYP-2434 my other screenshot (attempt 3).png"
+                    "CXP-18 my other screenshot (attempt 3).png"
                 );
                 assert.strictEqual(
                     testResultsRetriedScreenshot.results[0].evidence[1]?.filename,
-                    "template spec -- CYP-2434 manual screenshot (failed) (attempt 3).png"
+                    "template spec -- CXP-18 manual screenshot (failed) (attempt 3).png"
                 );
                 assert.deepStrictEqual(testResultsRetriedScreenshot.results[0].iterations, {
                     results: [],
                 });
-            }
+            });
+        }
+    }
 
-            if (testCase.service === "server") {
+    if (shouldRunIntegrationTests("server")) {
+        for (const testCase of [
+            {
+                linkedTests: ["CYPLUG-1692", "CYPLUG-1694"],
+                projectDirectory: join(import.meta.dirname, "server"),
+                projectKey: "CYPLUG",
+                title: "only last attempts are uploaded (server)",
+            },
+        ] as const) {
+            void it(testCase.title, async () => {
+                const output = runCypress(testCase.projectDirectory, {
+                    expectedStatusCode: 1,
+                    includeDefaultEnv: "server",
+                });
+
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    testCase.projectKey,
+                    output,
+                    "cypress"
+                );
+
                 // Jira server does not like searches immediately after issue creation (socket hang up).
                 await setTimeout(10000);
                 const testRunRetried = await XRAY_CLIENT_SERVER.testRun.getTestRun({
@@ -156,7 +170,7 @@ describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () =>
                     "template spec -- CYPLUG-1694 manual screenshot (failed) (attempt 3).png"
                 );
                 assert.strictEqual(testResultsRetriedScreenshot.iterations, undefined);
-            }
-        });
+            });
+        }
     }
 });

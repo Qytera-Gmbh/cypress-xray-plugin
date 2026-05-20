@@ -3,25 +3,28 @@ import FormData from "form-data";
 import type {
     XrayEvidenceItem,
     XrayTestExecutionResults,
-} from "../../types/xray/import-test-execution-results";
-import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import type { GetTestRunsResponseCloud } from "../../types/xray/responses/graphql/get-test-runs";
-import type { TestRun } from "../../types/xray/responses/graphql/xray";
-import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
+} from "../../models/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../models/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../models/xray/requests/import-execution-multipart-info";
+import type { GetTestRunsResponseCloud } from "../../models/xray/responses/graphql/get-test-runs";
+import type { TestRun } from "../../models/xray/responses/graphql/xray";
+import type { ImportExecutionResponseCloud } from "../../models/xray/responses/import-execution";
 import type {
     ImportFeatureResponse,
     ImportFeatureResponseCloud,
     IssueDetails,
-} from "../../types/xray/responses/import-feature";
+} from "../../models/xray/responses/import-feature";
 import { dedent } from "../../util/dedent";
 import { LOG } from "../../util/logging";
 import type { JwtCredentials } from "../authentication/credentials";
 import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
-import { AbstractXrayClient } from "./xray-client";
+import { BaseXrayClient } from "./base-xray-client";
 
-interface HasTestRunResults {
+/**
+ * Get test run results endpoint of Xray clients.
+ */
+export interface HasGetTestRunResultsEndpoint {
     /**
      * Returns a test execution by issue ID.
      *
@@ -41,9 +44,42 @@ interface HasTestRunResults {
     }): Promise<TestRun<{ key: string }>[]>;
 }
 
+/**
+ * Add evidence to test run endpoint of Xray clients.
+ */
+export interface HasAddEvidenceToTestRunEndpoint {
+    /**
+     * Mutation used to add evidence to a test run.
+     *
+     * @param variables - the GraphQL variable values
+     * @returns the result
+     *
+     * @see https://us.xray.cloud.getxray.app/doc/graphql/addevidencetotestrun.doc.html
+     */
+    addEvidenceToTestRun: (variables: {
+        /**
+         * The evidence to add to the test run.
+         */
+        evidence: readonly XrayEvidenceItem[];
+        /**
+         * The ID of the test run.
+         */
+        id: string;
+    }) => Promise<{
+        /**
+         * IDs of the added evidence.
+         */
+        addedEvidence: string[];
+        /**
+         * Warnings generated during the operation.
+         */
+        warnings: string[];
+    }>;
+}
+
 export class XrayClientCloud
-    extends AbstractXrayClient<ImportFeatureResponseCloud, ImportExecutionResponseCloud>
-    implements HasTestRunResults
+    extends BaseXrayClient<ImportFeatureResponseCloud, ImportExecutionResponseCloud>
+    implements HasAddEvidenceToTestRunEndpoint, HasGetTestRunResultsEndpoint
 {
     /**
      * The version of Xray's Cloud API. API v1 would also work, but let's stick to the recent one.
@@ -62,34 +98,10 @@ export class XrayClientCloud
         super(`${url}/api/${XrayClientCloud.VERSION}`, credentials, httpClient);
     }
 
-    /**
-     * Mutation used to add evidence to a test run.
-     *
-     * @param variables - the GraphQL variable values
-     * @returns the result
-     *
-     * @see https://us.xray.cloud.getxray.app/doc/graphql/addevidencetotestrun.doc.html
-     */
     @loggedRequest({ purpose: "add evidence to test run" })
-    public async addEvidenceToTestRun(variables: {
-        /**
-         * The evidence to add to the test run.
-         */
-        evidence: readonly XrayEvidenceItem[];
-        /**
-         * The ID of the test run.
-         */
-        id: string;
-    }): Promise<{
-        /**
-         * IDs of the added evidence.
-         */
-        addedEvidence: string[];
-        /**
-         * Warnings generated during the operation.
-         */
-        warnings: string[];
-    }> {
+    public async addEvidenceToTestRun(
+        ...[variables]: Parameters<HasAddEvidenceToTestRunEndpoint["addEvidenceToTestRun"]>
+    ): ReturnType<HasAddEvidenceToTestRunEndpoint["addEvidenceToTestRun"]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         const mutation = dedent(`
             mutation($id: String!, $evidence: [AttachmentDataInput]!) {
@@ -129,8 +141,8 @@ export class XrayClientCloud
 
     @loggedRequest({ purpose: "get test run results" })
     public async getTestRunResults(
-        options: Parameters<HasTestRunResults["getTestRunResults"]>[0]
-    ): Promise<TestRun<{ key: string }>[]> {
+        ...[options]: Parameters<HasGetTestRunResultsEndpoint["getTestRunResults"]>
+    ): ReturnType<HasGetTestRunResultsEndpoint["getTestRunResults"]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message("debug", "Retrieving test run results...");
         const runResults: TestRun<{ key: string }>[] = [];

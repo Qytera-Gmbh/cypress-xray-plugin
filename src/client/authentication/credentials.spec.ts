@@ -7,8 +7,8 @@ import { LOG } from "../../util/logging";
 import { AxiosRestClient } from "../https/requests";
 import { JwtCredentials } from "./credentials";
 
-describe(relative(cwd(), __filename), async () => {
-    await describe(JwtCredentials.name, async () => {
+void describe(relative(cwd(), __filename), () => {
+    void describe(JwtCredentials.name, () => {
         let restClient: AxiosRestClient;
         let credentials: JwtCredentials;
 
@@ -17,8 +17,8 @@ describe(relative(cwd(), __filename), async () => {
             credentials = new JwtCredentials("id", "secret", "http://localhost:1234", restClient);
         });
 
-        await describe(JwtCredentials.prototype.getAuthorizationHeader.name, async () => {
-            await it("returns authorization headers", async (context) => {
+        void describe(JwtCredentials.prototype.getAuthorizationHeader.name, () => {
+            void it("returns authorization headers", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
                 context.mock.method(restClient, "post", () => {
                     return {
@@ -36,7 +36,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
             });
 
-            await it("authorizes once only", async (context) => {
+            void it("authorizes once only", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
                 const post = context.mock.method(restClient, "post", () => {
                     return {
@@ -61,7 +61,7 @@ describe(relative(cwd(), __filename), async () => {
                 assert.strictEqual(post.mock.callCount(), 1);
             });
 
-            await it("handles unparseable tokens", async (context) => {
+            void it("handles unparseable tokens", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
                 context.mock.method(LOG, "logErrorToFile", context.mock.fn());
                 context.mock.method(restClient, "post", () => {
@@ -79,7 +79,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
             });
 
-            await it("handles bad responses", async (context) => {
+            void it("handles bad responses", async (context) => {
                 const message = context.mock.method(LOG, "message", context.mock.fn());
                 context.mock.method(LOG, "logErrorToFile", context.mock.fn());
                 context.mock.method(restClient, "post", () => {

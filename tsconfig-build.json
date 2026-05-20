@@ -1,5 +1,5 @@
 {
     "extends": "./tsconfig.json",
-    "include": ["index.ts", "src/cypress/index.ts", "src/cypress/commands.ts"],
+    "include": ["index.ts", "src/tasks/index.ts", "src/tasks/commands.ts"],
     "exclude": ["node_modules/", "dist/"]
 }

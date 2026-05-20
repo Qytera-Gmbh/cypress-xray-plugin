@@ -1,0 +1,1027 @@
+import type { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
+import type { AxiosRequestConfig } from "axios";
+import type { AxiosRestClient, RequestsOptions } from "../client/https/requests";
+import type { JiraClientCloud } from "../client/jira/jira-client-cloud";
+import type { JiraClientServer } from "../client/jira/jira-client-server";
+import type { XrayClientCloud } from "../client/xray/xray-client-cloud";
+import type { XrayClientServer } from "../client/xray/xray-client-server";
+import type { Level } from "../util/logging";
+import type { IssueUpdate } from "./jira/responses/issue-update";
+import type { XrayTestExecutionResults } from "./xray/import-test-execution-results";
+import type { CucumberMultipart } from "./xray/requests/import-execution-cucumber-multipart";
+import type {
+    MultipartInfo,
+    MultipartInfoCloud,
+} from "./xray/requests/import-execution-multipart-info";
+
+/**
+ * Models all options for configuring the behaviour of the plugin.
+ */
+export interface CypressXrayPluginOptions {
+    /**
+     * When Cucumber is enabled, you can use these options to configure how the plugin works with
+     * your feature files.
+     *
+     * @see https://csvtuda.github.io/docs/cypress-xray-plugin/configuration/cucumber/
+     */
+    cucumber?: CucumberOptions;
+    /**
+     * HTTP configuration to be used for requests made by the plugin. You can set default options to be
+     * used for all requests and override them with individual options for Jira or Xray.
+     *
+     * @example
+     *
+     * ```ts
+     * {
+     *   // ...other plugin options
+     *   http: {
+     *     timeout: 5000,
+     *     jira: {
+     *       proxy: {
+     *         host: "http://1.2.3.4",
+     *         port: 12345
+     *       }
+     *     },
+     *     xray: {
+     *       timeout: 10000,
+     *     }
+     *   }
+     * }
+     * ```
+     *
+     * @see https://csvtuda.github.io/docs/cypress-xray-plugin/configuration/http
+     */
+    http?: HttpOptions;
+    /**
+     * Defines Jira-specific options that control how the plugin interacts with Jira.
+     *
+     * @see https://csvtuda.github.io/docs/cypress-xray-plugin/configuration/jira/
+     */
+    jira: JiraOptions;
+    /**
+     * Options for configuring the general behaviour of the plugin.
+     *
+     * @see https://csvtuda.github.io/docs/cypress-xray-plugin/configuration/plugin/
+     */
+    plugin?: PluginOptions;
+    /**
+     * Xray settings that may be required depending on your project configuration.
+     *
+     * @see https://csvtuda.github.io/docs/cypress-xray-plugin/configuration/xray/
+     */
+    xray?: XrayOptions;
+}
+
+export interface JiraFieldIds {
+    /**
+     * The Jira issue description field ID.
+     *
+     * @deprecated Will be removed in version `9.0.0`. `description` is a system field and will
+     * always have ID `description`.
+     */
+    description?: string;
+    /**
+     * The Jira issue labels field ID.
+     *
+     * @deprecated Will be removed in version `9.0.0`. `labels` is a system field and will
+     * always have ID `labels`.
+     */
+    labels?: string;
+    /**
+     * The Jira issue summary field ID (i.e. the title of the issues).
+     *
+     * @deprecated Will be removed in version `9.0.0`. `summary` is a system field and will always
+     * have ID `summary`.
+     */
+    summary?: string;
+    /**
+     * The Xray test environments field ID (i.e. the test environments associated with test
+     * execution issues).
+     *
+     * *Note: This option is required for server instances only. Xray cloud provides ways to
+     * retrieve test environment field information independently of Jira.*
+     */
+    testEnvironments?: string;
+    /**
+     * The Jira field ID of test plans in Xray test (execution) issues.
+     *
+     * *Note: This option is required for server instances only. Xray cloud provides ways to
+     * retrieve test plan field information independently of Jira.*
+     */
+    testPlan?: string;
+}
+
+/**
+ * Wrapper type around Jira's issue update type with some additional properties.
+ */
+export type PluginIssueUpdate = IssueUpdate & {
+    /**
+     * An execution issue key to attach run results to. If omitted, Xray will always create
+     * a new test execution issue with each upload.
+     *
+     * @example "CYP-123"
+     */
+    key?: string;
+};
+
+/**
+ * Jira-specific options that control how the plugin interacts with Jira.
+ */
+export interface JiraOptions {
+    /**
+     * Whether any videos Cypress captured during test execution should be attached to the test
+     * execution issue on results upload.
+     */
+    attachVideos?: boolean;
+    /**
+     * Jira Field IDs to make all fields required during the upload process uniquely identifiable.
+     *
+     * By default, the plugin accesses field information using the fields' names (`Summary`,
+     * `Description`, ...) just fine. Still, providing the fields' IDs here might become necessary
+     * in the following scenarios:
+     * - Your Jira language setting is a language other than English. For example, when the plugin
+     * tries to access the `Test Plan` field and the Jira language is set to French, access will
+     * fail because Jira only provides access to a field called `Plan de Test` instead.
+     * - Your Jira project contains several fields with identical names.
+     *
+     * *Note: In case you don't know these properties or if you are unsure whether they are really
+     * needed, the plugin will try to provide lists of field candidates in case any errors occur.
+     * You can then extract all required information from these candidates.*
+     *
+     * *Please consult the official documentation for more information about field IDs: https://confluence.atlassian.com/jirakb/how-to-find-id-for-custom-field-s-744522503.html*
+     *
+     * @example
+     * ```ts
+     *   fields: {
+     *     testPlan: "customfield_12643"
+     *   }
+     * ```
+     */
+    fields?: JiraFieldIds;
+    /**
+     * The Jira project key.
+     *
+     * @example "CYP"
+     */
+    projectKey: string;
+    /**
+     * This option can be used to configure the test execution issue that the plugin will either
+     * create or modify with the run results. The value must match the format of Jira's issue
+     * create/update payloads.
+     *
+     * ```ts
+     * testExecutionIssue: {
+     *   key: "PRJ-16",
+     *   fields: {
+     *     summary: "My execution issue summary",
+     *     description: "My execution issue description",
+     *     assignee: {
+     *       name: "cool.turtle@company.com"
+     *     },
+     *     customfield_12345: "Sprint 17"
+     *   }
+     * }
+     * ```
+     *
+     * You can also return the issue data from a function in case you need dynamic values based on
+     * data computed during the test run.
+     *
+     * ```ts
+     * const executionIssueData = {
+     *   fields: {
+     *     issuetype: {
+     *       name: "Test Execution",
+     *     },
+     *     summary: "My default summary",
+     *     description: "My default description",
+     *   },
+     * };
+     * await configureXrayPlugin(on, config, {
+     *   jira: {
+     *     projectKey: "CYP",
+     *     testExecutionIssue: ({ results }) => {
+     *       if (results.totalFailed > 0) {
+     *         executionIssueData.fields.summary = "Failed test execution";
+     *       }
+     *       return executionIssueData;
+     *     },
+     *     url: "https://example.org",
+     *   },
+     * });
+     * ```
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post
+     * @see https://developer.atlassian.com/server/jira/platform/rest/v10000/api-group-issue/#api-api-2-issue-post
+     */
+    testExecutionIssue?:
+        | ((args: {
+              /**
+               * The Cypress run results.
+               */
+              results: CypressCommandLine.CypressRunResult;
+          }) => PluginIssueUpdate | Promise<PluginIssueUpdate>)
+        | PluginIssueUpdate;
+    /**
+     * The description of the test execution issue, which will be used both for new test execution
+     * issues as well as for updating existing issues (if provided through
+     * {@link JiraOptions.testExecutionIssue}).
+     *
+     * If omitted, test execution issues will have the following description:
+     * ```ts
+     * `Cypress version: ${cypressVersion} Browser: ${browserName} (${browserVersion})`
+     * ```
+     *
+     * @deprecated Will be removed in version `9.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * ```ts
+     * configureXrayPlugin(on, config, {
+     *   // ...
+     *   testExecutionIssue: {
+     *     fields: {
+     *       description: "my description"
+     *     }
+     *   }
+     * });
+     * ```
+     */
+    testExecutionIssueDescription?: string;
+    /**
+     * An execution issue key to attach run results to. If omitted, Jira will always create a new
+     * test execution issue with each upload.
+     *
+     * @example "CYP-123"
+     *
+     * @deprecated Will be removed in version `9.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * ```ts
+     * configureXrayPlugin(on, config, {
+     *   // ...
+     *   testExecutionIssue: {
+     *     key: "CYP-123"
+     *   }
+     * });
+     * ```
+     */
+    testExecutionIssueKey?: string;
+    /**
+     * The summary of the test execution issue, which will be used both for new test execution
+     * issues as well as for updating existing issues (if provided through
+     * {@link JiraOptions.testExecutionIssue}).
+     *
+     * If omitted, test execution issues will be named as follows:
+     * ```ts
+     * `Execution Results [${t}]`,
+     * ```
+     * where `t` is the timestamp when Cypress started testing.
+     *
+     * @deprecated Will be removed in version `9.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * ```ts
+     * configureXrayPlugin(on, config, {
+     *   // ...
+     *   testExecutionIssue: {
+     *     fields {
+     *       summary: "my summary"
+     *     }
+     *   }
+     * });
+     * ```
+     */
+    testExecutionIssueSummary?: string;
+    /**
+     * The issue type name of test executions. By default, Xray calls them `Test Execution`, but
+     * it's possible that they have been renamed or translated in your Jira instance.
+     *
+     * @deprecated Will be removed in version `9.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * ```ts
+     * configureXrayPlugin(on, config, {
+     *   // ...
+     *   testExecutionIssue: {
+     *     fields: {
+     *       issuetype: {
+     *         id: "12345",
+     *         name: "Test Execution"
+     *         // whatever is necessary to uniquely identify the issue type
+     *       }
+     *     }
+     *   }
+     * });
+     * ```
+     */
+    testExecutionIssueType?: string;
+    /**
+     * A test plan issue key to attach the execution to.
+     *
+     * @example "CYP-567"
+     */
+    testPlanIssueKey?:
+        | ((args: {
+              /**
+               * The Cypress run results.
+               */
+              results: CypressCommandLine.CypressRunResult;
+          }) => Promise<string> | string)
+        | string;
+    /**
+     * The issue type name of test plans. By default, Xray calls them `Test Plan`, but it's possible
+     * that they have been renamed or translated in your Jira instance.
+     *
+     * @deprecated Unused, will be removed in version `9.0.0`.
+     */
+    testPlanIssueType?: string;
+    /**
+     * Use this parameter to specify the base URL of your Jira instance.
+     *
+     * @example "https://example.org/development/jira" // Jira server
+     * @example "https://your-domain.atlassian.net" // Jira cloud
+     */
+    url: string;
+}
+
+/**
+ * A more specific Jira options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export type InternalJiraOptions = JiraOptions &
+    Required<
+        Pick<
+            JiraOptions,
+            | "attachVideos"
+            | "fields"
+            | "projectKey"
+            | "testExecutionIssueType"
+            | "testPlanIssueType"
+            | "url"
+        >
+    >;
+
+/**
+ * Xray settings that may be required depending on the project configuration.
+ */
+export interface XrayOptions {
+    /**
+     * A mapping of Cypress statuses to corresponding Xray _test_ statuses.
+     */
+    status?: {
+        /**
+         * A function that returns a single Xray status for a given combination of Cypress statuses.
+         * It is used to determine the final status of retried and data-driven tests and is never
+         * called for tests that have only been run once.
+         *
+         * Please note that tests are grouped by the issue keys present in their `describe()` and
+         * `it()` titles as described
+         * [here](https://csvtuda.github.io/docs/cypress-xray-plugin/guides/targetingExistingIssues/#reuse-cypress-issues).
+         *
+         * By default, the aggregation works as follows in order of mention:
+         *
+         * - a test is considered _passed_ if:
+         *   - all iterations pass
+         *   - at least one iteration passes and all others are pending
+         * - a test is considered _pending_ if:
+         *   - all iterations are pending
+         * - a test is considered _skipped_ if:
+         *   - at least one iteration is skipped
+         * - the test is considered _failed_ in all other scenarios
+         *
+         * @example
+         *
+         * The following example defines custom `FLAKY` and `ABORTED` statuses for iterated tests:
+         *
+         * ```ts
+         * ({ failed, passed, pending, skipped }) => {
+         *   if (passed > 0 && failed === 0 && skipped === 0) {
+         *     return "PASSED";
+         *   }
+         *   if (passed > 0 && (failed > 0 || skipped > 0)) {
+         *     return "FLAKY";
+         *   }
+         *   if (pending > 0) {
+         *     return "ABORTED";
+         *   }
+         *   return "FAILED";
+         * }
+         * ```
+         *
+         * @param args - the status aggregation arguments
+         * @returns the aggregated Xray status
+         */
+        aggregate?: (args: {
+            /**
+             * The number of iterations that have been reported as _failed_ by Cypress.
+             *
+             * @see https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests#Failed
+             */
+            failed: number;
+            /**
+             * The issue key of the aggregated test results.
+             */
+            issueKey: string;
+            /**
+             * The number of iterations that have been reported as _passed_ by Cypress.
+             *
+             * @see https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests#Passed
+             */
+            passed: number;
+            /**
+             * The number of iterations that have been reported as _pending_ by Cypress.
+             *
+             * @see https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests#Pending
+             */
+            pending: number;
+            /**
+             * The number of iterations that have been reported as _skipped_ by Cypress.
+             *
+             * @see https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests#Skipped
+             */
+            skipped: number;
+            /**
+             * Contains all Cypress specs which ran at least one test with the grouped issue key.
+             */
+            specs: CypressCommandLine.RunResult["spec"][];
+            /**
+             * Contains all Cypress tests where the grouped issue key appears in the title.
+             */
+            tests: CypressCommandLine.RunResult["tests"];
+        }) => string;
+        /**
+         * The Xray status name of a test marked as failed by Cypress. Should be used when custom
+         * status names have been set up in Xray.
+         *
+         * @example "FEHLGESCHLAGEN" // german
+         */
+        failed?: string;
+        /**
+         * The Xray status name of a test marked as passed by Cypress. Should be used when custom
+         * status names have been set up in Xray.
+         *
+         * @example "BESTANDEN" // german
+         */
+        passed?: string;
+        /**
+         * The Xray status name of a test marked as pending by Cypress. Should be used when custom
+         * status names have been set up in Xray.
+         *
+         * @example "EN_ATTENTE" // french
+         */
+        pending?: string;
+        /**
+         * The Xray status name of a test marked as skipped by Cypress. Should be used when custom
+         * status names have been set up in Xray.
+         *
+         * @example "OMIT" // french
+         */
+        skipped?: string;
+        /**
+         * A mapping of Cypress statuses to corresponding Xray _step_ statuses. These are currently
+         * only accessed in Cucumber report conversion.
+         */
+        step?: {
+            /**
+             * The Xray status name of a step marked as failed. Should be used when custom status
+             * names have been set up in Xray.
+             *
+             * @example "FEHLGESCHLAGEN" // german
+             */
+            failed?: string;
+            /**
+             * The Xray status name of a step marked as passed. Should be used when custom status
+             * names have been set up in Xray.
+             *
+             * @example "BESTANDEN" // german
+             */
+            passed?: string;
+            /**
+             * The Xray status name of a step marked as pending. Should be used when custom status
+             * names have been set up in Xray.
+             *
+             * @example "EN_ATTENTE" // french
+             */
+            pending?: string;
+            /**
+             * The Xray status name of a step marked as skipped. Should be used when custom status
+             * names have been set up in Xray.
+             *
+             * @example "OMIT" // french
+             */
+            skipped?: string;
+        };
+    };
+    /**
+     * The test environments for test execution issues. These will be used as follows:
+     * - if the plugin creates new test execution issues, they will be associated with the issue
+     * - if the plugin reuses existing test execution issues, they will:
+     *   - replace existing test environments
+     *   - be added if the issue does not yet have any test environments associated
+     *
+     * *Note: Xray's API only allows _replacing_ test environments in the plugin's scope. It is not
+     * possible to completely _remove_ all existing test environments during result upload.
+     * Completely removing all existing environments needs to be done manually.*
+     *
+     * @see {@link https://docs.getxray.app/display/XRAY/Working+with+Test+Environments | Xray server documentation}
+     * @see {@link https://docs.getxray.app/display/XRAYCLOUD/Working+with+Test+Environments | Xray cloud documentation}
+     */
+    testEnvironments?: [string, ...string[]];
+    /**
+     * Enables or disables the upload of manually executed requests using `cy.request`. If `true`,
+     * requests and responses will be attached to the corresponding test as evidence. If `false` or
+     * left `undefined`, neither requests nor responses are attached.
+     *
+     * *Note: For this option to work properly, you need to overwrite the `cy.request` command.*
+     *
+     * @see https://csvtuda.github.io/docs/cypress-xray-plugin/guides/uploadRequestData/
+     *
+     * @defaultValue false
+     *
+     * @deprecated Will be removed in version `9.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * Disable the plugin's internal `cy.request()` override (which will be removed alongside this option in `9.0.0`):
+     *
+     * ```ts
+     * // cypress.config.js
+     * import { configureXrayPlugin } from "cypress-xray-plugin";
+     *
+     * async setupNodeEvents(on, config) {
+     *     await configureXrayPlugin(on, config, {
+     *         // ...
+     *         xray: {
+     *             uploadRequests: false
+     *         }
+     *     });
+     * }
+     * ```
+     *
+     * Then, if you want to upload requests, you'll need to overwrite the `cy.request()` command yourself:
+     *
+     * ```ts
+     * // commands.js
+     * import { enqueueTask } from "cypress-xray-plugin/commands/tasks";
+     *
+     * Cypress.Commands.overwrite("request", (originalFn, request) => {
+     *   const myFileName = "my-request.json"; // build as desired
+     *   enqueueTask("cypress-xray-plugin:task:evidence:attachment", {
+     *     contentType: "application/json",
+     *     data: Buffer.from(JSON.stringify(request)).toString("base64"),
+     *     filename: myFileName,
+     *   });
+     *   return originalFn(request);
+     * });
+     * ```
+     *
+     * If you want to upload responses as evidence, you'll need to enqueue the evidence task inside the test case:
+     *
+     * ```ts
+     * // my-test.js
+     * import { enqueueTask } from "cypress-xray-plugin/commands/tasks";
+     *
+     * it("CYP-123 my test case", () => {
+     *   cy.request("my-url").then((response) =>
+     *     const myFileName = "my-response.json"; // build as desired
+     *     enqueueTask("cypress-xray-plugin:task:evidence:attachment", {
+     *       contentType: "application/json",
+     *       data: Buffer.from(JSON.stringify(response)).toString("base64"),
+     *       filename: myFileName,
+     *     })
+     *   );
+     * });
+     * ```
+     */
+    uploadRequests?: boolean;
+    /**
+     * Turns execution results upload on or off. Useful when switching upload on or off from the
+     * command line (via environment variables).
+     *
+     * @defaultValue true
+     */
+    uploadResults?: boolean;
+    /**
+     * Turns on or off the upload of screenshots Cypress takes during test execution.
+     *
+     * @defaultValue true
+     */
+    uploadScreenshots?: boolean;
+    /**
+     * The Xray base URL to use. Defaults to {@link JiraOptions.url | `jira.url`} for Xray server
+     * and `https://xray.cloud.getxray.app` for Xray cloud.
+     *
+     * @example "https://eu.xray.cloud.getxray.app"
+     *
+     * @see https://docs.getxray.app/display/XRAY/REST+API
+     * @see https://docs.getxray.app/display/XRAYCLOUD/REST+API
+     */
+    url?: string;
+}
+
+/**
+ * A more specific Xray options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export type InternalXrayOptions = XrayOptions &
+    Required<
+        Pick<XrayOptions, "status" | "uploadRequests" | "uploadResults" | "uploadScreenshots">
+    >;
+
+/**
+ * When Cucumber is enabled, these options are used to configure how the plugin works with
+ * encountered feature files.
+ */
+export interface CucumberOptions {
+    /**
+     * Set it to true to automatically download feature files from Xray for Cypress to execute.
+     *
+     * *Note: Enable this option if the source of truth for test cases are step definitions in Xray
+     * and Cypress is only used for running tests.*
+     *
+     * @defaultValue false
+     */
+    downloadFeatures?: boolean;
+    /**
+     * The file extension of feature files you want to run in Cypress. The plugin will use this to
+     * parse all matching files with to extract any tags contained within them. Such tags are
+     * needed to identify to which test issue a feature file belongs.
+     *
+     * @example ".cy.feature"
+     */
+    featureFileExtension: string;
+    /**
+     * These settings allow specifying tag prefixes used by Xray when exporting or importing feature
+     * files and Cucumber test results. The plugin will access these options to verify that your
+     * feature files are tagged correctly according to your Xray prefix scheme.
+     *
+     * @remarks
+     *
+     * Whenever Cucumber test results or entire feature files are imported, Xray tries to link
+     * existing test and precondition Jira issues with the executed/present Cucumber scenarios and
+     * backgrounds. The default matching is quite involved (see documentation for
+     * {@link https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST | Xray server}
+     * or {@link https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST | Xray cloud}),
+     * but luckily Xray also supports and uses
+     * {@link https://cucumber.io/docs/cucumber/api/?lang=java#tags | feature file tags}.
+     *
+     * The tags are of the form `@CYP-123` or `@Prefix:CYP-123`, containing an optional prefix and
+     * the issue key. The concrete prefix and whether a prefix is at all necessary depends on your
+     * configured prefix scheme in Xray.
+     *
+     * If any tag in a feature file (and thus the Cucumber JSON report used for importing test
+     * execution results) is not consistent with the scheme defined in Xray, Xray will reject the
+     * imported results altogether.
+     *
+     * More information:
+     * - {@link https://csvtuda.github.io/docs/cypress-xray-plugin/configuration/cucumber/#prefixes | Plugin documentation for `prefixes`}
+     * - Xray feature tagging
+     *   - {@link https://docs.getxray.app/display/XRAY/Export+Cucumber+Features | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Generate+Cucumber+Features | Xray cloud}
+     * - Xray import behaviour
+     *   - {@link https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST | Xray cloud}
+     * - Xray Cucumber prefix schemes
+     *   - {@link https://docs.getxray.app/display/XRAY/Miscellaneous#Miscellaneous-CucumberExportPrefixes | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Global+Settings%3A+Cucumber | Xray cloud}
+     */
+    prefixes?: {
+        /**
+         * The prefix for Cucumber background tags.
+         *
+         * If left undefined, the plugin will assume that your Xray instance is able to properly
+         * parse issue tags _without_ any prefixes, e.g. background tags of the form `@CYP-123`
+         * instead of something like `@Precondition:CYP-123`.
+         *
+         * @example 'Precondition:'
+         * @example 'PRECOND_'
+         */
+        precondition?: string;
+        /**
+         * The prefix for Cucumber scenario tags.
+         *
+         * If left undefined, the plugin will assume that your Xray instance is able to properly
+         * parse issue tags _without_ any prefixes, e.g. scenario tags of the form `@CYP-123`
+         * instead of something like `@TestName:CYP-123`.
+         *
+         * @example 'TestName:'
+         * @example 'TEST_'
+         */
+        test?: string;
+    };
+    /**
+     * Set it to true to automatically create or update existing Xray issues (summary, steps),
+     * based on the feature file executed by Cypress.
+     *
+     * *Note: Enable this option if the source of truth for test cases are local feature files in
+     * Cypress and Xray is only used for tracking execution status/history.*
+     *
+     * @defaultValue false
+     */
+    uploadFeatures?: boolean;
+}
+
+/**
+ * A more specific Cucumber options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export interface InternalCucumberOptions extends Required<CucumberOptions> {
+    /**
+     * The Cucumber preprocessor configuration.
+     */
+    preprocessor?: Pick<IPreprocessorConfiguration, "json">;
+}
+
+/**
+ * Options which the plugin will use when making HTTP requests. You can specify
+ * [common options](https://axios-http.com/docs/req_config) to use for all requests or choose to
+ * define specific ones for Jira or Xray.
+ */
+export type HttpOptions = AxiosRequestConfig &
+    Pick<RequestsOptions, "rateLimiting"> & {
+        /**
+         * The HTTP configuration for requests to Jira. HTTP options defined for both clients will be
+         * overridden in the Jira client by those defined here.
+         *
+         * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
+         * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
+         * single one instead, e.g.:*
+         *
+         * ```ts
+         * {
+         *   // ...other plugin options
+         *   http: {
+         *     proxy: {
+         *       host: "http://1.2.3.4",
+         *       port: 12345
+         *     }
+         *   }
+         * }
+         * ```
+         */
+        jira?: AxiosRequestConfig & Pick<RequestsOptions, "rateLimiting">;
+        /**
+         * The HTTP configuration for requests to Xray. HTTP options defined for both clients will be
+         * overridden in the Jira client by those defined here.
+         *
+         * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
+         * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
+         * single one instead, e.g.:*
+         *
+         * ```ts
+         * {
+         *   // ...other plugin options
+         *   http: {
+         *     proxy: {
+         *       host: "http://1.2.3.4",
+         *       port: 12345
+         *     }
+         *   }
+         * }
+         * ```
+         */
+        xray?: AxiosRequestConfig & Pick<RequestsOptions, "rateLimiting">;
+    };
+
+export type InternalHttpOptions = HttpOptions;
+
+/**
+ * All events which the plugin can emit.
+ */
+export interface PluginEvent {
+    /**
+     * An event that is emitted after the Cucumber results have been uploaded.
+     */
+    ["upload:cucumber"]: {
+        /**
+         * The Cucumber test results.
+         *
+         * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+         * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+         */
+        results: CucumberMultipart;
+        /**
+         * The key of the Jira issue to which the results were uploaded.
+         */
+        testExecutionIssueKey: string;
+    };
+    /**
+     * An event that is emitted after the Cypress results have been uploaded.
+     */
+    ["upload:cypress"]: {
+        /**
+         * The Jira test execution issue information.
+         *
+         * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+         * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+         */
+        info: MultipartInfo | MultipartInfoCloud;
+        /**
+         * The test results as provided by Cypress, converted to Xray JSON format.
+         *
+         * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+         * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+         */
+        results: XrayTestExecutionResults;
+        /**
+         * The key of the Jira issue to which the results were uploaded.
+         */
+        testExecutionIssueKey: string;
+    };
+}
+
+interface PluginEventSubscriber {
+    /**
+     * A callback that is invoked after the Cypress results have been uploaded.
+     *
+     * @example
+     *
+     * ```ts
+     * on("upload:cypress", (data) => {
+     *   console.log(data.testExecutionIssueKey);
+     * })
+     * ```
+     *
+     * @param event - the event
+     * @param handler - the event handler
+     */
+    (
+        event: "upload:cypress",
+        handler: (data: PluginEvent["upload:cypress"]) => Promise<void> | void
+    ): void;
+    /**
+     * A callback that is invoked after the Cucumber results have been uploaded.
+     *
+     * @example
+     *
+     * ```ts
+     * on("upload:cucumber", (data) => {
+     *   console.log(data.testExecutionIssueKey);
+     * })
+     * ```
+     *
+     * @param event - the event
+     * @param handler - the event handler
+     */
+    (
+        event: "upload:cucumber",
+        handler: (data: PluginEvent["upload:cucumber"]) => Promise<void> | void
+    ): void;
+}
+
+/**
+ * Options for configuring the general behaviour of the plugin.
+ */
+export interface PluginOptions {
+    /**
+     * Enables or disables extensive debugging output.
+     *
+     * @defaultValue false
+     */
+    debug?: boolean;
+    /**
+     * Enables or disables the entire plugin. Setting this option to false will disable all plugin
+     * functions, including authentication checks, uploads or feature file synchronization.
+     *
+     * @defaultValue true
+     */
+    enabled?: boolean;
+    /**
+     * A listener function for handling plugin events.
+     *
+     * @param pluginEvents - the event callbacks registration
+     */
+    listener?: (pluginEvents: {
+        /**
+         * The event emitter to subscribe to.
+         */
+        on: PluginEventSubscriber;
+    }) => Promise<void> | void;
+    /**
+     * The directory which all error and debug log files will be written to.
+     *
+     * @defaultValue "logs"
+     */
+    logDirectory?: string;
+    /**
+     * A custom logger function that replaces the default ANSI-based logger for the plugin. If
+     * specified, this logger will completely replace the default plugin logger.
+     *
+     * Messages passed to this function:
+     * - will not contain the prefix `│ Cypress Xray Plugin │`
+     * - will not contain ANSI escape characters
+     * - may contain line break characters
+     *
+     * @example
+     *
+     * ```ts
+     * (level: Level, ...text: string[]) => {
+     *   switch (level) {
+     *     case "debug":
+     *       if (process.env.DEBUG) {
+     *         console.debug(...text);
+     *       }
+     *       break;
+     *     case "error":
+     *       console.error("oh no", ...text);
+     *       break;
+     *     case "info":
+     *       console.info("fyi", ...text);
+     *       break;
+     *     case "notice":
+     *       console.log("please beware", ...text);
+     *       break;
+     *     case "warning":
+     *       console.warn("danger", ...text);
+     *       break;
+     *   }
+     * }
+     * ```
+     *
+     * @param level - the severity level of the log message
+     * @param text - one or more messages to be logged
+     */
+    logger?: (level: Level, ...text: string[]) => void;
+    /**
+     * Some Xray setups may have problems with uploaded evidence if the filenames contain non-ASCII
+     * characters. With this option enabled, the plugin will only allow the characters `a-zA-Z0-9.`
+     * in screenshot names, and will replace all other sequences with `_`.
+     *
+     * @defaultValue false
+     */
+    normalizeScreenshotNames?: boolean;
+    /**
+     * Enables split upload mode for evidence files such as screenshots and videos, which are then
+     * uploaded in multiple smaller requests rather than in a single large request. This approach
+     * helps to avoid server-side request size limitations, and can also be useful for avoiding
+     * `JSON.stringify` token length errors.
+     *
+     * If set to `true`, evidence uploads will be sent concurrently for each test issue. This may
+     * cause them to appear out of order in Xray. If the order is important, but split uploads are
+     * still desired, the `sequential` setting can be used.
+     *
+     * @defaultValue false
+     */
+    splitUpload?: "sequential" | boolean;
+    /**
+     * If set to `true`, test retries and their associated screenshots will be omitted from the
+     * upload to Xray, i.e. only the last attempt of each test will be included.
+     *
+     * @defaultValue false
+     */
+    uploadLastAttempt?: boolean;
+}
+
+/**
+ * A more specific Cucumber options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export type InternalPluginOptions = PluginOptions &
+    Required<
+        Pick<
+            PluginOptions,
+            | "debug"
+            | "enabled"
+            | "logDirectory"
+            | "normalizeScreenshotNames"
+            | "splitUpload"
+            | "uploadLastAttempt"
+        >
+    >;
+
+/**
+ * Options only intended for internal plugin use.
+ */
+export interface InternalCypressXrayPluginOptions {
+    cucumber?: InternalCucumberOptions;
+    http?: InternalHttpOptions;
+    jira: InternalJiraOptions;
+    plugin: InternalPluginOptions;
+    xray: InternalXrayOptions;
+}
+
+/**
+ * Type describing the possible client combinations.
+ */
+export type ClientCombination =
+    | {
+          jiraClient: JiraClientCloud;
+          kind: "cloud";
+          xrayClient: XrayClientCloud;
+      }
+    | {
+          jiraClient: JiraClientServer;
+          kind: "server";
+          xrayClient: XrayClientServer;
+      };
+
+/**
+ * Wraps the REST clients used for HTTP requests directed at Jira and Xray.
+ */
+export interface HttpClientCombination {
+    jira: AxiosRestClient;
+    xray: AxiosRestClient;
+}

@@ -127,9 +127,7 @@ export class JwtCredentials implements HttpCredentials {
     }
 
     public async getAuthorizationHeader(): Promise<AuthorizationHeader> {
-        if (!this.token) {
-            this.token = this.fetchToken();
-        }
+        this.token ??= this.fetchToken();
         return {
             ["Authorization"]: `Bearer ${await this.token}`,
         };
