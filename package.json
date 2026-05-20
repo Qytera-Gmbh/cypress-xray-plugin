@@ -68,22 +68,22 @@
         "@eslint/js": "^10.0.1",
         "@faker-js/faker": "^10.4.0",
         "@qytera/xray-client": "^4.0.0",
-        "@types/node": "^25.6.0",
+        "@types/node": "^25.8.0",
         "@types/semver": "^7.7.1",
         "c8": "^11.0.0",
-        "cypress": "^15.14.1",
+        "cypress": "^15.15.0",
         "cypress-on-fix": "^1.1.0",
         "dotenv": "^17.4.2",
-        "eslint": "^10.2.1",
+        "eslint": "^10.3.0",
         "eslint-plugin-perfectionist": "^5.9.0",
         "eslint-plugin-tsdoc": "^0.5.0",
-        "graphql": "^16.13.2",
+        "graphql": "^16.14.0",
         "graphql-tag": "^2.12.6",
         "jira.js": "^5.3.1",
         "prettier": "^3.8.3",
         "shx": "^0.4.0",
-        "tsx": "^4.21.0",
+        "tsx": "^4.22.0",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.59.0"
+        "typescript-eslint": "^8.59.3"
     }
 }
