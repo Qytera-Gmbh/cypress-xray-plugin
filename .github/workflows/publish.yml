@@ -1,11 +1,15 @@
 name: Publish Package to npmjs
+# Disabled auto-publish on release events (2026-05-20): npm auth was not configured
+# after the September 2025 archival pause, causing the v9.0.0 release publish to fail
+# with 404/permission denied. Re-enable by restoring the `release: published` trigger
+# once npm Trusted Publishers (or NPM_TOKEN secret) is set up for Qytera-Gmbh/cypress-xray-plugin
+# under the qytera npmjs.com account.
 # see:
 # - https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages#publishing-packages-to-the-npm-registry
 # - https://docs.npmjs.com/trusted-publishers
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
 
 jobs:
   publish-npm:
