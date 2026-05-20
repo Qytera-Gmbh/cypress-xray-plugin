@@ -74,7 +74,7 @@
         "dotenv": "^16.4.7",
         "eslint": "^9.23.0",
         "eslint-plugin-perfectionist": "^4.9.0",
-        "eslint-plugin-tsdoc": "^0.4.0",
+        "eslint-plugin-tsdoc": "^0.5.2",
         "graphql": "^16.10.0",
         "graphql-tag": "^2.12.6",
         "jira.js": "^4.0.6",
